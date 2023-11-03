@@ -1,0 +1,52 @@
+#root {
+    width:100%;
+    height:100%;
+}
+
+.app{
+    width:100%;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+}
+
+.nav{
+    display:flex;
+    justify-content:space-between;
+}
+.content{
+    width:100%;
+    flex-grow:1;
+    position:relative;
+}
+
+.registers{
+    width:100%;
+    height:100%;
+}
+
+.registersGrid{
+    display: grid;
+    grid-template-columns: repeat(10, calc(10vw - 1px));
+    grid-template-rows: repeat(10, calc(10vw - 1px));
+    gap:1px;
+    width:100%;
+    height:100%;
+}
+
+.registerCell{
+    width:100%;
+    height:100%;
+    border-radius:5px;
+}
+
+
+.registerDetails{
+    position:absolute;
+    top:0px;
+    left:0px;
+    width:100%;
+    height:100%;
+    background-color:white;
+}
+
