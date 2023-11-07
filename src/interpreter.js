@@ -12,6 +12,7 @@ export class Interpreter{
         this.mainCanvas = document.createElement("canvas");
         this.mainCanvas.style.width = "100%";
         this.mainCanvas.style.height = "100%";
+        this.mainCanvas.style.touchAction = "none";
         this.ctx = this.mainCanvas.getContext("2d");
     }
 
@@ -44,7 +45,8 @@ export class Interpreter{
         const ifStack = [];
         const forStack = [];
         instructions.forEach((line, i) => {
-            const [module, cmd, ...params] = line;
+            if(line.code.length === 0)return;
+            const [module, cmd, ...params] = line.code;
             if(module==="ctrl"){
                 switch(cmd){
                 case "if":
@@ -52,7 +54,6 @@ export class Interpreter{
                     break;
                 case "elseif":{
                     ifStack[ifStack.length - 1].push(i);
-                    this.jumpTable.set(i, ifStack[ifStack.length - 1]);
                     break;
                 }
                 case "else":{
@@ -61,20 +62,14 @@ export class Interpreter{
                 }
                 case "endif":
                     const jumps = ifStack.pop();
+                    jumps.push(i);
+                    this.jumpTable.set(jumps[0], jumps);
                     break;
                 case "for":
                     forStack.push(i);
                     break;
-                case "break":
-                    this.jumpTable.set(i, forStack[forStack.length - 1]);
-                    break;
-                case "continue":
-                    this.jumpTable.set(i, forStack[forStack.length - 1]);
-                    break;
                 case "endfor":
-                    const forBegin = forStack.pop();
-                    this.jumpTable.set(i, forBegin);
-                    this.jumpTable.set(forBegin, i);
+                    this.jumpTable.set(forStack.pop(), i);
                     break;
                 }
             }
@@ -83,20 +78,112 @@ export class Interpreter{
 
 
     executeInstructions(instructions){
-        // this.initJumpTableanstructions();
+        this.initJumpTable(instructions);
         this.setVal("r:time", Date.now());
         this.instructionId = 0;
+        const ctrlStack = [];
         while(this.instructionId < instructions.length){
             const line = instructions[this.instructionId];
-            let jumped = false;
-            if(line.code.length){
-                const [module, cmd, ...params] = line.code;
-                if(!params.includes("r:null")){
-                    jumped = instructionsDefinitions[module][cmd].effect(params, this);
+            try{
+                if(line.code.length){
+                    const [module, cmd, ...params] = line.code;
+                    if(!params.includes("r:null")){
+                        if(module === "ctrl"){
+                            if(cmd === "if"){
+                                ctrlStack.push({
+                                    type:"if",
+                                    line:this.instructionId,
+                                    jumps:this.jumpTable.get(this.instructionId)
+                                });
+                                if(this.readVal(params[0])){
+                                    this.instructionId++;
+                                }
+                                else{
+                                    this.instructionId = this.jumpTable.get(this.instructionId)[1];
+                                }
+                            }
+                            if(cmd === "endif"){
+                                ctrlStack.pop();
+                                this.instructionId++;
+                            }
+                            if(cmd === "for"){
+                                let forDefinition = ctrlStack.find(c => c.beginLine== this.instructionId);
+                                if(!forDefinition){
+                                    const begin = this.readVal(params[1]);
+                                    const end = this.readVal(params[2]);
+                                    const step = begin < end ? 1 : -1;
+                                    forDefinition = {
+                                        type:"for",
+                                        targetRegister:params[0],
+                                        begin, end, step,
+                                        beginLine:this.instructionId,
+                                        endLine:this.jumpTable.get(this.instructionId)
+                                    };
+                                    ctrlStack.push(forDefinition);
+                                    this.setVal(forDefinition.targetRegister, begin);
+                                };
+                                if(this.readVal(forDefinition.targetRegister) === forDefinition.end){
+                                    this.instructionId = forDefinition.endLine;
+                                    ctrlStack.pop();
+                                }
+                                else{
+                                    this.setVal(forDefinition.targetRegister, this.readVal(forDefinition.targetRegister) + forDefinition.step);
+                                    this.instructionId++;
+                                }
+                            }
+                            if(cmd === "break"){
+                                //find most recently encountered for. Some "If" can be opened
+                                let ctrlId = undefined;
+                                for(let i = ctrlStack.length - 1; i >= 0; i--){
+                                    const ctrl = ctrlStack[i];
+                                    if(ctrl.type === "for"){
+                                        ctrlId = i;
+                                        break;
+                                    }
+                                }
+                                if(ctrlId !== undefined){
+                                    const forDefinition = ctrlStack[ctrlId];
+                                    //drop opened ifs and current for
+                                    ctrlStack.length = ctrlId - 1;
+                                    this.instructionId = forDefinition.endLine + 1;
+                                }
+                            }
+                            if(cmd === "continue"){
+                                //find most recently encountered for. Some "If" can be opened
+                                let ctrlId = undefined;
+                                for(let i = ctrlStack.length - 1; i >= 0; i--){
+                                    const ctrl = ctrlStack[i];
+                                    if(ctrl.type === "for"){
+                                        ctrlId = i;
+                                        break;
+                                    }
+                                }
+                                if(ctrlId !== undefined){
+                                    const forDefinition = ctrlStack[ctrlId];
+                                    //drop opened ifs
+                                    ctrlStack.length = ctrlId;
+                                    this.instructionId = forDefinition.beginLine;
+                                }
+                            }
+                            if(cmd === "endfor"){
+                                const forDefinition = ctrlStack[ctrlStack.length - 1];
+                                const line = forDefinition.beginLine;
+                                this.instructionId = line;
+                            }
+                        }
+                        else{
+                            instructionsDefinitions[module][cmd].effect(params, this);
+                            this.instructionId++;
+                        }
+                    }
+                }
+                else{
+                    //blank line
+                    this.instructionId++;
                 }
             }
-            if(!jumped){
-                this.instructionId++;
+            catch(e){
+                throw(new Error(`line ${this.instructionId}:${line.code.join(" ")}`));
             }
         }
         this.onExecuted(this.registers);
@@ -162,6 +249,7 @@ export class Interpreter{
     }
 
     onPointerMove = (e) => {
+        e.preventDefault();
         this.updatePointer(e.clientX, e.clientY);
         this.executeInstructions(this.source.pointerMove);
     }

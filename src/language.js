@@ -24,7 +24,7 @@ function comp(fun){
     return {
         params:[0, 1, 2],
         effect:(params, env) => {
-            env.setVal(params[2], fun(env.readVal(params[0]), env.readVal(params[1])) ? 0 : 1);
+            env.setVal(params[2], fun(env.readVal(params[0]), env.readVal(params[1])) ? 1 : 0);
         }
     };
 }
@@ -84,14 +84,14 @@ export const instructionsDefinitions = {
         "random":{
             params:[0, 1, 2],
             effect:(params, env) => {
-                const [min, max] = params.slice(0, 2).map(v => env.readVal(v));
+                const [min, max] = params.slice(0, 2).map(env.readVal, env);
                 env.setVal(params[2], lerp(min, max, Math.random()));
             }
         },
         "lerp":{
             params:[0, 1, 2, 3],
             effect:(params, env) => {
-                const [a, b, t] = params.slice(0, 3).map(v => env.readVal(v));
+                const [a, b, t] = params.slice(0, 3).map(env.readVal, env);
                 env.setVal(params[3], lerp(a, b, t));
             }
         },
@@ -112,7 +112,6 @@ export const instructionsDefinitions = {
             effect: (_, env) => {
                 const w = env.readVal("r:width");
                 const h = env.readVal("r:height");
-                console.log(w, h);
                 env.ctx.save();
                 env.ctx.fillStyle="white";
                 env.ctx.fillRect(0, 0, w, h);
@@ -146,21 +145,21 @@ export const instructionsDefinitions = {
         "curve2":{
             params:[0, 1, 2, 3],
             effect:(params, env) => {
-                const [cx, cy, x, y] = params.map(v => env.readVal(v));
+                const [cx, cy, x, y] = params.map(env.readVal, env);
                 env.ctx.curveTo(cx, cy, x, y);
             }
         },
         "curve3":{
             params:[0, 1, 2, 3 , 4, 5],
             effect:(params, env) => {
-                const [c1x, c1y, c2x, c2y, x, y] = params.map(v => env.readVal(v));
+                const [c1x, c1y, c2x, c2y, x, y] = params.map(env.readVal, env);
                 env.ctx.bezierCurveTo(c1x, c1y, c2x, c2y, x, y);
             }
         },
         "rect":{
             params:[0, 1, 2, 3],
             effect:(params, env) =>{
-                const [x, y, w, h] = params.map(v => env.readVal(v));
+                const [x, y, w, h] = params.map(env.readVal, env);
                 env.ctx.moveTo(x, y);
                 env.ctx.lineTo(x+w, y);
                 env.ctx.lineTo(x+w, y+h);
@@ -171,16 +170,15 @@ export const instructionsDefinitions = {
         "circle":{
             params:[0, 1, 2],
             effect:(params, env) =>{
-                const [x, y, r] = params.map(v => env.readVal(v));
+                const [x, y, r] = params.map(env.readVal, env);
                 env.ctx.moveTo(x +r, y);
                 env.ctx.arc(x+r, y, r, 0, 2 * Math.PI);
             }
         },
         "square":{
             params:[0, 1, 2],
-            effec:(params, env) =>{
-                const [x, y, c] = params.map(v => env.readVal(v));
-                console.log(x, y, c);
+            effect:(params, env) =>{
+                const [x, y, c] = params.map(env.readVal, env);
                 const hc = c / 2;
                 env.ctx.moveTo(x - hc, y - hc);
                 env.ctx.lineTo(x + hc, y - hc);
@@ -192,7 +190,7 @@ export const instructionsDefinitions = {
         "arc":{
             params:[0, 1, 2, 3, 4, 5],
             effect:(params, env) =>{
-                const [x, y, r, a1, a2, d] = params.map(v => env.readVal(v));
+                const [x, y, r, a1, a2, d] = params.map(env.readVal, env);
                 env.ctx.moveTo(x +r, y);
                 env.ctx.arc(x+r, y, r, a1, a2, d);
             }
