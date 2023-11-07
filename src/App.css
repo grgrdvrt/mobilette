@@ -18,6 +18,7 @@
     width:100%;
     flex-grow:1;
     position:relative;
+    overflow:hidden;
 }
 
 .registers{
@@ -50,3 +51,56 @@
     background-color:white;
 }
 
+
+.code{
+    height:100%;
+    overflow:hidden;
+    font-family:"monospace";
+    display:flex;
+    flex-direction:column;
+}
+
+.codeList{
+    overflow-x:hidden;
+    overflow-y:auto;
+    flex-grow:1;
+}
+
+
+.sourceLine p *{
+    pointer-events:none;
+}
+
+.sourceLine.selected p *{
+    pointer-events:auto;
+}
+
+.sourceLine.selected p{
+    background-color:#eeeeee;
+}
+
+.instructionsMenu{
+    width:100%;
+    background-color:#eeeeee;
+    text-align:center;
+}
+
+.instructionsMenu ul{
+    width:100%;
+    display:flex;
+    justify-content:space-between;
+    padding:0;
+    flex-wrap:wrap;
+}
+
+.instructionsMenu li{
+    list-style:none;
+    flex-grow:1;
+    margin:2px;
+}
+
+
+.instructionsMenu button{
+    padding:10px;
+    width:100%;
+}
