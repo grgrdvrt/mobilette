@@ -91,6 +91,13 @@ export function setCommand(module, command){
     }));
 }
 
+export function setRegister(sourcePath, lineId, registerIndex, registerId){
+    setStore(produce(store => {
+        const line = store.program.source[sourcePath].find(l => l.id === lineId);
+        line.code[registerIndex + 2] = `r:${registerId}`;
+    }));
+}
+
 export function setSelection(ids){
     setStore(produce(store => {
         store.gui.selection = ids;
@@ -240,25 +247,25 @@ const bouncingProgram = {
 const forProgram = {
     source:{
         init:[
-            {id:"aa", code:["gfx", "fillStyle", "v:[0,0,0,1]"]},
-            {id:"ad", code:["maths", "*", "r:width", "v:0.5", "r:x"]},
-            {id:"ae", code:["maths", "*", "r:height", "v:0.5", "r:y"]},
+            {id:"a1", code:["gfx", "fillStyle", "v:[0,0,0,1]"]},
+            {id:"a2", code:["maths", "*", "r:width", "v:0.5", "r:x"]},
+            {id:"a3", code:["maths", "*", "r:height", "v:0.5", "r:y"]},
 
-            {id:"ad", code:["ctrl", "for", "r:i", "v:0", "v:10"]},
-            {id:"ac", code:["gfx", "beginPath"]},
-            {id:"ab", code:["bool", "==", "v:3", "r:i", "r:cond"]},
-            {id:"ab", code:["ctrl", "if", "r:cond"]},
-            {id:"ab", code:["ctrl", "continue"]},
-            {id:"ab", code:["ctrl", "endif"]},
-            // {id:"ab", code:["bool", "==", "v:5", "r:i", "r:cond"]},
-            // {id:"ab", code:["ctrl", "if", "r:cond"]},
-            // {id:"ab", code:["ctrl", "break;"]},
-            // {id:"ab", code:["ctrl", "endif"]},
-            {id:"ab", code:["maths", "random", "v:0", "r:width", "r:x"]},
-            {id:"ac", code:["maths", "random", "v:0", "r:height", "r:y"]},
-            {id:"ac", code:["gfx", "square", "r:x", "r:y", "r:c"]},
-            {id:"ac", code:["gfx", "fill"]},
-            {id:"ad", code:["ctrl", "endfor"]},
+            {id:"a4", code:["ctrl", "for", "r:i", "v:0", "v:10"]},
+            {id:"a5", code:["gfx", "beginPath"]},
+            // {id:"a6", code:["bool", "==", "v:3", "r:i", "r:cond"]},
+            // {id:"a7", code:["ctrl", "if", "r:cond"]},
+            // {id:"a8", code:["ctrl", "continue"]},
+            // {id:"a9", code:["ctrl", "endif"]},
+            {id:"a10", code:["bool", "==", "v:5", "r:i", "r:cond"]},
+            {id:"a11", code:["ctrl", "if", "r:cond"]},
+            {id:"a12", code:["ctrl", "break"]},
+            {id:"a13", code:["ctrl", "endif"]},
+            {id:"a14", code:["maths", "random", "v:0", "r:width", "r:x"]},
+            {id:"a15", code:["maths", "random", "v:0", "r:height", "r:y"]},
+            {id:"a16", code:["gfx", "square", "r:x", "r:y", "r:c"]},
+            {id:"a17", code:["gfx", "fill"]},
+            {id:"a18", code:["ctrl", "endfor"]},
         ],
         loop:[
         ],
@@ -279,7 +286,7 @@ const forProgram = {
     ]
 };
 
-// setProgram(greenRectProgram);
+setProgram(greenRectProgram);
 // setProgram(drawingProgram);
 // setProgram(bouncingProgram);
-setProgram(forProgram);
+// setProgram(forProgram);

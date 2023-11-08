@@ -84,6 +84,8 @@ export class Interpreter{
         const ctrlStack = [];
         while(this.instructionId < instructions.length){
             const line = instructions[this.instructionId];
+            console.log(this.instructionId, line.code.join(" "));
+            // debugger;
             try{
                 if(line.code.length){
                     const [module, cmd, ...params] = line.code;
@@ -123,7 +125,7 @@ export class Interpreter{
                                     this.setVal(forDefinition.targetRegister, begin);
                                 };
                                 if(this.readVal(forDefinition.targetRegister) === forDefinition.end){
-                                    this.instructionId = forDefinition.endLine;
+                                    this.instructionId = forDefinition.endLine + 1;
                                     ctrlStack.pop();
                                 }
                                 else{
@@ -134,6 +136,7 @@ export class Interpreter{
                             if(cmd === "break"){
                                 //find most recently encountered for. Some "If" can be opened
                                 let ctrlId = undefined;
+                                debugger;
                                 for(let i = ctrlStack.length - 1; i >= 0; i--){
                                     const ctrl = ctrlStack[i];
                                     if(ctrl.type === "for"){
@@ -141,10 +144,11 @@ export class Interpreter{
                                         break;
                                     }
                                 }
+                                debugger;
                                 if(ctrlId !== undefined){
                                     const forDefinition = ctrlStack[ctrlId];
                                     //drop opened ifs and current for
-                                    ctrlStack.length = ctrlId - 1;
+                                    ctrlStack.length = ctrlId;
                                     this.instructionId = forDefinition.endLine + 1;
                                 }
                             }
@@ -161,7 +165,7 @@ export class Interpreter{
                                 if(ctrlId !== undefined){
                                     const forDefinition = ctrlStack[ctrlId];
                                     //drop opened ifs
-                                    ctrlStack.length = ctrlId;
+                                    ctrlStack.length = ctrlId + 1;
                                     this.instructionId = forDefinition.beginLine;
                                 }
                             }

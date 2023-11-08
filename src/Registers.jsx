@@ -1,4 +1,4 @@
-import { createSignal, createEffect, onMount, Show, Switch, Match, For} from 'solid-js';
+import { createSignal, Show, For} from 'solid-js';
 
 import './App.css';
 
@@ -10,35 +10,35 @@ function range(min, max){
     return result;
 }
 
-export function Registers({registers}){
-    const [selectedRegister, setSelectedRegister] = createSignal(null);
+export function RegistersGrid({registers, onRegisterClicked}){
     const cols = range(0, 10);
     const rows = range(0, 10);
     return(
-        <div class="registers">
-            <div class="registersGrid">
-            <For each={rows}>
-                {j => {
-                    return (
-                        <For each={cols}>
-                        {i => {
-                            const register = registers.find(r => r.x === i && r.y === j);
-                            return (
-                                <div
-                                class="registerCell"
-                                  onClick={() => {if(register){setSelectedRegister(register);}}}
-                                    style={{"background-color":register?register.color:"#eeeeee"}}
-                                />
-                            );
-                        }}
-                        </For>
-                    );
-                }}
-            </For>
-              <Show when={selectedRegister() !== null}>
-                <RegisterDetails register={selectedRegister()} onClose={() => setSelectedRegister(null)}/>
-              </Show>
-            </div>
+        <div class="registersGrid"
+             onClick={(e) => {
+                 const id = e.target.dataset?.register;
+                 const register = registers.find(r => r.id === id);
+                 if(register){onRegisterClicked(register);}
+             }}
+        >
+          <For each={rows}>
+            {j => {
+                return (
+                    <For each={cols}>
+                      {i => {
+                          const register = registers.find(r => r.x === i && r.y === j);
+                          return (
+                              <div
+                              class="registerCell"
+                                data-register={register?.id}
+                                style={{"background-color":register?register.color:"#eeeeee"}}
+                              />
+                          );
+                      }}
+                    </For>
+                );
+            }}
+          </For>
         </div>
     );
 }
@@ -53,6 +53,18 @@ export function RegisterDetails({register, onClose}){
           <p>type: number</p>
           <p>value: {register.value}</p>
           <p>name: {register.name||""}</p>
+        </div>
+    );
+}
+
+export function Registers({registers}){
+    const [selectedRegister, setSelectedRegister] = createSignal(null);
+    return(
+        <div class="registers">
+          <RegistersGrid registers={registers} onRegisterClicked={register => setSelectedRegister(register)}/>
+          <Show when={selectedRegister() !== null}>
+            <RegisterDetails register={selectedRegister()} onClose={() => setSelectedRegister(null)}/>
+          </Show>
         </div>
     );
 }
