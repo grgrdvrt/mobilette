@@ -41,7 +41,7 @@ export function getSelectedLines(){
     const lines = [];
     for(let k in store.program.source){
         store.program.source[k].forEach(line => {
-            if(store.gui.selection.indexOf(line.id) !== -1){
+            if(store.gui.selection.includes(line.id)){
                 lines.push(line);
             }
         });
@@ -98,10 +98,55 @@ export function setRegister(sourcePath, lineId, registerIndex, registerId){
     }));
 }
 
-export function setSelection(ids){
+function lerp(a, b, t){
+    return a + t * (b - a);
+}
+
+function randomRegisterColor(){
+    return "#" + ["ff", "80", Math.round(lerp(128, 256, Math.random())).toString("16")].sort(() => Math.random() - 0.5).join("");
+}
+
+export function makeEmptyRegister(x, y){
+    return {
+        id:"empty",
+        name:"",
+        initialValue:0,
+        value:0,
+        x:x,
+        y:y,
+        color:randomRegisterColor(),
+    };
+}
+
+export function getRegisterByPosition(x, y){
+    return Object.values(store.program.registers).find(r => r.x === x && r.y === y);
+}
+export function createRegister(x, y, color, name, value){
     setStore(produce(store => {
-        store.gui.selection = ids;
+        const register = {
+            id: crypto.randomUUID(),
+            value: value,
+            name: name,
+            color: color,
+            x:x,
+            y:y,
+        };
+        store.program.registers.push(register);
     }));
+}
+
+export function saveRegister(id, color, name, value){
+    setStore(produce(store => {
+        const register = store.program.registers.find(r => r.id === id);
+        register.color = color;
+        register.name = name;
+        register.value = value;
+    }));
+
+}
+
+export function setSelection(ids){
+    setStore("gui", "selection", ids);
 }
 
 export function addToSelection(id){
@@ -110,15 +155,31 @@ export function addToSelection(id){
     }));
 }
 
+export function deleteSelection(){
+    setStore(produce(store => {
+        const source = store.program.source;
+        store.gui.selection.forEach(idToDelete => {
+            for(let key in source){
+                for(let i = source[key].length - 1; i >= 0; i--){
+                    const line = source[key][i];
+                    if(line.id === idToDelete) {
+                        source[key].splice(i, 1);
+                    }
+                }
+            }
+        });
+    }));
+}
+
 const defaultRegisters = [
-    {id:"null", name:"null", initialValue:null, value:null, x:-1, y:-1, color:"hsl(0, 0%, 50%)"},
-    {id:"width", name:"width", initialValue:0, value:0, x:0, y:0, color:"hsl(22, 46%, 91%)"},
-    {id:"height", name:"height", initialValue:0, value:0, x:1, y:0, color:"hsl(227, 69%, 73%)"},
-    {id:"time", name:"time", initialValue:0, value:0, x:2, y:0, color:"hsl(114, 30%, 66%)"},
-    {id:"pointerX", name:"pointerX", initialValue:0, value:0, x:3, y:0, color:"hsl(22, 46%, 91%)"},
-    {id:"pointerY", name:"pointerY", initialValue:0, value:0, x:4, y:0, color:"hsl(227, 69%, 73%)"},
-    {id:"pPointerX", name:"pPointerX", initialValue:0, value:0, x:5, y:0, color:"hsl(22, 46%, 91%)"},
-    {id:"pPointerY", name:"pPointerY", initialValue:0, value:0, x:6, y:0, color:"hsl(227, 69%, 73%)"},
+    {id:"null", name:"null", initialValue:null, value:null, x:-1, y:-1, color:randomRegisterColor()},
+    {id:"width", name:"width", initialValue:0, value:0, x:0, y:0, color:randomRegisterColor()},
+    {id:"height", name:"height", initialValue:0, value:0, x:1, y:0, color:randomRegisterColor()},
+    {id:"time", name:"time", initialValue:0, value:0, x:2, y:0, color:randomRegisterColor()},
+    {id:"pointerX", name:"pointerX", initialValue:0, value:0, x:3, y:0, color:randomRegisterColor()},
+    {id:"pointerY", name:"pointerY", initialValue:0, value:0, x:4, y:0, color:randomRegisterColor()},
+    {id:"pPointerX", name:"pPointerX", initialValue:0, value:0, x:5, y:0, color:randomRegisterColor()},
+    {id:"pPointerY", name:"pPointerY", initialValue:0, value:0, x:6, y:0, color:randomRegisterColor()},
 ]
 
 //init
@@ -153,13 +214,13 @@ const greenRectProgram = {
     },
     registers:[
         ...defaultRegisters,
-        {id:"margin", initialValue:50, value:50, x:0, y:1, color:"hsl(359, 70%, 50%)"},
-        {id:"margin2", initialValue:0, value:0, x:1, y:1, color:"hsl(278, 14%, 59%)"},
-        {id:"x", initialValue:0, value:0, x:0, y:2, color:"hsl(352, 62%, 63%)"},
-        {id:"y", initialValue:0, value:0, x:1, y:2, color:"hsl(169, 57%, 54%)"},
-        {id:"w", initialValue:0, value:0, x:2, y:2, color:"hsl(61, 51%, 96%)"},
-        {id:"h", initialValue:0, value:0, x:3, y:2, color:"hsl(257, 79%, 77%)"},
-        {id:"t", initialValue:0, value:0, x:4, y:2, color:"hsl(324, 61%, 84%)"},
+        {id:"margin", initialValue:50, value:50, x:0, y:1, color:randomRegisterColor()},
+        {id:"margin2", initialValue:0, value:0, x:1, y:1, color:randomRegisterColor()},
+        {id:"x", initialValue:0, value:0, x:0, y:2, color:randomRegisterColor()},
+        {id:"y", initialValue:0, value:0, x:1, y:2, color:randomRegisterColor()},
+        {id:"w", initialValue:0, value:0, x:2, y:2, color:randomRegisterColor()},
+        {id:"h", initialValue:0, value:0, x:3, y:2, color:randomRegisterColor()},
+        {id:"t", initialValue:0, value:0, x:4, y:2, color:randomRegisterColor()},
     ]
 };
 
@@ -234,13 +295,13 @@ const bouncingProgram = {
     },
     registers:[
         ...defaultRegisters,
-        {id:"c", name:"c", initialValue:100, value:100, x:0, y:2, color:"hsl(200, 62%, 63%)"},
-        {id:"x", name:"x", initialValue:0, value:0, x:0, y:2, color:"hsl(352, 60%, 63%)"},
-        {id:"y", name:"y", initialValue:0, value:0, x:1, y:2, color:"hsl(169, 60%, 54%)"},
-        {id:"vx", name:"vx", initialValue:0, value:0, x:0, y:3, color:"hsl(352, 60%, 80%)"},
-        {id:"vy", name:"vy", initialValue:0, value:0, x:1, y:3, color:"hsl(169, 60%, 80%)"},
-        {id:"e", name:"e", initialValue:0, value:0, x:1, y:3, color:"hsl(169, 0%, 54%)"},
-        {id:"bounce", name:"bounce", initialValue:0, value:0, x:1, y:3, color:"hsl(169, 30%, 54%)"},
+        {id:"c", name:"c", initialValue:100, value:100, x:0, y:2, color:randomRegisterColor()},
+        {id:"x", name:"x", initialValue:0, value:0, x:0, y:2, color:randomRegisterColor()},
+        {id:"y", name:"y", initialValue:0, value:0, x:1, y:2, color:randomRegisterColor()},
+        {id:"vx", name:"vx", initialValue:0, value:0, x:0, y:3, color:randomRegisterColor()},
+        {id:"vy", name:"vy", initialValue:0, value:0, x:1, y:3, color:randomRegisterColor()},
+        {id:"e", name:"e", initialValue:0, value:0, x:1, y:3, color:randomRegisterColor()},
+        {id:"bounce", name:"bounce", initialValue:0, value:0, x:1, y:3, color:randomRegisterColor()},
     ]
 };
 
@@ -278,14 +339,39 @@ const forProgram = {
     },
     registers:[
         ...defaultRegisters,
-        {id:"c", name:"c", initialValue:10, value:10, x:0, y:2, color:"hsl(200, 62%, 63%)"},
-        {id:"x", name:"x", initialValue:0, value:0, x:0, y:2, color:"hsl(352, 60%, 63%)"},
-        {id:"y", name:"y", initialValue:0, value:0, x:1, y:2, color:"hsl(169, 60%, 54%)"},
-        {id:"i", name:"i", initialValue:0, value:0, x:0, y:3, color:"hsl(109, 60%, 54%)"},
-        {id:"cond", name:"cond", initialValue:0, value:0, x:0, y:4, color:"hsl(109, 60%, 54%)"},
+        {id:"c", name:"c", initialValue:10, value:10, x:0, y:2, color:randomRegisterColor()},
+        {id:"x", name:"x", initialValue:0, value:0, x:0, y:2, color:randomRegisterColor()},
+        {id:"y", name:"y", initialValue:0, value:0, x:1, y:2, color:randomRegisterColor()},
+        {id:"i", name:"i", initialValue:0, value:0, x:0, y:3, color:randomRegisterColor()},
+        {id:"cond", name:"cond", initialValue:0, value:0, x:0, y:4, color:randomRegisterColor()},
     ]
 };
 
+const emptyProgram = {
+    source:{
+        init:[
+            {id:"a0", code:[]},
+        ],
+        loop:[
+            {id:"b0", code:[]},
+        ],
+        pointerDown:[
+            {id:"c0", code:[]},
+        ],
+        pointerUp:[
+            {id:"d0", code:[]},
+        ],
+        pointerMove:[
+            {id:"e0", code:[]},
+        ],
+    },
+    registers:[
+        ...defaultRegisters,
+        {id:"c", name:"c", initialValue:0, value:0, x:0, y:1, color:randomRegisterColor()},
+    ]
+};
+
+// setProgram(emptyProgram);
 setProgram(greenRectProgram);
 // setProgram(drawingProgram);
 // setProgram(bouncingProgram);

@@ -69,6 +69,12 @@
     flex-grow:1;
 }
 
+.codeDeleteBtn{
+    position:absolute;
+    top:5px;
+    right:5px;
+}
+
 
 .sourceLine p *{
     pointer-events:none;

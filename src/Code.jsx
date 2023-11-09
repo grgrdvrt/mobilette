@@ -9,12 +9,36 @@ import {
     insertAfter,
     setSelection,
     getSelectedLines,
+    deleteSelection,
+    getRegisterByPosition,
     setRegister
 } from "./store";
 const [store] = useStore();
 
 import {RegistersGrid} from "./Registers";
 import {InstructionsMenu} from "./InstructionsMenu";
+
+function RegisterParam({register, setSelectedRegister, sourcePath, line, index}){
+    return(
+        <span
+        class="codeRegister"
+          style={{"background-color":register.color}}
+          onClick={e => {
+              e.stopPropagation();
+              setSelectedRegister({sourcePath:sourcePath, lineId:line.id, register, index:index});
+          }}
+        >
+          {register.name || register.y + ":" + register.x}
+        </span>
+    );
+}
+
+
+function ValueParam({value}){
+    return(
+        <span>{value}</span>
+    );
+}
 
 function SourceLine({line, selected, sourcePath, registers, setSelectedRegister}){
     return (
@@ -27,19 +51,18 @@ function SourceLine({line, selected, sourcePath, registers, setSelectedRegister}
                     const item = p.substr(2);
                     const register = registers.find(r => r.id === item);
                     return (
-                        <Show when={p.substr(0, 2) === "r:"} fallback={<span>{item} </span>}>
-                          <span
-                            class="codeRegister"
-                            style={{"background-color":register.color}}
-                            onClick={e => {
-                                e.stopPropagation();
-                                setSelectedRegister({sourcePath:sourcePath, lineId:line.id, register, index:index()});
-                            }}
-                          >
-                            {register.name || register.y + ":" + register.x}
-                          </span>
-                          <span> </span>
-                        </Show>
+                        <>
+                          <Show when={p.substr(0, 2) === "r:"} fallback={<ValueParam value={item}/>}>
+                              <RegisterParam
+                                register={register}
+                                setSelectedRegister={setSelectedRegister}
+                                sourcePath={sourcePath}
+                                line={line}
+                                index={index()}
+                              />
+                            </Show>
+                            <span> </span>
+                        </>
                     );
                 }}
               </For>
@@ -78,6 +101,9 @@ export function Code({source, registers}){
     const showInstruction = () => {
         const selectedLines = getSelectedLines();
         return selectedLines.length === 1 && selectedLines[0].code.length === 0;
+    };
+    const hasSelection = () => {
+        return store.gui.selection.length > 0;
     };
     return(
         <div class="code">
@@ -128,12 +154,16 @@ export function Code({source, registers}){
           <Show when={showInstruction()}>
             <InstructionsMenu/>
           </Show>
+          <Show when={hasSelection()}>
+            <button class="codeDeleteBtn" onClick={deleteSelection}>Delete</button>
+          </Show>
           <Show when={selectedRegister()}>
             <div class="registerPicker">
               <RegistersGrid
                 registers={registers}
                 onRegisterClicked={
-                    register =>{
+                    registerPosition =>{
+                        const register = getRegisterByPosition(registerPosition.x, registerPosition.y);
                         const {sourcePath, lineId, index} = selectedRegister();
                         setRegister(sourcePath, lineId, index, register.id);
                         setSelectedRegister(null);
