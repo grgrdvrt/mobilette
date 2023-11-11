@@ -62,7 +62,7 @@ export function RegisterDetails({registerPosition, onClose}){
     let valueField, colorField, nameField;
     return (
         <div class="registerDetails">
-          <button onClick={onClose}>Close</button>
+          <button onClick={() => onClose("close")}>Close</button>
           <p>{register().x}:{register().y}</p>
           <input ref={colorField} type="color" value={register().color}/>
           <p>type: number</p>
@@ -80,14 +80,14 @@ export function RegisterDetails({registerPosition, onClose}){
                 onClick={
                     () => {
                         saveRegister(register().id, colorField.value, nameField.value, valueField.value);
-                        onClose();
+                        onClose("save");
                     }
                 }>Save</button>
           }>
-            <button onClick={onClose}>Cancel</button>
+            <button onClick={() => onClose("cancel")}>Cancel</button>
             <button onClick={() => {
                 createRegister(registerPosition.x, registerPosition.y, colorField.value, nameField.value, valueField.value);
-                onClose();
+                onClose("create");
             }}>Create</button>
           </Show>
         </div>

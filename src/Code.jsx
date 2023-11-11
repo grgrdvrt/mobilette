@@ -15,7 +15,7 @@ import {
 } from "./store";
 const [store] = useStore();
 
-import {RegistersGrid} from "./Registers";
+import { RegisterDetails, RegistersGrid} from "./Registers";
 import {InstructionsMenu} from "./InstructionsMenu";
 
 function RegisterParam({register, setSelectedRegister, sourcePath, line, index}){
@@ -158,19 +158,50 @@ export function Code({source, registers}){
             <button class="codeDeleteBtn" onClick={deleteSelection}>Delete</button>
           </Show>
           <Show when={selectedRegister()}>
-            <div class="registerPicker">
-              <RegistersGrid
-                registers={registers}
-                onRegisterClicked={
-                    registerPosition =>{
-                        const register = getRegisterByPosition(registerPosition.x, registerPosition.y);
-                        const {sourcePath, lineId, index} = selectedRegister();
-                        setRegister(sourcePath, lineId, index, register.id);
-                        setSelectedRegister(null);
-                    }
-                }
-              />
-            </div>
+            <InputSelection
+              registers={registers}
+              selectedRegister={selectedRegister()}
+              setSelectedRegister={setSelectedRegister}
+            />
+          </Show>
+        </div>
+    );
+}
+
+function InputSelection({registers, selectedRegister, setSelectedRegister}){
+    const [step, setStep] = createSignal({id:"selection", data:{}});
+    return(
+        <div class="registerPicker">
+          <Show when={step().id == "selection"}>
+            <RegistersGrid
+              registers={registers}
+              onRegisterClicked={
+                  registerPosition =>{
+                      const register = getRegisterByPosition(registerPosition.x, registerPosition.y);
+                      if(!register){
+                          setStep({id:"creation", data:registerPosition});
+                      }
+                      else{
+                          const {sourcePath, lineId, index} = selectedRegister;
+                          setRegister(sourcePath, lineId, index, register.id);
+                          setSelectedRegister(null);
+                      }
+                  }
+              }
+            />
+          </Show>
+          <Show when={step().id == "creation"}>
+            <RegisterDetails
+              registerPosition={step().data}
+              onClose={(reason) => {
+                  const {sourcePath, lineId, index} = selectedRegister;
+                  if(reason === "create"){
+                      const register = getRegisterByPosition(step().data.x, step().data.y);
+                      setRegister(sourcePath, lineId, index, register.id);
+                  }
+                  setSelectedRegister(null);
+              }}
+            />
           </Show>
         </div>
     );

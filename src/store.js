@@ -186,7 +186,7 @@ const defaultRegisters = [
 const greenRectProgram = {
     source:{
         init:[
-            {id:"aa", code:["gfx", "fillStyle", "v:[100,100,50,1]"]},
+            {id:"aa", code:["gfx", "fillStyle", "v:green"]},
             {id:"ab", code:[]},
             {id:"ac", code:["maths", "*", "r:margin", "v:2", "r:margin2"]},
             {id:"ad", code:["maths", "-", "r:width", "r:margin2", "r:w"]},
@@ -205,10 +205,10 @@ const greenRectProgram = {
             {id:"bg", code:["registers", "print", "r:y"]},
         ],
         pointerDown:[
-            {id:"ca", code:["gfx", "fillStyle", "v:[0,100,50,1]"]},
+            {id:"ca", code:["gfx", "fillStyle", "v:red"]},
         ],
         pointerUp:[
-            {id:"da", code:["gfx", "fillStyle", "v:[100,100,50,1]"]},
+            {id:"da", code:["gfx", "fillStyle", "v:green"]},
         ],
         pointerMove:[],
     },
@@ -251,7 +251,7 @@ const drawingProgram = {
 const bouncingProgram = {
     source:{
         init:[
-            {id:"aa", code:["gfx", "fillStyle", "v:[0,0,0,1]"]},
+            {id:"aa", code:["gfx", "fillStyle", "v:black"]},
             {id:"ad", code:["maths", "*", "r:width", "v:0.5", "r:x"]},
             {id:"ae", code:["maths", "*", "r:height", "v:0.5", "r:y"]},
             {id:"ab", code:["maths", "random", "v:-3", "v:3", "r:vx"]},
@@ -308,7 +308,7 @@ const bouncingProgram = {
 const forProgram = {
     source:{
         init:[
-            {id:"a1", code:["gfx", "fillStyle", "v:[0,0,0,1]"]},
+            {id:"a1", code:["gfx", "fillStyle", "v:black"]},
             {id:"a2", code:["maths", "*", "r:width", "v:0.5", "r:x"]},
             {id:"a3", code:["maths", "*", "r:height", "v:0.5", "r:y"]},
 
@@ -371,8 +371,8 @@ const emptyProgram = {
     ]
 };
 
-// setProgram(emptyProgram);
-setProgram(greenRectProgram);
+setProgram(emptyProgram);
+// setProgram(greenRectProgram);
 // setProgram(drawingProgram);
 // setProgram(bouncingProgram);
 // setProgram(forProgram);

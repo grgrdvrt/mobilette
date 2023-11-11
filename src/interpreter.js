@@ -35,7 +35,7 @@ export class Interpreter{
         case "v:":
             return eval(val);
         case "r:":
-            return this.getReg(val).value;
+            return Number(this.getReg(val).value);
         }
         return 0;
     }
@@ -223,6 +223,8 @@ export class Interpreter{
 
     init(){
         this.checkMainCanvasSize();
+        const {width, height} = this.mainCanvas;
+        this.ctx.clearRect(0, 0, width, height);
         this.updatePointer(0, 0);
         this.setStdOut([]);
         this.executeInstructions(this.source.init);
