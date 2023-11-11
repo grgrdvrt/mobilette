@@ -79,14 +79,14 @@ export function RegisterDetails({registerPosition, onClose}){
               <button
                 onClick={
                     () => {
-                        saveRegister(register().id, colorField.value, nameField.value, valueField.value);
+                        saveRegister(register().id, colorField.value, nameField.value, eval(valueField.value));
                         onClose("save");
                     }
                 }>Save</button>
           }>
             <button onClick={() => onClose("cancel")}>Cancel</button>
             <button onClick={() => {
-                createRegister(registerPosition.x, registerPosition.y, colorField.value, nameField.value, valueField.value);
+                createRegister(registerPosition.x, registerPosition.y, colorField.value, nameField.value, eval(valueField.value));
                 onClose("create");
             }}>Create</button>
           </Show>

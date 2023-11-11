@@ -251,7 +251,7 @@ const drawingProgram = {
 const bouncingProgram = {
     source:{
         init:[
-            {id:"aa", code:["gfx", "fillStyle", "v:black"]},
+            {id:"aa", code:["gfx", "fillStyle", "v:[0, 100, 50, 1]"]},
             {id:"ad", code:["maths", "*", "r:width", "v:0.5", "r:x"]},
             {id:"ae", code:["maths", "*", "r:height", "v:0.5", "r:y"]},
             {id:"ab", code:["maths", "random", "v:-3", "v:3", "r:vx"]},
@@ -308,7 +308,7 @@ const bouncingProgram = {
 const forProgram = {
     source:{
         init:[
-            {id:"a1", code:["gfx", "fillStyle", "v:black"]},
+            {id:"a1", code:["gfx", "fillStyle", "v:[0, 100, 50, 1]"]},
             {id:"a2", code:["maths", "*", "r:width", "v:0.5", "r:x"]},
             {id:"a3", code:["maths", "*", "r:height", "v:0.5", "r:y"]},
 

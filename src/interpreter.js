@@ -35,7 +35,7 @@ export class Interpreter{
         case "v:":
             return eval(val);
         case "r:":
-            return Number(this.getReg(val).value);
+            return this.getReg(val).value;
         }
         return 0;
     }

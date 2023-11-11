@@ -198,15 +198,13 @@ export const instructionsDefinitions = {
         "fillStyle":{
             params:[0],
             effect:(params, env) => {
-                // env.ctx.fillStyle=hsla(env.readVal(params[0]));
-                env.ctx.fillStyle=env.readVal(params[0]);
+                env.ctx.fillStyle=hsla(env.readVal(params[0]));
             }
         },
         "strokeStyle":{
             params:[0],
             effect:(params, env) => {
-                // env.ctx.strokeStyle=hsla(env.readVal(params[0]));
-                env.ctx.strokeStyle=env.readVal(params[0]);
+                env.ctx.strokeStyle=hsla(env.readVal(params[0]));
             }
         },
         "fill":{
