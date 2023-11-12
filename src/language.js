@@ -117,7 +117,7 @@ export const instructionsDefinitions = {
         "get":{
             params:[0, 1],
             effect:(params, env) => {
-                return env.readVal(params[0])[env.readVal(params[1])];
+                env.setVal(params[2], env.readVal(params[0])[env.readVal(params[1])]);
             }
         }
     },
