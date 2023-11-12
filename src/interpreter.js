@@ -86,7 +86,7 @@ export class Interpreter{
             const line = instructions[this.instructionId];
             console.log(this.instructionId, line.code.join(" "));
             // debugger;
-            try{
+            // try{
                 if(line.code.length){
                     const [module, cmd, ...params] = line.code;
                     if(!params.includes("r:null")){
@@ -185,10 +185,10 @@ export class Interpreter{
                     //blank line
                     this.instructionId++;
                 }
-            }
-            catch(e){
-                throw(new Error(`line ${this.instructionId}:${line.code.join(" ")}`));
-            }
+            // }
+            // catch(e){
+            //     throw(new Error(`line ${this.instructionId}:${line.code.join(" ")}`));
+            // }
         }
         this.onExecuted(this.registers);
     }
@@ -204,6 +204,8 @@ export class Interpreter{
 
         this.setVal("r:width", w);
         this.setVal("r:height", h);
+        this.setVal("r:cx", w/2);
+        this.setVal("r:cy", h/2);
     }
 
     play(){

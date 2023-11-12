@@ -36,6 +36,10 @@ function lerp(a, b, t){
     return a + t * (b - a);
 }
 
+function map(a, b, c, d, t){
+    return lerp(c, d, (t - a) / (b - a));
+}
+
 export const instructionsDefinitions = {
     registers:{
         "set": {
@@ -53,12 +57,12 @@ export const instructionsDefinitions = {
     },
     ctrl:{
         "if":{params:[0], effect:() => {}},
-        "else":{params:[], effect:() => {}},
         "endif":{params:[], effect:() => {}},
+        "else":{params:[], effect:() => {}},
         "for":{params:[0, 1, 2], effect:() => {}},
+        "endfor":{params:[], effect:() => {}},
         "break":{params:[], effect:() => {}},
         "continue":{params:[], effect:() => {}},
-        "endfor":{params:[], effect:() => {}},
     },
     maths:{
         "+": binop((a, b) => a + b),
@@ -93,6 +97,13 @@ export const instructionsDefinitions = {
             effect:(params, env) => {
                 const [a, b, t] = params.slice(0, 3).map(env.readVal, env);
                 env.setVal(params[3], lerp(a, b, t));
+            }
+        },
+        "map":{
+            params:[0, 1, 2, 3, 4, 5],
+            effect:(params, env) => {
+                const [a, b, c, d, t] = params.slice(0, 3).map(env.readVal, env);
+                env.setVal(params[4], map(a, b, c, d, t));
             }
         },
     },

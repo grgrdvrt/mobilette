@@ -173,14 +173,29 @@ export function deleteSelection(){
 
 const defaultRegisters = [
     {id:"null", name:"null", initialValue:null, value:null, x:-1, y:-1, color:randomRegisterColor()},
+
     {id:"width", name:"width", initialValue:0, value:0, x:0, y:0, color:randomRegisterColor()},
     {id:"height", name:"height", initialValue:0, value:0, x:1, y:0, color:randomRegisterColor()},
-    {id:"time", name:"time", initialValue:0, value:0, x:2, y:0, color:randomRegisterColor()},
+    {id:"cx", name:"cx", initialValue:0, value:0, x:0, y:1, color:randomRegisterColor()},
+    {id:"cy", name:"cy", initialValue:0, value:0, x:1, y:1, color:randomRegisterColor()},
+
     {id:"pointerX", name:"pointerX", initialValue:0, value:0, x:3, y:0, color:randomRegisterColor()},
     {id:"pointerY", name:"pointerY", initialValue:0, value:0, x:4, y:0, color:randomRegisterColor()},
-    {id:"pPointerX", name:"pPointerX", initialValue:0, value:0, x:5, y:0, color:randomRegisterColor()},
-    {id:"pPointerY", name:"pPointerY", initialValue:0, value:0, x:6, y:0, color:randomRegisterColor()},
-]
+    {id:"pPointerX", name:"pPointerX", initialValue:0, value:0, x:3, y:1, color:randomRegisterColor()},
+    {id:"pPointerY", name:"pPointerY", initialValue:0, value:0, x:4, y:1, color:randomRegisterColor()},
+
+    {id:"time", name:"time", initialValue:0, value:0, x:6, y:0, color:randomRegisterColor()},
+
+    {id:"π", name:"π", initialValue:Math.PI, value:Math.PI, x:8, y:0, color:randomRegisterColor()},
+    {id:"2π", name:"2π", initialValue:2*Math.PI, value:2*Math.PI, x:9, y:0, color:randomRegisterColor()},
+    {id:"√2", name:"√2", initialValue:Math.SQRT2, value:Math.SQRT2, x:8, y:1, color:randomRegisterColor()},
+    {id:"√2/2", name:"√2/2", initialValue:Math.SQRT1_2, value:Math.SQRT1_2, x:9, y:1, color:randomRegisterColor()},
+
+    {id:"-1", name:"-1", initialValue:-1, value:-1, x:0, y:3, color:randomRegisterColor()},
+    {id:"0", name:"0", initialValue:0, value:0, x:1, y:3, color:randomRegisterColor()},
+    {id:"1", name:"1", initialValue:1, value:1, x:2, y:3, color:randomRegisterColor()},
+    {id:"2", name:"2", initialValue:2, value:2, x:3, y:3, color:randomRegisterColor()},
+];
 
 //init
 const greenRectProgram = {

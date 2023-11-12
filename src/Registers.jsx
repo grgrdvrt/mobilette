@@ -44,7 +44,7 @@ export function RegistersGrid({registers, onRegisterClicked}){
                                 data-x={i}
                                 data-y={j}
                                 style={{"background-color":register(i, j)?register(i, j).color:"#eeeeee"}}
-                              >{register(i, j)?.name?.[0]}</div>
+                              >{register(i, j)?.name?.substr(0, 3)}</div>
                           );
                       }}
                     </For>

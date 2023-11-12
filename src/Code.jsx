@@ -2,6 +2,7 @@ import {
     Show,
     For,
     createSignal,
+    createMemo,
 } from 'solid-js';
 
 import {
@@ -20,7 +21,7 @@ import {InstructionsMenu} from "./InstructionsMenu";
 
 function RegisterParam({register, setSelectedRegister, sourcePath, line, index}){
     return(
-        <span
+        <button
         class="codeRegister"
           style={{"background-color":register.color}}
           onClick={e => {
@@ -29,7 +30,7 @@ function RegisterParam({register, setSelectedRegister, sourcePath, line, index})
           }}
         >
           {register.name || register.y + ":" + register.x}
-        </span>
+        </button>
     );
 }
 
@@ -40,10 +41,13 @@ function ValueParam({value}){
     );
 }
 
-function SourceLine({line, selected, sourcePath, registers, setSelectedRegister}){
+function SourceLine({line, depth, selected, sourcePath, registers, setSelectedRegister}){
     return (
         <div class="sourceLine" classList={{selected:selected()}}>
-          <p onClick={() => selected() ? setSelection([]) : setSelection([line.id])} >
+          <p
+            style={{"padding-left":15*depth()+"px"}}
+            onClick={() => selected() ? setSelection([]) : setSelection([line.id])}
+          >
             <Show when={line.code.length} fallback={<p>//</p>}>
               {line.code[1]}<span> </span>
               <For each={line.code.slice(2)}>
@@ -69,7 +73,7 @@ function SourceLine({line, selected, sourcePath, registers, setSelectedRegister}
             </Show>
           </p>
           <Show when={store.gui.selection.length === 1 && store.gui.selection[0] === line.id}>
-            <button onClick={() => insertAfter(sourcePath, line.id)}>+</button>
+            <button class="insertionButton"onClick={() => insertAfter(sourcePath, line.id)}>+</button>
           </Show>
         </div>
     );
@@ -80,12 +84,27 @@ function Program({source, sourcePath, registers, setSelectedRegister}){
         const isSelected = store.gui.selection.indexOf(id) !== -1;
         return isSelected;
     };
+    const depths = createMemo(() => {
+        let d = 0;
+        return source.map(line => {
+            let result;
+            if(line.code[1] === "endif" || line.code[1] === "endfor"){
+                d--;
+            }
+            result = d;
+            if(line.code[1] === "if" || line.code[1] === "for"){
+                d++;
+            }
+            return result;
+        });
+    });
     return(
         <For each={source}>
-          {line => {
+          {(line, i) => {
               return(
                   <SourceLine
                     line={line}
+                    depth={() => depths()[i()]}
                     sourcePath={sourcePath}
                     registers={registers}
                     selected={() => isSelected(line.id)}
