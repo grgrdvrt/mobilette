@@ -107,6 +107,20 @@ export const instructionsDefinitions = {
             }
         },
     },
+    array:{
+        "set":{
+            params:[0, 1, 2],
+            effect:(params, env) => {
+                env.readVal(params[0])[env.readVal(params[1])] = env.readVal(params[2]);
+            }
+        },
+        "get":{
+            params:[0, 1],
+            effect:(params, env) => {
+                return env.readVal(params[0])[env.readVal(params[1])];
+            }
+        }
+    },
     bool:{
         "==":comp((a, b) => a == b),
         ">=":comp((a, b) => a >= b),
