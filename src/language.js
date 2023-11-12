@@ -183,7 +183,7 @@ export const instructionsDefinitions = {
             effect:(params, env) =>{
                 const [x, y, r] = params.map(env.readVal, env);
                 env.ctx.moveTo(x +r, y);
-                env.ctx.arc(x+r, y, r, 0, 2 * Math.PI);
+                env.ctx.arc(x, y, r, 0, 2 * Math.PI);
             }
         },
         "square":{
