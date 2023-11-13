@@ -18,7 +18,7 @@ function range(min, max){
 
 export function RegistersGrid({registers, onRegisterClicked}){
     const cols = range(0, 10);
-    const rows = range(0, 10);
+    const rows = range(0, 20);
     const register = (x, y) => {
         return registers.find(r => r.x === x && r.y === y);
     };
