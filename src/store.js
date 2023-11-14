@@ -4,7 +4,7 @@ import {
     unwrap,
 } from "solid-js/store";
 
-import {instructionsDefinitions} from "./language";
+import {types, instructionsDefinitions} from "./language";
 
 function createEmptyProgram(){
     return {
@@ -49,6 +49,10 @@ export function getSelectedLines(){
     return lines;
 }
 
+export function getInput(sourcePath, lineId, index){
+    return store.program.source[sourcePath].find(line => line.id === lineId).code[index + 2];
+}
+
 //commands
 
 export function resetRegisters(){
@@ -91,6 +95,13 @@ export function setCommand(module, command){
     }));
 }
 
+export function setValue(sourcePath, lineId, registerIndex, value){
+    setStore(produce(store => {
+        const line = store.program.source[sourcePath].find(l => l.id === lineId);
+        line.code[registerIndex + 2] = `v:${value}`;
+    }));
+}
+
 export function setRegister(sourcePath, lineId, registerIndex, registerId){
     setStore(produce(store => {
         const line = store.program.source[sourcePath].find(l => l.id === lineId);
@@ -109,6 +120,7 @@ function randomRegisterColor(){
 export function makeEmptyRegister(x, y){
     return {
         id:"empty",
+        type:types.NUMBER,
         name:"",
         initialValue:0,
         value:0,
@@ -121,23 +133,25 @@ export function makeEmptyRegister(x, y){
 export function getRegisterByPosition(x, y){
     return Object.values(store.program.registers).find(r => r.x === x && r.y === y);
 }
-export function createRegister(x, y, color, name, value){
+export function createRegister(x, y, type, color, name, value){
     setStore(produce(store => {
         const register = {
             id: crypto.randomUUID(),
-            value: value,
-            name: name,
-            color: color,
-            x:x,
-            y:y,
+            type,
+            name,
+            value,
+            color,
+            x,
+            y,
         };
         store.program.registers.push(register);
     }));
 }
 
-export function saveRegister(id, color, name, value){
+export function saveRegister(id, type, color, name, value){
     setStore(produce(store => {
         const register = store.program.registers.find(r => r.id === id);
+        register.type = type;
         register.color = color;
         register.name = name;
         register.value = value;
@@ -168,199 +182,48 @@ export function deleteSelection(){
                 }
             }
         });
+        store.gui.selection.length = 0;
     }));
 }
 
+function makeRegister(name, value, x, y, color){
+    return {
+        id:name,
+        name,
+        type:types.NUMBER,
+        initialValue:value,
+        value,
+        x,
+        y,
+        color:color??randomRegisterColor()
+    };
+}
+
 const defaultRegisters = [
-    {id:"null", name:"null", initialValue:null, value:null, x:-1, y:-1, color:randomRegisterColor()},
+    makeRegister("null", null, -1, -1),
 
-    {id:"width", name:"width", initialValue:0, value:0, x:0, y:0, color:randomRegisterColor()},
-    {id:"height", name:"height", initialValue:0, value:0, x:1, y:0, color:randomRegisterColor()},
-    {id:"cx", name:"cx", initialValue:0, value:0, x:0, y:1, color:randomRegisterColor()},
-    {id:"cy", name:"cy", initialValue:0, value:0, x:1, y:1, color:randomRegisterColor()},
+    makeRegister("width", 0, 0, 0),
+    makeRegister("height", 0, 1, 0),
+    makeRegister("cx", 0, 0, 1),
+    makeRegister("cy", 0, 1, 1),
 
-    {id:"pointerX", name:"pointerX", initialValue:0, value:0, x:3, y:0, color:randomRegisterColor()},
-    {id:"pointerY", name:"pointerY", initialValue:0, value:0, x:4, y:0, color:randomRegisterColor()},
-    {id:"pPointerX", name:"pPointerX", initialValue:0, value:0, x:3, y:1, color:randomRegisterColor()},
-    {id:"pPointerY", name:"pPointerY", initialValue:0, value:0, x:4, y:1, color:randomRegisterColor()},
+    makeRegister("pointerX", 0, 3, 0),
+    makeRegister("pointerY", 0, 4, 0),
+    makeRegister("pPointerX", 0, 3, 1),
+    makeRegister("pPointerY", 0, 4, 1),
 
-    {id:"time", name:"time", initialValue:0, value:0, x:6, y:0, color:randomRegisterColor()},
+    makeRegister("time", 0, 6, 0),
 
-    {id:"π", name:"π", initialValue:Math.PI, value:Math.PI, x:8, y:0, color:randomRegisterColor()},
-    {id:"2π", name:"2π", initialValue:2*Math.PI, value:2*Math.PI, x:9, y:0, color:randomRegisterColor()},
-    {id:"√2", name:"√2", initialValue:Math.SQRT2, value:Math.SQRT2, x:8, y:1, color:randomRegisterColor()},
-    {id:"√2/2", name:"√2/2", initialValue:Math.SQRT1_2, value:Math.SQRT1_2, x:9, y:1, color:randomRegisterColor()},
+    makeRegister("π", Math.PI, 8, 0),
+    makeRegister("2π", 2 * Math.PI, 9, 0),
+    makeRegister("√2", Math.SQRT2, 8, 0),
+    makeRegister("√2/2", Math.SQRT1_2, 9, 0),
 
-    {id:"-1", name:"-1", initialValue:-1, value:-1, x:0, y:3, color:randomRegisterColor()},
-    {id:"0", name:"0", initialValue:0, value:0, x:1, y:3, color:randomRegisterColor()},
-    {id:"1", name:"1", initialValue:1, value:1, x:2, y:3, color:randomRegisterColor()},
-    {id:"2", name:"2", initialValue:2, value:2, x:3, y:3, color:randomRegisterColor()},
+    makeRegister("-1", -1, 8, 0),
+    makeRegister("0", 0, 9, 0),
+    makeRegister("1", 1, 8, 0),
+    makeRegister("2", 2, 9, 0),
 ];
-
-//init
-const greenRectProgram = {
-    source:{
-        init:[
-            {id:"aa", code:["gfx", "fillStyle", "v:green"]},
-            {id:"ab", code:[]},
-            {id:"ac", code:["maths", "*", "r:margin", "v:2", "r:margin2"]},
-            {id:"ad", code:["maths", "-", "r:width", "r:margin2", "r:w"]},
-            {id:"ae", code:["maths", "-", "r:height", "r:margin2", "r:h"]},
-            {id:"af", code:["registers", "set", "r:x", "r:margin"]},
-            {id:"ag", code:["registers", "set", "r:y", "r:margin"]},
-        ],
-        loop:[
-            {id:"ba", code:["gfx", "clear"]},
-            {id:"bb", code:["maths", "*", "r:time", "v:0.001", "r:t"]},
-            {id:"bc", code:["maths", "cos", "r:t", "r:y"]},
-            {id:"bd", code:["maths", "*", "r:y", "r:margin", "r:y"]},
-            {id:"be", code:["gfx", "beginPath"]},
-            {id:"be", code:["gfx", "rect", "r:x", "r:y", "r:w", "r:h"]},
-            {id:"bf", code:["gfx", "fill"]},
-            {id:"bg", code:["registers", "print", "r:y"]},
-        ],
-        pointerDown:[
-            {id:"ca", code:["gfx", "fillStyle", "v:red"]},
-        ],
-        pointerUp:[
-            {id:"da", code:["gfx", "fillStyle", "v:green"]},
-        ],
-        pointerMove:[],
-    },
-    registers:[
-        ...defaultRegisters,
-        {id:"margin", initialValue:50, value:50, x:0, y:1, color:randomRegisterColor()},
-        {id:"margin2", initialValue:0, value:0, x:1, y:1, color:randomRegisterColor()},
-        {id:"x", initialValue:0, value:0, x:0, y:2, color:randomRegisterColor()},
-        {id:"y", initialValue:0, value:0, x:1, y:2, color:randomRegisterColor()},
-        {id:"w", initialValue:0, value:0, x:2, y:2, color:randomRegisterColor()},
-        {id:"h", initialValue:0, value:0, x:3, y:2, color:randomRegisterColor()},
-        {id:"t", initialValue:0, value:0, x:4, y:2, color:randomRegisterColor()},
-    ]
-};
-
-const drawingProgram = {
-    source:{
-        init:[
-            {id:"aa", code:["gfx", "strokeStyle", "v:[0,0,0,1]"]},
-        ],
-        loop:[
-        ],
-        pointerDown:[
-        ],
-        pointerUp:[
-        ],
-        pointerMove:[
-            {id:"ea", code:["gfx", "beginPath"]},
-            {id:"eb", code:["gfx", "moveTo", "r:pPointerX", "r:pPointerY"]},
-            {id:"ec", code:["gfx", "lineTo", "r:pointerX", "r:pointerY"]},
-            {id:"ed", code:["gfx", "stroke"]},
-            {id:"ed", code:["registers", "print", "r:pointerX"]},
-        ],
-    },
-    registers:[
-        ...defaultRegisters,
-    ]
-};
-
-const bouncingProgram = {
-    source:{
-        init:[
-            {id:"aa", code:["gfx", "fillStyle", "v:[0, 100, 50, 1]"]},
-            {id:"ad", code:["maths", "*", "r:width", "v:0.5", "r:x"]},
-            {id:"ae", code:["maths", "*", "r:height", "v:0.5", "r:y"]},
-            {id:"ab", code:["maths", "random", "v:-3", "v:3", "r:vx"]},
-            {id:"ac", code:["maths", "random", "v:-3", "v:3", "r:vy"]},
-            {id:"ad", code:["registers", "print", "r:vx"]},
-            {id:"ae", code:["registers", "print", "r:vy"]},
-        ],
-        loop:[
-            {id:"ba", code:["maths", "+", "r:x", "r:vx", "r:x"]},
-            {id:"bb", code:["maths", "+", "r:y", "r:vy", "r:y"]},
-            {id:"b//1", code:[]},
-            {id:"bc", code:["maths", "-", "r:x", "r:c", "r:e"]},
-            {id:"bd", code:["bool", "<", "r:e", "v:0", "r:bounce"]},
-            {id:"be", code:["maths", "+", "r:x", "r:c", "r:e"]},
-            {id:"bf", code:["bool", ">", "r:e", "r:width", "r:e"]},
-            {id:"bh", code:["bool", "||", "r:bounce", "r:e", "r:bounce"]},
-            {id:"bi", code:["ctrl", "if", "r:bounce"]},
-            {id:"bj", code:["maths", "-", "v:0", "r:vx", "r:vx"]},
-            {id:"bk", code:["ctrl", "endif"]},
-            {id:"b//2", code:[]},
-            {id:"bl", code:["maths", "-", "r:y", "r:c", "r:e"]},
-            {id:"bm", code:["bool", "<", "r:e", "v:0", "r:bounce"]},
-            {id:"bn", code:["maths", "+", "r:y", "r:c", "r:e"]},
-            {id:"bo", code:["bool", ">", "r:e", "r:height", "r:e"]},
-            {id:"bp", code:["bool", "||", "r:bounce", "r:e", "r:bounce"]},
-            {id:"bq", code:["ctrl", "if", "r:bounce"]},
-            {id:"br", code:["maths", "-", "v:0", "r:vy", "r:vy"]},
-            {id:"bs", code:["ctrl", "endif"]},
-            {id:"b//3", code:[]},
-            {id:"bt", code:["gfx", "clear"]},
-            {id:"bu", code:["gfx", "beginPath"]},
-            {id:"bv", code:["gfx", "square", "r:x", "r:y", "r:c"]},
-            {id:"bw", code:["gfx", "fill"]},
-        ],
-        pointerDown:[
-        ],
-        pointerUp:[
-        ],
-        pointerMove:[
-        ],
-    },
-    registers:[
-        ...defaultRegisters,
-        {id:"c", name:"c", initialValue:100, value:100, x:0, y:2, color:randomRegisterColor()},
-        {id:"x", name:"x", initialValue:0, value:0, x:0, y:2, color:randomRegisterColor()},
-        {id:"y", name:"y", initialValue:0, value:0, x:1, y:2, color:randomRegisterColor()},
-        {id:"vx", name:"vx", initialValue:0, value:0, x:0, y:3, color:randomRegisterColor()},
-        {id:"vy", name:"vy", initialValue:0, value:0, x:1, y:3, color:randomRegisterColor()},
-        {id:"e", name:"e", initialValue:0, value:0, x:1, y:3, color:randomRegisterColor()},
-        {id:"bounce", name:"bounce", initialValue:0, value:0, x:1, y:3, color:randomRegisterColor()},
-    ]
-};
-
-const forProgram = {
-    source:{
-        init:[
-            {id:"a1", code:["gfx", "fillStyle", "v:[0, 100, 50, 1]"]},
-            {id:"a2", code:["maths", "*", "r:width", "v:0.5", "r:x"]},
-            {id:"a3", code:["maths", "*", "r:height", "v:0.5", "r:y"]},
-
-            {id:"a4", code:["ctrl", "for", "r:i", "v:0", "v:10"]},
-            {id:"a5", code:["gfx", "beginPath"]},
-            // {id:"a6", code:["bool", "==", "v:3", "r:i", "r:cond"]},
-            // {id:"a7", code:["ctrl", "if", "r:cond"]},
-            // {id:"a8", code:["ctrl", "continue"]},
-            // {id:"a9", code:["ctrl", "endif"]},
-            {id:"a10", code:["bool", "==", "v:5", "r:i", "r:cond"]},
-            {id:"a11", code:["ctrl", "if", "r:cond"]},
-            {id:"a12", code:["ctrl", "break"]},
-            {id:"a13", code:["ctrl", "endif"]},
-            {id:"a14", code:["maths", "random", "v:0", "r:width", "r:x"]},
-            {id:"a15", code:["maths", "random", "v:0", "r:height", "r:y"]},
-            {id:"a16", code:["gfx", "square", "r:x", "r:y", "r:c"]},
-            {id:"a17", code:["gfx", "fill"]},
-            {id:"a18", code:["ctrl", "endfor"]},
-        ],
-        loop:[
-        ],
-        pointerDown:[
-        ],
-        pointerUp:[
-        ],
-        pointerMove:[
-        ],
-    },
-    registers:[
-        ...defaultRegisters,
-        {id:"c", name:"c", initialValue:10, value:10, x:0, y:2, color:randomRegisterColor()},
-        {id:"x", name:"x", initialValue:0, value:0, x:0, y:2, color:randomRegisterColor()},
-        {id:"y", name:"y", initialValue:0, value:0, x:1, y:2, color:randomRegisterColor()},
-        {id:"i", name:"i", initialValue:0, value:0, x:0, y:3, color:randomRegisterColor()},
-        {id:"cond", name:"cond", initialValue:0, value:0, x:0, y:4, color:randomRegisterColor()},
-    ]
-};
 
 const emptyProgram = {
     source:{
@@ -382,12 +245,7 @@ const emptyProgram = {
     },
     registers:[
         ...defaultRegisters,
-        {id:"c", name:"c", initialValue:0, value:0, x:0, y:1, color:randomRegisterColor()},
     ]
 };
 
 setProgram(emptyProgram);
-// setProgram(greenRectProgram);
-// setProgram(drawingProgram);
-// setProgram(bouncingProgram);
-// setProgram(forProgram);

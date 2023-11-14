@@ -1,7 +1,31 @@
 import {untrack} from "solid-js";
-function binop(func){
+export const types = {
+    ANY:-1,
+    BOOLEAN:0,
+    NUMBER:1,
+    STRING:2,
+    ARRAY:3,
+    COLOR:4,
+};
+
+export const typesNames = {
+    [types.ANY]:"Any",
+    [types.BOOLEAN]:"Boolean",
+    [types.NUMBER]:"Number",
+    [types.STRING]:"String",
+    [types.ARRAY]:"Array",
+    [types.COLOR]:"Color",
+};
+
+const num = {type:types.NUMBER};
+const bool = {type:types.BOOLEAN};
+function binop(func, paramsTypes=[types.NUMBER, types.NUMBER, types.NUMBER]){
     return {
-        params:[0, 1, 2],
+        params:[
+            {type:paramsTypes[0]},
+            {type:paramsTypes[1]},
+            {type:paramsTypes[2], optional:true},
+        ],
         effect:(params, env) => {
             env.setVal(
                 params.length === 3 ? params[2] : params[0],
@@ -11,18 +35,24 @@ function binop(func){
     };
 }
 
-function monop(func){
+function monop(func, paramsTypes=[types.NUMBER, types.NUMBER]){
     return {
-        params:[0, 1],
+        params:[
+            {type:paramsTypes[0]},
+            {type:paramsTypes[1], optional:true},
+        ],
         effect: (params, env) => {
-            env.setVal(params[1], func(env.readVal(params[0])));
+            env.setVal(
+                params.length === 2 ? params[1] : params[0],
+                func(env.readVal(params[0]))
+            );
         }
     };
 }
 
 function comp(fun){
     return {
-        params:[0, 1, 2],
+        params:[num, num, num],
         effect:(params, env) => {
             env.setVal(params[2], fun(env.readVal(params[0]), env.readVal(params[1])) ? 1 : 0);
         }
@@ -43,11 +73,11 @@ function map(a, b, c, d, t){
 export const instructionsDefinitions = {
     registers:{
         "set": {
-            params:[0, 1],
+            params:[{type:types.ANY}, {type:types.ANY}],
             effect:(params, env) => env.setVal(params[0], env.readVal(params[1]))
         },
         "print":{
-            params:[0],
+            params:[{type:types.ANY}],
             effect:(params, env) => {
                 untrack(() =>{
                     env.setStdOut([...env.stdOut(), `${env.instructionId}: ${params[0]}, ${env.readVal(params[0])}`]);
@@ -56,10 +86,10 @@ export const instructionsDefinitions = {
         }
     },
     ctrl:{
-        "if":{params:[0], effect:() => {}},
+        "if":{params:[bool], effect:() => {}},
         "endif":{params:[], effect:() => {}},
         "else":{params:[], effect:() => {}},
-        "for":{params:[0, 1, 2], effect:() => {}},
+        "for":{params:[num, num, num], effect:() => {}},
         "endfor":{params:[], effect:() => {}},
         "break":{params:[], effect:() => {}},
         "continue":{params:[], effect:() => {}},
@@ -86,21 +116,21 @@ export const instructionsDefinitions = {
         "ceil": monop(Math.ceil),
         "floor": monop(Math.floor),
         "random":{
-            params:[0, 1, 2],
+            params:[num, num, num],
             effect:(params, env) => {
                 const [min, max] = params.slice(0, 2).map(env.readVal, env);
                 env.setVal(params[2], lerp(min, max, Math.random()));
             }
         },
         "lerp":{
-            params:[0, 1, 2, 3],
+            params:[num, num, num, num],
             effect:(params, env) => {
                 const [a, b, t] = params.slice(0, 3).map(env.readVal, env);
                 env.setVal(params[3], lerp(a, b, t));
             }
         },
         "map":{
-            params:[0, 1, 2, 3, 4, 5],
+            params:[num, num, num, num, num, num],
             effect:(params, env) => {
                 const [a, b, c, d, t] = params.slice(0, 3).map(env.readVal, env);
                 env.setVal(params[4], map(a, b, c, d, t));
@@ -109,13 +139,13 @@ export const instructionsDefinitions = {
     },
     array:{
         "set":{
-            params:[0, 1, 2],
+            params:[{type:types.ARRAY}, {type:types.NUMBER}, {type:types.ANY}],
             effect:(params, env) => {
                 env.readVal(params[0])[env.readVal(params[1])] = env.readVal(params[2]);
             }
         },
         "get":{
-            params:[0, 1, 2],
+            params:[{type:types.ARRAY}, {type:types.NUMBER}, {type:types.ANY}],
             effect:(params, env) => {
                 env.setVal(params[2], env.readVal(params[0])[env.readVal(params[1])]);
             }
@@ -127,9 +157,9 @@ export const instructionsDefinitions = {
         "<=":comp((a, b) => a <= b),
         ">":comp((a, b) => a > b),
         "<":comp((a, b) => a < b),
-        "&&":binop((a, b) => (a * b) ? 1 : 0),
-        "||":binop((a, b) => (a + b) ? 1 : 0),
-        "!": monop(v => 1 - v),
+        "&&":binop((a, b) => a && b, [types.BOOLEAN, types.BOOLEAN, types.BOOLEAN]),
+        "||":binop((a, b) => a || b, [types.BOOLEAN, types.BOOLEAN, types.BOOLEAN]),
+        "!": monop(v => !v, [types.BOOLEAN]),
     },
     gfx:{
         "clear":{
@@ -150,7 +180,7 @@ export const instructionsDefinitions = {
             }
         },
         "moveTo":{
-            params:[0, 1],
+            params:[num, num],
             effect:(params, env) => {
                 env.ctx.moveTo(
                     env.readVal(params[0]),
@@ -159,7 +189,7 @@ export const instructionsDefinitions = {
             }
         },
         "lineTo":{
-            params:[0, 1],
+            params:[num, num],
             effect:(params, env) => {
                 env.ctx.lineTo(
                     env.readVal(params[0]),
@@ -168,21 +198,21 @@ export const instructionsDefinitions = {
             }
         },
         "curve2":{
-            params:[0, 1, 2, 3],
+            params:[num, num, num, num],
             effect:(params, env) => {
                 const [cx, cy, x, y] = params.map(env.readVal, env);
                 env.ctx.curveTo(cx, cy, x, y);
             }
         },
         "curve3":{
-            params:[0, 1, 2, 3 , 4, 5],
+            params:[num, num, num, num, num, num],
             effect:(params, env) => {
                 const [c1x, c1y, c2x, c2y, x, y] = params.map(env.readVal, env);
                 env.ctx.bezierCurveTo(c1x, c1y, c2x, c2y, x, y);
             }
         },
         "rect":{
-            params:[0, 1, 2, 3],
+            params:[num, num, num, num],
             effect:(params, env) =>{
                 const [x, y, w, h] = params.map(env.readVal, env);
                 env.ctx.moveTo(x, y);
@@ -193,7 +223,7 @@ export const instructionsDefinitions = {
             }
         },
         "circle":{
-            params:[0, 1, 2],
+            params:[num, num, num],
             effect:(params, env) =>{
                 const [x, y, r] = params.map(env.readVal, env);
                 env.ctx.moveTo(x +r, y);
@@ -201,7 +231,7 @@ export const instructionsDefinitions = {
             }
         },
         "square":{
-            params:[0, 1, 2],
+            params:[num, num, num],
             effect:(params, env) =>{
                 const [x, y, c] = params.map(env.readVal, env);
                 const hc = c / 2;
@@ -213,7 +243,7 @@ export const instructionsDefinitions = {
             }
         },
         "arc":{
-            params:[0, 1, 2, 3, 4, 5],
+            params:[num, num, num, num, num, num],
             effect:(params, env) =>{
                 const [x, y, r, a1, a2, d] = params.map(env.readVal, env);
                 env.ctx.moveTo(x +r, y);
@@ -221,13 +251,13 @@ export const instructionsDefinitions = {
             }
         },
         "fillStyle":{
-            params:[0],
+            params:[{type:types.COLOR}],
             effect:(params, env) => {
                 env.ctx.fillStyle=hsla(env.readVal(params[0]));
             }
         },
         "strokeStyle":{
-            params:[0],
+            params:[{type:types.COLOR}],
             effect:(params, env) => {
                 env.ctx.strokeStyle=hsla(env.readVal(params[0]));
             }

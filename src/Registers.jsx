@@ -8,6 +8,8 @@ import {
     saveRegister,
 } from "./store";
 
+import {types, typesNames} from "./language";
+
 function range(min, max){
     const result = [];
     for(let i = min; i < max; i++){
@@ -59,13 +61,27 @@ export function RegisterDetails({registerPosition, onClose}){
     const register = createMemo(() => {
         return getRegisterByPosition(registerPosition.x, registerPosition.y) || makeEmptyRegister(registerPosition.x, registerPosition.y);
     });
+    const [selectedType, setSelectedType] = createSignal(register().type);
     let valueField, colorField, nameField;
     return (
         <div class="registerDetails">
           <button onClick={() => onClose("close")}>Close</button>
           <p>{register().x}:{register().y}</p>
+
           <input ref={colorField} type="color" value={register().color}/>
-          <p>type: number</p>
+
+          <div style={{display:"block"}}>
+            <label for="types-select">Type:</label>
+            <select name="types" id="types-select" onInput={(e) => setSelectedType(Number(e.target.value))}>
+              <For each={Object.entries(typesNames)}>
+                {([key, value]) => {
+                    return(
+                        <option value={key} selected={(() => selectedType().toString() === key)()}>{value}</option>
+                    );
+                }}
+              </For>
+            </select>
+          </div>
 
           <label for="registerValue">value</label>
           <input ref={valueField} id="registerValue" value={register().value??0}/>
@@ -79,14 +95,14 @@ export function RegisterDetails({registerPosition, onClose}){
               <button
                 onClick={
                     () => {
-                        saveRegister(register().id, colorField.value, nameField.value, eval(valueField.value));
+                        saveRegister(register().id, selectedType(), colorField.value, nameField.value, eval(valueField.value));
                         onClose("save");
                     }
                 }>Save</button>
           }>
             <button onClick={() => onClose("cancel")}>Cancel</button>
             <button onClick={() => {
-                createRegister(registerPosition.x, registerPosition.y, colorField.value, nameField.value, eval(valueField.value));
+                createRegister(registerPosition.x, registerPosition.y, selectedType(), colorField.value, nameField.value, eval(valueField.value));
                 onClose("create");
             }}>Create</button>
           </Show>

@@ -4,20 +4,27 @@ import {
     createSignal,
     createMemo,
 } from 'solid-js';
+import {
+    Dynamic,
+} from 'solid-js/web';
 
 import {
     useStore,
     insertAfter,
     setSelection,
     getSelectedLines,
+    getInput,
     deleteSelection,
     getRegisterByPosition,
-    setRegister
+    setRegister,
+    setValue,
 } from "./store";
 const [store] = useStore();
 
 import { RegisterDetails, RegistersGrid} from "./Registers";
 import {InstructionsMenu} from "./InstructionsMenu";
+
+import {types, typesNames} from "./language";
 
 function RegisterParam({register, setSelectedRegister, sourcePath, line, index}){
     return(
@@ -34,10 +41,18 @@ function RegisterParam({register, setSelectedRegister, sourcePath, line, index})
     );
 }
 
-
-function ValueParam({value}){
+function ValueParam({value, register, setSelectedRegister, sourcePath, line, index}){
     return(
-        <span>{value}</span>
+        <button
+        class="codeRegister"
+          style={{"border":"solid 1px black"}}
+          onClick={e => {
+              e.stopPropagation();
+              setSelectedRegister({sourcePath:sourcePath, lineId:line.id, register:null, index:index});
+          }}
+        >
+          {value}
+        </button>
     );
 }
 
@@ -56,7 +71,7 @@ function SourceLine({line, depth, selected, sourcePath, registers, setSelectedRe
                     const register = registers.find(r => r.id === item);
                     return (
                         <>
-                          <Show when={p.substr(0, 2) === "r:"} fallback={<ValueParam value={item}/>}>
+                          <Show when={p.substr(0, 2) === "r:"} fallback={<ValueParam value={item} register={register} setSelectedRegister={setSelectedRegister} sourcePath={sourcePath} line={line} index={index()}/>}>
                               <RegisterParam
                                 register={register}
                                 setSelectedRegister={setSelectedRegister}
@@ -189,39 +204,66 @@ export function Code({source, registers}){
 
 function InputSelection({registers, selectedRegister, setSelectedRegister}){
     const [step, setStep] = createSignal({id:"selection", data:{}});
+
+    const [selectedType, setSelectedType] = createSignal(types.NUMBER);
+    let valueField;
+
+    const input = () => {
+        console.log("geg", selectedRegister.sourcePath, selectedRegister.lineId, selectedRegister.index, getInput(selectedRegister.sourcePath, selectedRegister.lineId, selectedRegister.index));
+        return getInput(selectedRegister.sourcePath, selectedRegister.lineId, selectedRegister.index);
+    };
     return(
-        <div class="registerPicker">
-          <Show when={step().id == "selection"}>
-            <RegistersGrid
-              registers={registers}
-              onRegisterClicked={
-                  registerPosition =>{
-                      const register = getRegisterByPosition(registerPosition.x, registerPosition.y);
-                      if(!register){
-                          setStep({id:"creation", data:registerPosition});
-                      }
-                      else{
-                          const {sourcePath, lineId, index} = selectedRegister;
-                          setRegister(sourcePath, lineId, index, register.id);
-                          setSelectedRegister(null);
-                      }
-                  }
-              }
-            />
-          </Show>
-          <Show when={step().id == "creation"}>
-            <RegisterDetails
-              registerPosition={step().data}
-              onClose={(reason) => {
-                  const {sourcePath, lineId, index} = selectedRegister;
-                  if(reason === "create"){
-                      const register = getRegisterByPosition(step().data.x, step().data.y);
-                      setRegister(sourcePath, lineId, index, register.id);
-                  }
-                  setSelectedRegister(null);
-              }}
-            />
-          </Show>
+        <div class="inputSelection">
+          <div class="directValueInput">
+            <select name="types" id="types-select" onInput={(e) => setSelectedType(Number(e.target.value))}>
+              <For each={Object.entries(typesNames)}>
+                {([key, value]) => {
+                    return(
+                        <option value={key} selected={(() => selectedType().toString() === key)()}>{value}</option>
+                    );
+                }}
+              </For>
+            </select>
+            <input ref={valueField} id="registerValue" value={input()?.[0] === "v" ? input().substr(2) : ""}/>
+            <button onClick={() => {
+                const {sourcePath, lineId, index} = selectedRegister;
+                setValue(sourcePath, lineId, index, eval(valueField.value));
+                setSelectedRegister(null);
+            }}>set</button>
+          </div>
+          <div class="registerPicker">
+            <Show when={step().id == "selection"}>
+              <RegistersGrid
+                registers={registers}
+                onRegisterClicked={
+                    registerPosition =>{
+                        const register = getRegisterByPosition(registerPosition.x, registerPosition.y);
+                        if(!register){
+                            setStep({id:"creation", data:registerPosition});
+                        }
+                        else{
+                            const {sourcePath, lineId, index} = selectedRegister;
+                            setRegister(sourcePath, lineId, index, register.id);
+                            setSelectedRegister(null);
+                        }
+                    }
+                }
+              />
+            </Show>
+            <Show when={step().id == "creation"}>
+              <RegisterDetails
+                registerPosition={step().data}
+                onClose={(reason) => {
+                    const {sourcePath, lineId, index} = selectedRegister;
+                    if(reason === "create"){
+                        const register = getRegisterByPosition(step().data.x, step().data.y);
+                        setRegister(sourcePath, lineId, index, register.id);
+                    }
+                    setSelectedRegister(null);
+                }}
+              />
+            </Show>
+          </div>
         </div>
     );
 }
