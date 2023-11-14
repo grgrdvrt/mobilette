@@ -77,10 +77,11 @@ export const instructionsDefinitions = {
             effect:(params, env) => env.setVal(params[0], env.readVal(params[1]))
         },
         "print":{
-            params:[{type:types.ANY}],
+            params:[{type:types.ANY, variadic:true}],
             effect:(params, env) => {
                 untrack(() =>{
-                    env.setStdOut([...env.stdOut(), `${env.instructionId}: ${params[0]}, ${env.readVal(params[0])}`]);
+                    const paramsStr = params.map(p =>`${p}: ${env.readVal(p)}`).join("; ");
+                    env.setStdOut([...env.stdOut(), `${env.instructionId}: ${paramsStr}`]);
                 });
             }
         }
@@ -148,6 +149,27 @@ export const instructionsDefinitions = {
             params:[{type:types.ARRAY}, {type:types.NUMBER}, {type:types.ANY}],
             effect:(params, env) => {
                 env.setVal(params[2], env.readVal(params[0])[env.readVal(params[1])]);
+            }
+        },
+        "struct":{
+            params:[{type:types.ARRAY}, {type:types.ANY, variadic:true}],
+            effect:(params, env) => {
+                const arr = env.readVal(params[0]);
+                arr.length = 0;
+                for(let i = 1; i < params.length; i++){
+                    arr.push(env.readVal(params[i]));
+                }
+            }
+        },
+        "destruct":{
+            params:[{type:types.ARRAY}, {type:types.ANY, variadic:true}],
+            effect:(params, env) => {
+                const arr = env.readVal(params[0]);
+                console.log("arr", arr);
+                for(let i = 0; i < arr.length; i++){
+                    console.log(arr[i], params[i + 1]);
+                    env.setVal(params[i + 1], arr[i]);
+                }
             }
         }
     },

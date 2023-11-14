@@ -18,13 +18,15 @@ import {
     getRegisterByPosition,
     setRegister,
     setValue,
+    addParameter,
+    removeParameter,
 } from "./store";
 const [store] = useStore();
 
 import { RegisterDetails, RegistersGrid} from "./Registers";
 import {InstructionsMenu} from "./InstructionsMenu";
 
-import {types, typesNames} from "./language";
+import {types, typesNames, instructionsDefinitions} from "./language";
 
 function RegisterParam({register, setSelectedRegister, sourcePath, line, index}){
     return(
@@ -57,6 +59,18 @@ function ValueParam({value, register, setSelectedRegister, sourcePath, line, ind
 }
 
 function SourceLine({line, depth, selected, sourcePath, registers, setSelectedRegister}){
+    const canAddParam = (line) => {
+        if(!line.code.length)return false;
+        const def = instructionsDefinitions[line.code[0]][line.code[1]];
+        return line.code.length && def.params[def.params.length - 1].variadic;
+    };
+    const canRemoveParam = (line) => {
+        if(!line.code.length)return false;
+        const def = instructionsDefinitions[line.code[0]][line.code[1]];
+        const isVariadic = def.params[def.params.length - 1].variadic;
+        const canRemove = line.code.length > def.params.length;
+        return isVariadic && canRemove;
+    };
     return (
         <div class="sourceLine" classList={{selected:selected()}}>
           <p
@@ -85,10 +99,16 @@ function SourceLine({line, depth, selected, sourcePath, registers, setSelectedRe
                     );
                 }}
               </For>
+              <Show when={(() => canAddParam(line))()}>
+                <button onClick={() => addParameter(sourcePath, line.id)}>+</button>
+              </Show>
+              <Show when={(() => canRemoveParam(line))()}>
+                <button onClick={() => removeParameter(sourcePath, line.id)}>-</button>
+              </Show>
             </Show>
           </p>
           <Show when={store.gui.selection.length === 1 && store.gui.selection[0] === line.id}>
-            <button class="insertionButton"onClick={() => insertAfter(sourcePath, line.id)}>+</button>
+            <button class="insertionButton" onClick={() => insertAfter(sourcePath, line.id)}>+</button>
           </Show>
         </div>
     );

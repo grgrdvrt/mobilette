@@ -95,6 +95,20 @@ export function setCommand(module, command){
     }));
 }
 
+export function addParameter(sourcePath, lineId){
+    setStore(produce(store => {
+        const line = store.program.source[sourcePath].find(l => l.id === lineId);
+        line.code.push("r:null");
+    }));
+}
+
+export function removeParameter(sourcePath, lineId){
+    setStore(produce(store => {
+        const line = store.program.source[sourcePath].find(l => l.id === lineId);
+        line.code.pop();
+    }));
+}
+
 export function setValue(sourcePath, lineId, registerIndex, value){
     setStore(produce(store => {
         const line = store.program.source[sourcePath].find(l => l.id === lineId);
