@@ -62,12 +62,12 @@ function SourceLine({line, depth, selected, sourcePath, registers, setSelectedRe
     const canAddParam = (line) => {
         if(!line.code.length)return false;
         const def = instructionsDefinitions[line.code[0]][line.code[1]];
-        return line.code.length && def.params[def.params.length - 1].variadic;
+        return def.params[def.params.length - 1]?.variadic;
     };
     const canRemoveParam = (line) => {
         if(!line.code.length)return false;
         const def = instructionsDefinitions[line.code[0]][line.code[1]];
-        const isVariadic = def.params[def.params.length - 1].variadic;
+        const isVariadic = def.params[def.params.length - 1]?.variadic;
         const canRemove = line.code.length > def.params.length;
         return isVariadic && canRemove;
     };
