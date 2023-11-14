@@ -247,7 +247,7 @@ function InputSelection({registers, selectedRegister, setSelectedRegister}){
             <input ref={valueField} id="registerValue" value={input()?.[0] === "v" ? input().substr(2) : ""}/>
             <button onClick={() => {
                 const {sourcePath, lineId, index} = selectedRegister;
-                setValue(sourcePath, lineId, index, eval(valueField.value));
+                setValue(sourcePath, lineId, index, valueField.value);
                 setSelectedRegister(null);
             }}>set</button>
           </div>
