@@ -230,13 +230,13 @@ const defaultRegisters = [
 
     makeRegister("π", Math.PI, 8, 0),
     makeRegister("2π", 2 * Math.PI, 9, 0),
-    makeRegister("√2", Math.SQRT2, 8, 0),
-    makeRegister("√2/2", Math.SQRT1_2, 9, 0),
+    makeRegister("√2", Math.SQRT2, 8, 1),
+    makeRegister("√2/2", Math.SQRT1_2, 9, 1),
 
-    makeRegister("-1", -1, 8, 0),
-    makeRegister("0", 0, 9, 0),
-    makeRegister("1", 1, 8, 0),
-    makeRegister("2", 2, 9, 0),
+    makeRegister("-1", -1, 8, 2),
+    makeRegister("1", 1, 9, 2),
+    makeRegister("0", 0, 8, 3),
+    makeRegister("2", 2, 9, 3),
 ];
 
 const emptyProgram = {
