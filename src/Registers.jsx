@@ -1,4 +1,12 @@
-import { createSignal, createMemo, Show, For} from 'solid-js';
+import {
+    createSignal,
+    createMemo,
+    Show,
+    For,
+    onMount,
+    onCleanup,
+} from 'solid-js';
+import {produce} from 'solid-js/store';
 
 import './App.css';
 import {
@@ -6,7 +14,9 @@ import {
     getRegisterByPosition,
     makeEmptyRegister,
     saveRegister,
+    useStore
 } from "./store";
+const [store, setStore] = useStore();
 
 import {types, typesNames} from "./language";
 
@@ -19,13 +29,24 @@ function range(min, max){
 }
 
 export function RegistersGrid({registers, onRegisterClicked}){
-    const cols = range(0, 10);
-    const rows = range(0, 20);
+    let el;
+    const cols = range(0, 30);
+    const rows = range(0, 30);
     const register = (x, y) => {
         return registers.find(r => r.x === x && r.y === y);
     };
+    onMount(() => {
+        el.scrollTop = store.gui.registers.scrollTop;
+        el.scrollLeft = store.gui.registers.scrollLeft;
+    });
+    onCleanup(() => {
+        setStore(produce(store => {
+            store.gui.registers.scrollTop = el.scrollTop;
+            store.gui.registers.scrollLeft = el.scrollLeft;
+        }));
+    });
     return(
-        <div class="registersGrid"
+        <div ref={el} class="registersGrid"
              onClick={(e) => {
                  const x = e.target.dataset?.x;
                  const y = e.target.dataset?.y;

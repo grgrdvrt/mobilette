@@ -13,11 +13,9 @@ import {
     insertAfter,
     setSelection,
     getSelectedLines,
-    getInput,
     deleteSelection,
     getRegisterByPosition,
     setRegister,
-    setValue,
     addParameter,
     removeParameter,
 } from "./store";
@@ -26,7 +24,9 @@ const [store] = useStore();
 import { RegisterDetails, RegistersGrid} from "./Registers";
 import {InstructionsMenu} from "./InstructionsMenu";
 
-import {types, typesNames, instructionsDefinitions} from "./language";
+import {instructionsDefinitions} from "./language";
+
+import {ValueInput} from "./components/ValueInput";
 
 function RegisterParam({register, setSelectedRegister, sourcePath, line, index}){
     return(
@@ -99,11 +99,19 @@ function SourceLine({line, depth, selected, sourcePath, registers, setSelectedRe
                     );
                 }}
               </For>
-              <Show when={(() => canAddParam(line))()}>
-                <button onClick={() => addParameter(sourcePath, line.id)}>+</button>
-              </Show>
-              <Show when={(() => canRemoveParam(line))()}>
-                <button onClick={() => removeParameter(sourcePath, line.id)}>-</button>
+              <Show when={selected()}>
+                <Show when={(() => canAddParam(line))()}>
+                  <button onClick={e => {
+                      e.stopPropagation();
+                      addParameter(sourcePath, line.id);
+                  }}>+</button>
+                </Show>
+                <Show when={(() => canRemoveParam(line))()}>
+                  <button onClick={e => {
+                      e.stopPropagation();
+                      removeParameter(sourcePath, line.id);
+                  }}>-</button>
+                </Show>
               </Show>
             </Show>
           </p>
@@ -151,7 +159,7 @@ function Program({source, sourcePath, registers, setSelectedRegister}){
     );
 }
 export function Code({source, registers}){
-    const [selectedRegister, setSelectedRegister] = createSignal(null);
+    const [selectedInput, setSelectedInput] = createSignal(null);
     const showInstruction = () => {
         const selectedLines = getSelectedLines();
         return selectedLines.length === 1 && selectedLines[0].code.length === 0;
@@ -167,7 +175,7 @@ export function Code({source, registers}){
               source={source.init}
               sourcePath="init"
               registers={registers}
-              setSelectedRegister={setSelectedRegister}
+              setSelectedRegister={setSelectedInput}
             />
 
             <hr/>
@@ -176,7 +184,7 @@ export function Code({source, registers}){
               source={source.loop}
               sourcePath="loop"
               registers={registers}
-              setSelectedRegister={setSelectedRegister}
+              setSelectedRegister={setSelectedInput}
             />
 
             <hr/>
@@ -185,7 +193,7 @@ export function Code({source, registers}){
               source={source.pointerDown}
               sourcePath="pointerDown"
               registers={registers}
-              setSelectedRegister={setSelectedRegister}
+              setSelectedRegister={setSelectedInput}
             />
 
             <hr/>
@@ -194,7 +202,7 @@ export function Code({source, registers}){
               source={source.pointerUp}
               sourcePath="pointerUp"
               registers={registers}
-              setSelectedRegister={setSelectedRegister}
+              setSelectedRegister={setSelectedInput}
             />
 
             <hr/>
@@ -203,7 +211,7 @@ export function Code({source, registers}){
               source={source.pointerMove}
               sourcePath="pointerMove"
               registers={registers}
-              setSelectedRegister={setSelectedRegister}/>
+              setSelectedRegister={setSelectedInput}/>
           </div>
           <Show when={showInstruction()}>
             <InstructionsMenu/>
@@ -211,46 +219,23 @@ export function Code({source, registers}){
           <Show when={hasSelection()}>
             <button class="codeDeleteBtn" onClick={deleteSelection}>Delete</button>
           </Show>
-          <Show when={selectedRegister()}>
+          <Show when={selectedInput()}>
             <InputSelection
               registers={registers}
-              selectedRegister={selectedRegister()}
-              setSelectedRegister={setSelectedRegister}
+              selectedInput={selectedInput()}
+              setSelectedInput={setSelectedInput}
             />
           </Show>
         </div>
     );
 }
 
-function InputSelection({registers, selectedRegister, setSelectedRegister}){
+function InputSelection({registers, selectedInput, setSelectedInput}){
     const [step, setStep] = createSignal({id:"selection", data:{}});
 
-    const [selectedType, setSelectedType] = createSignal(types.NUMBER);
-    let valueField;
-
-    const input = () => {
-        console.log("geg", selectedRegister.sourcePath, selectedRegister.lineId, selectedRegister.index, getInput(selectedRegister.sourcePath, selectedRegister.lineId, selectedRegister.index));
-        return getInput(selectedRegister.sourcePath, selectedRegister.lineId, selectedRegister.index);
-    };
     return(
         <div class="inputSelection">
-          <div class="directValueInput">
-            <select name="types" id="types-select" onInput={(e) => setSelectedType(Number(e.target.value))}>
-              <For each={Object.entries(typesNames)}>
-                {([key, value]) => {
-                    return(
-                        <option value={key} selected={(() => selectedType().toString() === key)()}>{value}</option>
-                    );
-                }}
-              </For>
-            </select>
-            <input ref={valueField} id="registerValue" value={input()?.[0] === "v" ? input().substr(2) : ""}/>
-            <button onClick={() => {
-                const {sourcePath, lineId, index} = selectedRegister;
-                setValue(sourcePath, lineId, index, valueField.value);
-                setSelectedRegister(null);
-            }}>set</button>
-          </div>
+          <ValueInput selectedInput={selectedInput} setSelectedInput={setSelectedInput}/>
           <div class="registerPicker">
             <Show when={step().id == "selection"}>
               <RegistersGrid
@@ -262,9 +247,9 @@ function InputSelection({registers, selectedRegister, setSelectedRegister}){
                             setStep({id:"creation", data:registerPosition});
                         }
                         else{
-                            const {sourcePath, lineId, index} = selectedRegister;
+                            const {sourcePath, lineId, index} = selectedInput;
                             setRegister(sourcePath, lineId, index, register.id);
-                            setSelectedRegister(null);
+                            setSelectedInput(null);
                         }
                     }
                 }
@@ -274,12 +259,12 @@ function InputSelection({registers, selectedRegister, setSelectedRegister}){
               <RegisterDetails
                 registerPosition={step().data}
                 onClose={(reason) => {
-                    const {sourcePath, lineId, index} = selectedRegister;
+                    const {sourcePath, lineId, index} = selectedInput;
                     if(reason === "create"){
                         const register = getRegisterByPosition(step().data.x, step().data.y);
                         setRegister(sourcePath, lineId, index, register.id);
                     }
-                    setSelectedRegister(null);
+                    setSelectedInput(null);
                 }}
               />
             </Show>

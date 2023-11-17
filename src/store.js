@@ -4,24 +4,87 @@ import {
     unwrap,
 } from "solid-js/store";
 
+
+import {
+    updateDocument,
+} from "./db";
+
 import {types, instructionsDefinitions} from "./language";
 
-function createEmptyProgram(){
+
+function makeRegister(name, value, x, y, color){
     return {
-        source:{
-            init:[],
-            loop:[],
-            pointerDown:[],
-            pointerUp:[],
-            pointerMove:[],
-        }
+        id:name,
+        name,
+        type:types.NUMBER,
+        initialValue:value,
+        value,
+        x,
+        y,
+        color:color??randomRegisterColor()
     };
 }
 
+const defaultRegisters = [
+    makeRegister("null", null, -1, -1),
+
+    makeRegister("width", 0, 10, 6),
+    makeRegister("height", 0, 11, 6),
+    makeRegister("cx", 0, 10, 7),
+    makeRegister("cy", 0, 11, 7),
+
+    makeRegister("pointerX", 0, 13, 6),
+    makeRegister("pointerY", 0, 14, 6),
+    makeRegister("pPointerX", 0, 13, 7),
+    makeRegister("pPointerY", 0, 14, 7),
+
+    makeRegister("time", 0, 16, 6),
+
+    makeRegister("π", Math.PI, 18, 6),
+    makeRegister("2π", 2 * Math.PI, 19, 6),
+    makeRegister("√2", Math.SQRT2, 18, 7),
+    makeRegister("√2/2", Math.SQRT1_2, 19, 7),
+
+    makeRegister("-1", -1, 18, 8),
+    makeRegister("1", 1, 19, 8),
+    makeRegister("0", 0, 18, 9),
+    makeRegister("2", 2, 19, 9),
+];
+
+export function createEmptyProgram(){
+    return {
+        id:crypto.randomUUID(),
+        lastOpened:Date.now(),
+        source:{
+            init:[
+                {id:"a0", code:[]},
+            ],
+            loop:[
+                {id:"b0", code:[]},
+            ],
+            pointerDown:[
+                {id:"c0", code:[]},
+            ],
+            pointerUp:[
+                {id:"d0", code:[]},
+            ],
+            pointerMove:[
+                {id:"e0", code:[]},
+            ],
+        },
+        registers:[
+            ...defaultRegisters,
+        ]
+    };
+}
 
 const [store, setStore] = createStore({
     gui:{
         selection:[],
+        registers:{
+            scrollTop:224,
+            scrollLeft:376,
+        }
     },
     program:createEmptyProgram(),
 });
@@ -76,6 +139,7 @@ export function insertAfter(sourcePath, id){
         store.gui.selection = [newLineId];
 
     }));
+    autoSave();
 }
 
 export function setCommand(module, command){
@@ -93,6 +157,7 @@ export function setCommand(module, command){
         const params = new Array(paramsCount).fill("r:null");
         targetLine.code.push(module, command, ...params);
     }));
+    autoSave();
 }
 
 export function addParameter(sourcePath, lineId){
@@ -107,6 +172,7 @@ export function removeParameter(sourcePath, lineId){
         const line = store.program.source[sourcePath].find(l => l.id === lineId);
         line.code.pop();
     }));
+    autoSave();
 }
 
 export function setValue(sourcePath, lineId, registerIndex, value){
@@ -114,6 +180,7 @@ export function setValue(sourcePath, lineId, registerIndex, value){
         const line = store.program.source[sourcePath].find(l => l.id === lineId);
         line.code[registerIndex + 2] = `v:${value}`;
     }));
+    autoSave();
 }
 
 export function setRegister(sourcePath, lineId, registerIndex, registerId){
@@ -121,6 +188,7 @@ export function setRegister(sourcePath, lineId, registerIndex, registerId){
         const line = store.program.source[sourcePath].find(l => l.id === lineId);
         line.code[registerIndex + 2] = `r:${registerId}`;
     }));
+    autoSave();
 }
 
 function lerp(a, b, t){
@@ -153,6 +221,7 @@ export function createRegister(x, y, type, color, name, value){
             id: crypto.randomUUID(),
             type,
             name,
+            initialValue:value,
             value,
             color,
             x,
@@ -160,6 +229,7 @@ export function createRegister(x, y, type, color, name, value){
         };
         store.program.registers.push(register);
     }));
+    autoSave();
 }
 
 export function saveRegister(id, type, color, name, value){
@@ -168,9 +238,10 @@ export function saveRegister(id, type, color, name, value){
         register.type = type;
         register.color = color;
         register.name = name;
+        register.initialValue = value,
         register.value = value;
     }));
-
+    autoSave();
 }
 
 export function setSelection(ids){
@@ -198,68 +269,31 @@ export function deleteSelection(){
         });
         store.gui.selection.length = 0;
     }));
+    autoSave();
 }
 
-function makeRegister(name, value, x, y, color){
-    return {
-        id:name,
-        name,
-        type:types.NUMBER,
-        initialValue:value,
-        value,
-        x,
-        y,
-        color:color??randomRegisterColor()
-    };
+function save(){
+    updateDocument(unwrap(store.program));
 }
 
-const defaultRegisters = [
-    makeRegister("null", null, -1, -1),
 
-    makeRegister("width", 0, 0, 0),
-    makeRegister("height", 0, 1, 0),
-    makeRegister("cx", 0, 0, 1),
-    makeRegister("cy", 0, 1, 1),
-
-    makeRegister("pointerX", 0, 3, 0),
-    makeRegister("pointerY", 0, 4, 0),
-    makeRegister("pPointerX", 0, 3, 1),
-    makeRegister("pPointerY", 0, 4, 1),
-
-    makeRegister("time", 0, 6, 0),
-
-    makeRegister("π", Math.PI, 8, 0),
-    makeRegister("2π", 2 * Math.PI, 9, 0),
-    makeRegister("√2", Math.SQRT2, 8, 1),
-    makeRegister("√2/2", Math.SQRT1_2, 9, 1),
-
-    makeRegister("-1", -1, 8, 2),
-    makeRegister("1", 1, 9, 2),
-    makeRegister("0", 0, 8, 3),
-    makeRegister("2", 2, 9, 3),
-];
-
-const emptyProgram = {
-    source:{
-        init:[
-            {id:"a0", code:[]},
-        ],
-        loop:[
-            {id:"b0", code:[]},
-        ],
-        pointerDown:[
-            {id:"c0", code:[]},
-        ],
-        pointerUp:[
-            {id:"d0", code:[]},
-        ],
-        pointerMove:[
-            {id:"e0", code:[]},
-        ],
-    },
-    registers:[
-        ...defaultRegisters,
-    ]
-};
-
-setProgram(emptyProgram);
+let savedRecently;
+let requestSave;
+let saveTimeout;
+function autoSave(){
+    if(savedRecently){
+        requestSave = true;
+        return;
+    }
+    else{
+        save();
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+            saveTimeout = null;
+            if(requestSave){
+                save();
+            }
+            requestSave = false;
+        }, 5000);
+    }
+}
