@@ -31,7 +31,7 @@
 .registersGrid{
     display: grid;
     grid-template-columns: repeat(30, calc(10vw - 1px));
-    grid-template-rows: repeat(30, calc(10vw - 1px));
+    grid-template-rows: repeat(40, calc(10vw - 1px));
     gap:1px;
     width:100%;
     height:100%;
