@@ -14,6 +14,16 @@
     display:flex;
     justify-content:space-between;
 }
+
+.nav button{
+    background:none;
+}
+
+.nav button img{
+    width:30px;
+    height:30px;
+}
+
 .content{
     width:100%;
     flex-grow:1;
