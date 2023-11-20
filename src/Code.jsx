@@ -11,6 +11,7 @@ import {
 import {
     useStore,
     insertAfter,
+    insertAtIndex,
     setSelection,
     getSelectedLines,
     deleteSelection,
@@ -18,6 +19,7 @@ import {
     setRegister,
     addParameter,
     removeParameter,
+    clickContext,
 } from "./store";
 const [store] = useStore();
 
@@ -58,7 +60,7 @@ function ValueParam({value, register, setSelectedRegister, sourcePath, line, ind
     );
 }
 
-function SourceLine({line, depth, selected, sourcePath, registers, setSelectedRegister}){
+function SourceLine({line, depth, selected, sourcePath, registers, setSelectedRegister, order}){
     const canAddParam = (line) => {
         if(!line.code.length)return false;
         const def = instructionsDefinitions[line.code[0]][line.code[1]];
@@ -72,7 +74,7 @@ function SourceLine({line, depth, selected, sourcePath, registers, setSelectedRe
         return isVariadic && canRemove;
     };
     return (
-        <div class="sourceLine" classList={{selected:selected()}}>
+        <div class="sourceLine" classList={{selected:selected()}} style={{order:order}}>
           <p
             style={{"padding-left":15*depth()+"px"}}
             onClick={() => selected() ? setSelection([]) : setSelection([line.id])}
@@ -85,15 +87,24 @@ function SourceLine({line, depth, selected, sourcePath, registers, setSelectedRe
                     const register = registers.find(r => r.id === item);
                     return (
                         <>
-                          <Show when={p.substr(0, 2) === "r:"} fallback={<ValueParam value={item} register={register} setSelectedRegister={setSelectedRegister} sourcePath={sourcePath} line={line} index={index()}/>}>
-                              <RegisterParam
-                                register={register}
-                                setSelectedRegister={setSelectedRegister}
-                                sourcePath={sourcePath}
-                                line={line}
-                                index={index()}
-                              />
-                            </Show>
+                          <Show
+                            when={p.substr(0, 2) === "r:"}
+                            fallback={<ValueParam
+                                        value={item}
+                                        register={register}
+                                        setSelectedRegister={setSelectedRegister}
+                                        sourcePath={sourcePath}
+                                        line={line}
+                                        index={index()}/>}
+                          >
+                            <RegisterParam
+                              register={register}
+                              setSelectedRegister={setSelectedRegister}
+                              sourcePath={sourcePath}
+                              line={line}
+                              index={index()}
+                            />
+                          </Show>
                             <span> </span>
                         </>
                     );
@@ -115,9 +126,6 @@ function SourceLine({line, depth, selected, sourcePath, registers, setSelectedRe
               </Show>
             </Show>
           </p>
-          <Show when={store.gui.selection.length === 1 && store.gui.selection[0] === line.id}>
-            <button class="insertionButton" onClick={() => insertAfter(sourcePath, line.id)}>+</button>
-          </Show>
         </div>
     );
 }
@@ -142,20 +150,40 @@ function Program({source, sourcePath, registers, setSelectedRegister}){
         });
     });
     return(
-        <For each={source}>
-          {(line, i) => {
-              return(
-                  <SourceLine
-                    line={line}
-                    depth={() => depths()[i()]}
-                    sourcePath={sourcePath}
-                    registers={registers}
-                    selected={() => isSelected(line.id)}
-                    setSelectedRegister={setSelectedRegister}
-                  />
-              );
-          }}
-        </For>
+        <div style={{display:"flex", "flex-direction":"column"}}>
+          <Show when={store.gui.cursor.context === sourcePath && store.gui.cursor.position === -1}>
+            <button
+        class="insertionButton"
+              onClick={() => insertAfter(sourcePath, null)}
+            >
+              +
+            </button>
+          </Show>
+          <For each={source}>
+            {(line, i) => {
+                return(
+                    <>
+                      <SourceLine
+                        line={line}
+                        depth={() => depths()[i()]}
+                        sourcePath={sourcePath}
+                        registers={registers}
+                        selected={() => isSelected(line.id)}
+                        setSelectedRegister={setSelectedRegister}
+                      />
+                      <Show when={store.gui.cursor.context === sourcePath && store.gui.cursor.position === i()}>
+                        <button
+                            class="insertionButton"
+                          onClick={() => insertAfter(sourcePath, line.id)}
+                        >
+                          +
+                        </button>
+                      </Show>
+                    </>
+                );
+            }}
+          </For>
+        </div>
     );
 }
 export function Code({source, registers}){
@@ -170,7 +198,7 @@ export function Code({source, registers}){
     return(
         <div class="code">
           <div class="codeList">
-            <h3>Init</h3>
+            <h3 onClick={() => clickContext("init")}>Init</h3>
             <Program
               source={source.init}
               sourcePath="init"
@@ -179,7 +207,7 @@ export function Code({source, registers}){
             />
 
             <hr/>
-            <h3>Loop</h3>
+            <h3 onClick={() => clickContext("loop")}>Loop</h3>
             <Program
               source={source.loop}
               sourcePath="loop"
@@ -188,7 +216,7 @@ export function Code({source, registers}){
             />
 
             <hr/>
-            <h3>On Pointer Down</h3>
+            <h3 onClick={() => clickContext("pointerDown")}>On Pointer Down</h3>
             <Program
               source={source.pointerDown}
               sourcePath="pointerDown"
@@ -197,7 +225,8 @@ export function Code({source, registers}){
             />
 
             <hr/>
-            <h3>On Pointer Up</h3>
+            <h3></h3>
+            <h3 onClick={() => clickContext("pointerUp")}>On Pointer Up</h3>
             <Program
               source={source.pointerUp}
               sourcePath="pointerUp"
@@ -206,7 +235,7 @@ export function Code({source, registers}){
             />
 
             <hr/>
-            <h3>On Pointer Move</h3>
+            <h3 onClick={() => clickContext("pointerMove")}>On Pointer Move</h3>
             <Program
               source={source.pointerMove}
               sourcePath="pointerMove"

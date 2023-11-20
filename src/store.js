@@ -56,21 +56,11 @@ export function createEmptyProgram(){
         id:crypto.randomUUID(),
         lastOpened:Date.now(),
         source:{
-            init:[
-                {id:"a0", code:[]},
-            ],
-            loop:[
-                {id:"b0", code:[]},
-            ],
-            pointerDown:[
-                {id:"c0", code:[]},
-            ],
-            pointerUp:[
-                {id:"d0", code:[]},
-            ],
-            pointerMove:[
-                {id:"e0", code:[]},
-            ],
+            init:[],
+            loop:[],
+            pointerDown:[],
+            pointerUp:[],
+            pointerMove:[],
         },
         registers:[
             ...defaultRegisters,
@@ -80,6 +70,10 @@ export function createEmptyProgram(){
 
 const [store, setStore] = createStore({
     gui:{
+        cursor:{
+            context:null,
+            position:null,
+        },
         selection:[],
         registers:{
             scrollTop:224,
@@ -131,11 +125,22 @@ export function setProgram(program){
 }
 
 export function insertAfter(sourcePath, id){
+    const newLineId = crypto.randomUUID();
     setStore(produce(store => {
         const source = store.program.source[sourcePath];
-        const i = source.findIndex(line => line.id === id);
+        const i = id === null ? 0 : source.findIndex(line => line.id === id);
+        source.splice(i + (id === null ? 0 : 1), 0, {id:newLineId, code:[]});
+
+    }));
+    setSelection([newLineId]);
+    autoSave();
+}
+
+export function insertAtIndex(sourcePath, index){
+    setStore(produce(store => {
+        const source = store.program.source[sourcePath];
         const newLineId = crypto.randomUUID();
-        source.splice(i + 1, 0, {id:newLineId, code:[]});
+        source.splice(index + 1, 0, {id:newLineId, code:[]});
         store.gui.selection = [newLineId];
 
     }));
@@ -246,6 +251,45 @@ export function saveRegister(id, type, color, name, value){
 
 export function setSelection(ids){
     setStore("gui", "selection", ids);
+    if(ids.length === 1){
+        let cursor = undefined;
+        const source = store.program.source;
+        for(let context in source){
+            
+            const candidate = source[context].findIndex(l => l.id === ids[0]);
+            if(candidate !== -1){
+                cursor = {
+                    context:context,
+                    position:candidate,
+                };
+                break;
+            }
+        }
+        if(cursor !== undefined){
+            setStore("gui", "cursor", cursor);
+        }
+    }
+    else{
+        clearCursor();
+    }
+}
+
+export function clearCursor(){
+    setStore("gui", "cursor", "context", null);
+}
+
+export function clickContext(context){
+    setStore("gui", "selection", []);
+    if(store.gui.cursor.context === context && store.gui.cursor.position === -1){
+        setStore("gui", "cursor", {context, position:null});
+    }
+    else{
+        setStore("gui", "cursor", {context, position:-1});
+    }
+}
+
+export function setCursor(context, position){
+    setStore("gui", "cursor", {context, position});
 }
 
 export function addToSelection(id){
@@ -267,8 +311,8 @@ export function deleteSelection(){
                 }
             }
         });
-        store.gui.selection.length = 0;
     }));
+    setSelection([]);
     autoSave();
 }
 
