@@ -1,6 +1,7 @@
 import {
     For,
     createSignal,
+    createEffect,
 } from 'solid-js';
 
 import {
@@ -10,6 +11,14 @@ import {
 
 import {types, typesNames } from "../language";
 
+const defaultValues={
+    [types.ANY]:"0",
+    [types.BOOLEAN]:"1",
+    [types.NUMBER]:"0",
+    [types.STRING]:"",
+    [types.ARRAY]:"[]",
+    [types.COLOR]:"[0,0,0,1]",
+};
 export function ValueInput({selectedInput, setSelectedInput}){
 
     const [selectedType, setSelectedType] = createSignal(types.NUMBER);
@@ -18,6 +27,11 @@ export function ValueInput({selectedInput, setSelectedInput}){
     const input = () => {
         return getInput(selectedInput.sourcePath, selectedInput.lineId, selectedInput.index);
     };
+
+    // createEffect(() => {
+    //     const {sourcePath, lineId, index} = selectedInput;
+    //     setValue(sourcePath, lineId, index, defaultValues[selectedType()]);
+    // });
 
     return(
         <div class="ValueInput">

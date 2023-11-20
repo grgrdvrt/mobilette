@@ -79,10 +79,8 @@ export const instructionsDefinitions = {
         "print":{
             params:[{type:types.ANY, variadic:true}],
             effect:(params, env) => {
-                untrack(() =>{
-                    const paramsStr = params.map(p =>`${p}: ${env.readVal(p)}`).join("; ");
-                    env.setStdOut([...env.stdOut(), `${env.instructionId}: ${paramsStr}`]);
-                });
+                const paramsStr = params.map(p =>`${p}: ${env.readVal(p)}`).join("; ");
+                env.log(`${env.instructionId}: ${paramsStr}`);
             }
         }
     },

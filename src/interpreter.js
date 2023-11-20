@@ -1,4 +1,4 @@
-import {createSignal} from "solid-js";
+import {createSignal, untrack} from "solid-js";
 import {instructionsDefinitions} from "./language";
 
 export class Interpreter{
@@ -85,8 +85,7 @@ export class Interpreter{
         while(this.instructionId < instructions.length){
             const line = instructions[this.instructionId];
             console.log(this.instructionId, line.code.join(" "));
-            // debugger;
-            // try{
+            try{
                 if(line.code.length){
                     const [module, cmd, ...params] = line.code;
                     if(!params.includes("r:null")){
@@ -136,7 +135,6 @@ export class Interpreter{
                             if(cmd === "break"){
                                 //find most recently encountered for. Some "If" can be opened
                                 let ctrlId = undefined;
-                                debugger;
                                 for(let i = ctrlStack.length - 1; i >= 0; i--){
                                     const ctrl = ctrlStack[i];
                                     if(ctrl.type === "for"){
@@ -144,7 +142,6 @@ export class Interpreter{
                                         break;
                                     }
                                 }
-                                debugger;
                                 if(ctrlId !== undefined){
                                     const forDefinition = ctrlStack[ctrlId];
                                     //drop opened ifs and current for
@@ -180,17 +177,28 @@ export class Interpreter{
                             this.instructionId++;
                         }
                     }
+                    else{
+                        this.log(`${this.instructionId}: ERROR:${line.code.join(" ")}`);
+                        this.instructionId++;
+                    }
                 }
                 else{
                     //blank line
                     this.instructionId++;
                 }
-            // }
-            // catch(e){
-            //     throw(new Error(`line ${this.instructionId}:${line.code.join(" ")}`));
-            // }
+            }
+            catch(e){
+                this.log(`${this.instructionId}: ERROR:${line.code.join(" ")}`);
+                this.instructionId++;
+            }
         }
         this.onExecuted(this.registers);
+    }
+    log(msg){
+        untrack(() =>{
+            this.setStdOut([...this.stdOut(), msg]);
+        });
+        
     }
 
     checkMainCanvasSize(){
