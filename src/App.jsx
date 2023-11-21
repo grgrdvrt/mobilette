@@ -123,7 +123,7 @@ function Editor() {
                           <img src={PlayPicto}/>
                       }><img src={PausePicto}/></Show>
                     </button>
-                    <button onClick={resetRegisters}>
+                    <button onClick={() => interpreter.play()}>
                       <img src={ResetPicto}/>
                     </button>
                     <button onClick={() => {

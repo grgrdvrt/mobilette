@@ -122,14 +122,15 @@ export class Interpreter{
                                     };
                                     ctrlStack.push(forDefinition);
                                     this.setVal(forDefinition.targetRegister, begin);
-                                };
-                                if(this.readVal(forDefinition.targetRegister) === forDefinition.end){
-                                    this.instructionId = forDefinition.endLine + 1;
-                                    ctrlStack.pop();
+                                    this.instructionId++;
                                 }
-                                else{
+                                else if(this.readVal(forDefinition.targetRegister) !== forDefinition.end){
                                     this.setVal(forDefinition.targetRegister, this.readVal(forDefinition.targetRegister) + forDefinition.step);
                                     this.instructionId++;
+                                }
+                                else{
+                                    this.instructionId = forDefinition.endLine + 1;
+                                    ctrlStack.pop();
                                 }
                             }
                             if(cmd === "break"){
@@ -198,7 +199,6 @@ export class Interpreter{
         untrack(() =>{
             this.setStdOut([...this.stdOut(), msg]);
         });
-        
     }
 
     checkMainCanvasSize(){
@@ -241,6 +241,7 @@ export class Interpreter{
     }
 
     loop(){
+        cancelAnimationFrame(this.raf);
         this.raf = requestAnimationFrame(() => this.loop());
         this.executeInstructions(this.source.loop);
     }
