@@ -1,4 +1,8 @@
-import {untrack} from "solid-js";
+import {createNoise2D, createNoise3D, createNoise4D} from "simplex-noise";
+const noise2D = createNoise2D();
+const noise3D = createNoise3D();
+const noise4D = createNoise4D();
+
 export const types = {
     ANY:-1,
     BOOLEAN:0,
@@ -292,6 +296,44 @@ export const instructionsDefinitions = {
             params:[],
             effect:(_, env) => {
                 env.ctx.stroke();
+            }
+        },
+    },
+    "algo":{
+        "noise2D":{
+            params:[{type:types.NUMBER}, {type:types.NUMBER}, {type:types.NUMBER}],
+            effect:(params, env) => {
+                env.setVal(
+                    params[2],
+                    noise2D(env.readVal(params[0]), env.readVal(params[1]))
+                );
+            }
+        },
+        "noise3D":{
+            params:[{type:types.NUMBER}, {type:types.NUMBER}, {type:types.NUMBER}, {type:types.NUMBER}],
+            effect:(params, env) => {
+                env.setVal(
+                    params[3],
+                    noise3D(
+                        env.readVal(params[0]),
+                        env.readVal(params[1]),
+                        env.readVal(params[2]),
+                    )
+                );
+            }
+        },
+        "noise4D":{
+            params:[{type:types.NUMBER}, {type:types.NUMBER}, {type:types.NUMBER}, {type:types.NUMBER}, {type:types.NUMBER}],
+            effect:(params, env) => {
+                env.setVal(
+                    params[4],
+                    noise4D(
+                        env.readVal(params[0]),
+                        env.readVal(params[1]),
+                        env.readVal(params[2]),
+                        env.readVal(params[3]),
+                    )
+                );
             }
         },
     }
