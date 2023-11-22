@@ -28,27 +28,28 @@ function makeRegister(name, value, x, y, color){
 const defaultRegisters = [
     makeRegister("null", null, -1, -1),
 
-    makeRegister("width", 0, 10, 6),
-    makeRegister("height", 0, 11, 6),
-    makeRegister("cx", 0, 10, 7),
-    makeRegister("cy", 0, 11, 7),
+    makeRegister("width", 0, 0, 10),
+    makeRegister("height", 0, 1, 10),
+    makeRegister("cx", 0, 0, 11),
+    makeRegister("cy", 0, 1, 11),
 
-    makeRegister("pointerX", 0, 13, 6),
-    makeRegister("pointerY", 0, 14, 6),
-    makeRegister("pPointerX", 0, 13, 7),
-    makeRegister("pPointerY", 0, 14, 7),
+    makeRegister("pointerX", 0, 3, 10),
+    makeRegister("pointerY", 0, 4, 10),
+    makeRegister("pPointerX", 0, 3, 11),
+    makeRegister("pPointerY", 0, 4, 11),
 
-    makeRegister("time", 0, 16, 6),
+    makeRegister("time", 0, 6, 10),
 
-    makeRegister("π", Math.PI, 18, 6),
-    makeRegister("2π", 2 * Math.PI, 19, 6),
-    makeRegister("√2", Math.SQRT2, 18, 7),
-    makeRegister("√2/2", Math.SQRT1_2, 19, 7),
+    makeRegister("π", Math.PI, 8, 10),
+    makeRegister("2π", 2 * Math.PI, 9, 10),
+    makeRegister("√2", Math.SQRT2, 8, 11),
+    makeRegister("√2/2", Math.SQRT1_2, 9, 11),
 
-    makeRegister("-1", -1, 18, 8),
-    makeRegister("1", 1, 19, 8),
-    makeRegister("0", 0, 18, 9),
-    makeRegister("2", 2, 19, 9),
+    makeRegister("-1", -1, 8, 12),
+    makeRegister("1", 1, 9, 12),
+    makeRegister("0", 0, 8, 13),
+    makeRegister("2", 2, 9, 13),
+    makeRegister("100", 2, 9, 14),
 ];
 
 export function createEmptyProgram(){

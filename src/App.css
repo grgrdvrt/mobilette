@@ -40,7 +40,7 @@
 
 .registersGrid{
     display: grid;
-    grid-template-columns: repeat(30, calc(10vw - 1px));
+    grid-template-columns: repeat(10, calc(10vw - 1px));
     grid-template-rows: repeat(40, calc(10vw - 1px));
     gap:1px;
     width:100%;

@@ -23,44 +23,52 @@ import {
 } from "./store";
 const [store] = useStore();
 
+import {types, instructionsDefinitions} from "./language";
+
+import {hslaToHslaString} from "./utils";
+
 import { RegisterDetails, RegistersGrid} from "./Registers";
 import {InstructionsMenu} from "./InstructionsMenu";
 
-import {instructionsDefinitions} from "./language";
-
 import {ValueInput} from "./components/ValueInput";
 
-function RegisterParam({register, setSelectedRegister, sourcePath, line, index}){
+function RegisterParam({registers, registerId, setSelectedInput, sourcePath, line, index}){
+
+    const register = createMemo(() => registers.find(r => r.id === registerId));
     return(
         <button
         class="codeRegister"
-          style={{"background-color":register.color}}
+          style={{"background-color":register().color}}
           onClick={e => {
               e.stopPropagation();
-              setSelectedRegister({sourcePath:sourcePath, lineId:line.id, register, index:index});
+              setSelectedInput({sourcePath:sourcePath, lineId:line.id, value:register(), index:index});
           }}
         >
-          {register.name || register.y + ":" + register.x}
+          {register().name || register().y + ":" + register().x}
         </button>
     );
 }
 
-function ValueParam({value, register, setSelectedRegister, sourcePath, line, index}){
+function ValueParam({valueInput, setSelectedInput, sourcePath, line, index}){
     return(
         <button
         class="codeRegister"
-          style={{"border":"solid 1px black"}}
+          style={{
+              "border":"solid 1px black",
+              "background-color":valueInput.type === types.COLOR ? hslaToHslaString(valueInput.value) : "white",
+              "color":valueInput.type === types.COLOR && valueInput.value[2] < 50 ? "white" : "black"
+          }}
           onClick={e => {
               e.stopPropagation();
-              setSelectedRegister({sourcePath:sourcePath, lineId:line.id, register:null, index:index});
+              setSelectedInput({sourcePath:sourcePath, lineId:line.id, value:valueInput, index:index});
           }}
         >
-          {value}
+          {JSON.stringify(valueInput.value)}
         </button>
     );
 }
 
-function SourceLine({line, depth, selected, sourcePath, registers, setSelectedRegister, order}){
+function SourceLine({line, depth, selected, sourcePath, registers, setSelectedInput, order}){
     const canAddParam = (line) => {
         if(!line.code.length)return false;
         const def = instructionsDefinitions[line.code[0]][line.code[1]];
@@ -82,24 +90,22 @@ function SourceLine({line, depth, selected, sourcePath, registers, setSelectedRe
             <Show when={line.code.length} fallback={<p>//</p>}>
               {line.code[1]}<span> </span>
               <For each={line.code.slice(2)}>
-                {(p, index) => {
-                    const item = p.value;
-                    const register = registers.find(r => r.id === item);
+                {(input, index) => {
                     return (
                         <>
                           <Show
-                            when={p.type === "register"}
+                            when={input.type === "register"}
                             fallback={<ValueParam
-                                        value={item}
-                                        register={register}
-                                        setSelectedRegister={setSelectedRegister}
+                                        valueInput={input.value}
+                                        setSelectedInput={setSelectedInput}
                                         sourcePath={sourcePath}
                                         line={line}
                                         index={index()}/>}
                           >
                             <RegisterParam
-                              register={register}
-                              setSelectedRegister={setSelectedRegister}
+                              registerId={input.value}
+                              registers={registers}
+                              setSelectedInput={setSelectedInput}
                               sourcePath={sourcePath}
                               line={line}
                               index={index()}
@@ -130,7 +136,7 @@ function SourceLine({line, depth, selected, sourcePath, registers, setSelectedRe
     );
 }
 
-function Program({source, sourcePath, registers, setSelectedRegister}){
+function Program({source, sourcePath, registers, setSelectedInput}){
     const isSelected = (id) => {
         const isSelected = store.gui.selection.indexOf(id) !== -1;
         return isSelected;
@@ -169,7 +175,7 @@ function Program({source, sourcePath, registers, setSelectedRegister}){
                         sourcePath={sourcePath}
                         registers={registers}
                         selected={() => isSelected(line.id)}
-                        setSelectedRegister={setSelectedRegister}
+                        setSelectedInput={setSelectedInput}
                       />
                       <Show when={store.gui.cursor.context === sourcePath && store.gui.cursor.position === i()}>
                         <button
@@ -203,7 +209,7 @@ export function Code({source, registers}){
               source={source.init}
               sourcePath="init"
               registers={registers}
-              setSelectedRegister={setSelectedInput}
+              setSelectedInput={setSelectedInput}
             />
 
             <hr/>
@@ -212,7 +218,7 @@ export function Code({source, registers}){
               source={source.loop}
               sourcePath="loop"
               registers={registers}
-              setSelectedRegister={setSelectedInput}
+              setSelectedInput={setSelectedInput}
             />
 
             <hr/>
@@ -221,7 +227,7 @@ export function Code({source, registers}){
               source={source.pointerDown}
               sourcePath="pointerDown"
               registers={registers}
-              setSelectedRegister={setSelectedInput}
+              setSelectedInput={setSelectedInput}
             />
 
             <hr/>
@@ -231,7 +237,7 @@ export function Code({source, registers}){
               source={source.pointerUp}
               sourcePath="pointerUp"
               registers={registers}
-              setSelectedRegister={setSelectedInput}
+              setSelectedInput={setSelectedInput}
             />
 
             <hr/>
@@ -240,7 +246,7 @@ export function Code({source, registers}){
               source={source.pointerMove}
               sourcePath="pointerMove"
               registers={registers}
-              setSelectedRegister={setSelectedInput}/>
+              setSelectedInput={setSelectedInput}/>
           </div>
           <Show when={showInstruction()}>
             <InstructionsMenu/>

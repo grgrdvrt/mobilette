@@ -78,7 +78,7 @@ export class Interpreter{
 
     executeInstructions(instructions){
         this.initJumpTable(instructions);
-        this.setVal("time", Date.now());
+        this.setVal("time", Date.now() - this.initialTime);
         this.instructionId = 0;
         const ctrlStack = [];
         while(this.instructionId < instructions.length){
@@ -232,6 +232,7 @@ export class Interpreter{
     }
 
     init(){
+        this.initialTime = Date.now();
         this.checkMainCanvasSize();
         const {width, height} = this.mainCanvas;
         this.ctx.clearRect(0, 0, width, height);
