@@ -26,16 +26,15 @@ export class Interpreter{
     }
 
     setVal(regId, val){
-        this.getReg(regId.substr(2)).value = val;
+        this.getReg(regId).value = val;
     }
 
     readVal(param){
-        const [pfx, val] = [param.substr(0, 2), param.substr(2)];
-        switch(pfx){
-        case "v:":
-            return eval(val);
-        case "r:":
-            return this.getReg(val).value;
+        switch(param.type){
+        case "value":
+            return param.value.value;
+        case "register":
+            return this.getReg(param.value).value;
         }
         return 0;
     }
@@ -79,16 +78,17 @@ export class Interpreter{
 
     executeInstructions(instructions){
         this.initJumpTable(instructions);
-        this.setVal("r:time", Date.now());
+        this.setVal("time", Date.now());
         this.instructionId = 0;
         const ctrlStack = [];
         while(this.instructionId < instructions.length){
             const line = instructions[this.instructionId];
-            console.log(this.instructionId, line.code.join(" "));
-            try{
+            console.log(this.instructionId, JSON.stringify(line.code));
+            // try{
                 if(line.code.length){
                     const [module, cmd, ...params] = line.code;
-                    if(!params.includes("r:null")){
+                    const hasNull = params.some(p => p.value === "null");
+                    if(!hasNull){
                         if(module === "ctrl"){
                             if(cmd === "if"){
                                 ctrlStack.push({
@@ -179,7 +179,7 @@ export class Interpreter{
                         }
                     }
                     else{
-                        this.log(`${this.instructionId}: ERROR:${line.code.join(" ")}`);
+                        this.log(`${this.instructionId}: ERROR: has null param : ${JSON.stringify(line.code)}`);
                         this.instructionId++;
                     }
                 }
@@ -187,11 +187,11 @@ export class Interpreter{
                     //blank line
                     this.instructionId++;
                 }
-            }
-            catch(e){
-                this.log(`${this.instructionId}: ERROR:${line.code.join(" ")}`);
-                this.instructionId++;
-            }
+            // }
+            // catch(e){
+            //     this.log(`${this.instructionId}: ERROR:${JSON.stringify(line.code)}`);
+            //     this.instructionId++;
+            // }
         }
         this.onExecuted(this.registers);
     }
@@ -210,10 +210,10 @@ export class Interpreter{
             this.mainCanvas.height = h;
         }
 
-        this.setVal("r:width", w);
-        this.setVal("r:height", h);
-        this.setVal("r:cx", w/2);
-        this.setVal("r:cy", h/2);
+        this.setVal("width", w);
+        this.setVal("height", h);
+        this.setVal("cx", w/2);
+        this.setVal("cy", h/2);
     }
 
     play(){
@@ -247,10 +247,10 @@ export class Interpreter{
     }
 
     updatePointer(x, y){
-        this.setVal("r:pointerX", x);
-        this.setVal("r:pointerY", y);
-        this.setVal("r:pPointerX", this.pointerX);
-        this.setVal("r:pPointerY", this.pointerY);
+        this.setVal("pointerX", x);
+        this.setVal("pointerY", y);
+        this.setVal("pPointerX", this.pointerX);
+        this.setVal("pPointerY", this.pointerY);
         this.pointerX = x;
         this.pointerY = y;
     }

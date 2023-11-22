@@ -32,7 +32,7 @@ function binop(func, paramsTypes=[types.NUMBER, types.NUMBER, types.NUMBER]){
         ],
         effect:(params, env) => {
             env.setVal(
-                params.length === 3 ? params[2] : params[0],
+                (params.length === 3 ? params[2] : params[0]).value,
                 func(env.readVal(params[0]), env.readVal(params[1]))
             );
         }
@@ -47,7 +47,7 @@ function monop(func, paramsTypes=[types.NUMBER, types.NUMBER]){
         ],
         effect: (params, env) => {
             env.setVal(
-                params.length === 2 ? params[1] : params[0],
+                (params.length === 2 ? params[1] : params[0]).value,
                 func(env.readVal(params[0]))
             );
         }
@@ -58,7 +58,7 @@ function comp(fun){
     return {
         params:[num, num, num],
         effect:(params, env) => {
-            env.setVal(params[2], fun(env.readVal(params[0]), env.readVal(params[1])) ? 1 : 0);
+            env.setVal(params[2].value, fun(env.readVal(params[0]), env.readVal(params[1])) ? 1 : 0);
         }
     };
 }
@@ -78,12 +78,12 @@ export const instructionsDefinitions = {
     registers:{
         "set": {
             params:[{type:types.ANY}, {type:types.ANY}],
-            effect:(params, env) => env.setVal(params[0], env.readVal(params[1]))
+            effect:(params, env) => env.setVal(params[0].value, env.readVal(params[1]))
         },
         "print":{
             params:[{type:types.ANY, variadic:true}],
             effect:(params, env) => {
-                const paramsStr = params.map(p =>`${p}: ${env.readVal(p)}`).join("; ");
+                const paramsStr = params.map(p =>`${p.value}: ${env.readVal(p)}`).join("; ");
                 env.log(`${env.instructionId}: ${paramsStr}`);
             }
         }
@@ -122,21 +122,21 @@ export const instructionsDefinitions = {
             params:[num, num, num],
             effect:(params, env) => {
                 const [min, max] = params.slice(0, 2).map(env.readVal, env);
-                env.setVal(params[2], lerp(min, max, Math.random()));
+                env.setVal(params[2].value, lerp(min, max, Math.random()));
             }
         },
         "lerp":{
             params:[num, num, num, num],
             effect:(params, env) => {
                 const [a, b, t] = params.slice(0, 3).map(env.readVal, env);
-                env.setVal(params[3], lerp(a, b, t));
+                env.setVal(params[3].value, lerp(a, b, t));
             }
         },
         "map":{
             params:[num, num, num, num, num, num],
             effect:(params, env) => {
                 const [a, b, c, d, t] = params.slice(0, 3).map(env.readVal, env);
-                env.setVal(params[4], map(a, b, c, d, t));
+                env.setVal(params[4].value, map(a, b, c, d, t));
             }
         },
     },
@@ -150,7 +150,7 @@ export const instructionsDefinitions = {
         "get":{
             params:[{type:types.ARRAY}, {type:types.NUMBER}, {type:types.ANY}],
             effect:(params, env) => {
-                env.setVal(params[2], env.readVal(params[0])[env.readVal(params[1])]);
+                env.setVal(params[2].value, env.readVal(params[0])[env.readVal(params[1])]);
             }
         },
         "struct":{
@@ -170,7 +170,7 @@ export const instructionsDefinitions = {
                 console.log("arr", arr);
                 for(let i = 0; i < arr.length; i++){
                     console.log(arr[i], params[i + 1]);
-                    env.setVal(params[i + 1], arr[i]);
+                    env.setVal(params[i + 1].value, arr[i]);
                 }
             }
         }
@@ -304,7 +304,7 @@ export const instructionsDefinitions = {
             params:[{type:types.NUMBER}, {type:types.NUMBER}, {type:types.NUMBER}],
             effect:(params, env) => {
                 env.setVal(
-                    params[2],
+                    params[2].value,
                     noise2D(env.readVal(params[0]), env.readVal(params[1]))
                 );
             }
@@ -313,7 +313,7 @@ export const instructionsDefinitions = {
             params:[{type:types.NUMBER}, {type:types.NUMBER}, {type:types.NUMBER}, {type:types.NUMBER}],
             effect:(params, env) => {
                 env.setVal(
-                    params[3],
+                    params[3].value,
                     noise3D(
                         env.readVal(params[0]),
                         env.readVal(params[1]),
@@ -326,7 +326,7 @@ export const instructionsDefinitions = {
             params:[{type:types.NUMBER}, {type:types.NUMBER}, {type:types.NUMBER}, {type:types.NUMBER}, {type:types.NUMBER}],
             effect:(params, env) => {
                 env.setVal(
-                    params[4],
+                    params[4].value,
                     noise4D(
                         env.readVal(params[0]),
                         env.readVal(params[1]),

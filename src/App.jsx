@@ -162,7 +162,7 @@ function Editor() {
 }
 
 function Home({setPage}){
-    const [documents] = createResource(getDocuments);
+    const [documents, {refetch}] = createResource(getDocuments);
     return (
         <div style={{display:"flex", "flex-direction":"column", height:"50%", "justify-content":"space-between"}}>
           <div>
@@ -183,7 +183,10 @@ function Home({setPage}){
               setProgram(program);
               setPage("editor");
           }}>new</button>
-          <button onClick={() => deleteDatabase()}>clear</button>
+          <button onClick={() => {
+              deleteDatabase();
+              refetch();
+          }}>clear</button>
         </div>
     );
 }

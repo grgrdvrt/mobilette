@@ -159,7 +159,7 @@ export function setCommand(module, command){
             }
         }
         const paramsCount = instructionsDefinitions[module][command].params.length;
-        const params = new Array(paramsCount).fill("r:null");
+        const params = new Array(paramsCount).fill({type:"register", value:"null"});
         targetLine.code.push(module, command, ...params);
     }));
     autoSave();
@@ -168,7 +168,7 @@ export function setCommand(module, command){
 export function addParameter(sourcePath, lineId){
     setStore(produce(store => {
         const line = store.program.source[sourcePath].find(l => l.id === lineId);
-        line.code.push("r:null");
+        line.code.push({type:"register", value:"null"});
     }));
 }
 
@@ -180,18 +180,10 @@ export function removeParameter(sourcePath, lineId){
     autoSave();
 }
 
-export function setValue(sourcePath, lineId, registerIndex, value){
+export function setParameter(sourcePath, lineId, registerIndex, type, value){
     setStore(produce(store => {
         const line = store.program.source[sourcePath].find(l => l.id === lineId);
-        line.code[registerIndex + 2] = `v:${value}`;
-    }));
-    autoSave();
-}
-
-export function setRegister(sourcePath, lineId, registerIndex, registerId){
-    setStore(produce(store => {
-        const line = store.program.source[sourcePath].find(l => l.id === lineId);
-        line.code[registerIndex + 2] = `r:${registerId}`;
+        line.code[registerIndex + 2] = {type:type, value:value};
     }));
     autoSave();
 }
@@ -255,7 +247,6 @@ export function setSelection(ids){
         let cursor = undefined;
         const source = store.program.source;
         for(let context in source){
-            
             const candidate = source[context].findIndex(l => l.id === ids[0]);
             if(candidate !== -1){
                 cursor = {
@@ -340,4 +331,59 @@ function autoSave(){
             requestSave = false;
         }, 5000);
     }
+}
+
+
+
+
+
+const example = {
+  "id": "1ed0d2cf-b777-4e4c-ae22-e21e930c1c64",
+  "lastOpened": 1700532816496,
+  "source": {
+    "init": [
+      {"id": "26c8d45c-bcdc-4be9-8d6d-9872f395022d", "code": ["ctrl", "for", "r:9eaeeb0c-88d0-4792-830b-617327598685", "r:0", "r:width"]},
+      {"id": "cb44f315-36d6-4b6f-93fc-4460ec84464e", "code": ["ctrl", "for", "r:43a46d97-3beb-4b3f-b62f-e539b35f1330", "r:0", "r:height"]},
+      {"id": "516c8491-064d-4b12-a9b9-90e83f01731e", "code": ["gfx", "beginPath"]},
+      {"id": "a1ac04ed-ecc1-44eb-b689-77759c6faae8", "code": ["gfx", "rect", "r:9eaeeb0c-88d0-4792-830b-617327598685", "r:43a46d97-3beb-4b3f-b62f-e539b35f1330", "r:1", "r:1"]},
+      {"id": "959f480b-d4f3-48c8-9d44-6035eefe30be", "code": ["algo", "noise2D", "r:9eaeeb0c-88d0-4792-830b-617327598685", "r:43a46d97-3beb-4b3f-b62f-e539b35f1330", "r:15c7882b-0451-4dea-85ad-a8bbb6f55f96"]},
+      {"id": "0402cf02-5d4d-4cb0-83ab-d6451c99b143", "code": ["maths", "*", "r:15c7882b-0451-4dea-85ad-a8bbb6f55f96", "v:100", "r:15c7882b-0451-4dea-85ad-a8bbb6f55f96"]},
+      {"id": "ff569288-73f9-4581-a046-0bf66afdb8e7", "code": ["maths", "round", "r:15c7882b-0451-4dea-85ad-a8bbb6f55f96", "r:15c7882b-0451-4dea-85ad-a8bbb6f55f96"]},
+      {"id": "a58854b2-db95-45e7-b057-e7b5d00ada12", "code": ["array", "struct", "r:f7ec6c8d-f5ca-4cc0-9b5e-cca2450aa0b9", "r:0", "r:0", "r:15c7882b-0451-4dea-85ad-a8bbb6f55f96"]},
+      {"id": "94690e1e-63b9-459e-b1e1-dd8a0beaa8a3", "code": ["gfx", "fillStyle", "r:f7ec6c8d-f5ca-4cc0-9b5e-cca2450aa0b9"]},
+      {"id": "c72f6ce2-f521-4d02-8f35-b67935e0529f", "code": ["gfx", "fill"]},
+      {"id": "20dc7387-4283-4f70-bf3c-630251ee80d4", "code": ["ctrl", "endfor"]},
+      {"id": "ec18c808-7b77-4c28-9a20-ff35ec80a049", "code": ["ctrl", "endfor"]}
+    ],
+    "loop": [],
+    "pointerDown": [],
+    "pointerUp": [],
+    "pointerMove": []
+  },
+  "registers": [
+    {"id": "null", "name": "null", "type": 1, "initialValue": null, "value": null, "x": -1, "y": -1, "color": "#95ff80"},
+    {"id": "width", "name": "width", "type": 1, "initialValue": 0, "value": 0, "x": 10, "y": 6, "color": "#9180ff"},
+    {"id": "height", "name": "height", "type": 1, "initialValue": 0, "value": 0, "x": 11, "y": 6, "color": "#80b3ff"},
+    {"id": "cx", "name": "cx", "type": 1, "initialValue": 0, "value": 0, "x": 10, "y": 7, "color": "#80ffe0"},
+    {"id": "cy", "name": "cy", "type": 1, "initialValue": 0, "value": 0, "x": 11, "y": 7, "color": "#80ff95"},
+    {"id": "pointerX", "name": "pointerX", "type": 1, "initialValue": 0, "value": 0, "x": 13, "y": 6, "color": "#ff80da"},
+    {"id": "pointerY", "name": "pointerY", "type": 1, "initialValue": 0, "value": 0, "x": 14, "y": 6, "color": "#80ffed"},
+    {"id": "pPointerX", "name": "pPointerX", "type": 1, "initialValue": 0, "value": 0, "x": 13, "y": 7, "color": "#8280ff"},
+    {"id": "pPointerY", "name": "pPointerY", "type": 1, "initialValue": 0, "value": 0, "x": 14, "y": 7, "color": "#ff80d7"},
+    {"id": "time", "name": "time", "type": 1, "initialValue": 0, "value": 0, "x": 16, "y": 6, "color": "#9b80ff"},
+    {"id": "π", "name": "π", "type": 1, "initialValue": 3.141592653589793, "value": 3.141592653589793, "x": 18, "y": 6, "color": "#ff80c2"},
+    {"id": "2π", "name": "2π", "type": 1, "initialValue": 6.283185307179586, "value": 6.283185307179586, "x": 19, "y": 6, "color": "#af80ff"},
+    {"id": "√2", "name": "√2", "type": 1, "initialValue": 1.4142135623730951, "value": 1.4142135623730951, "x": 18, "y": 7, "color": "#ff80c8"},
+    {"id": "√2/2", "name": "√2/2", "type": 1, "initialValue": 0.7071067811865476, "value": 0.7071067811865476, "x": 19, "y": 7, "color": "#80ffe1"},
+    {"id": "-1", "name": "-1", "type": 1, "initialValue": -1, "value": -1, "x": 18, "y": 8, "color": "#fdff80"},
+    {"id": "1", "name": "1", "type": 1, "initialValue": 1, "value": 1, "x": 19, "y": 8, "color": "#ffd280"},
+    {"id": "0", "name": "0", "type": 1, "initialValue": 0, "value": 0, "x": 18, "y": 9, "color": "#ef80ff"},
+    {"id": "2", "name": "2", "type": 1, "initialValue": 2, "value": 2, "x": 19, "y": 9, "color": "#ae80ff"},
+    {"id": "fb523b45-bf8f-4a16-9c59-1f27398c2c95", "type": 1, "name": "", "initialValue": 0, "value": 0, "color": "#db80ff", "x": 11, "y": 9},
+    {"id": "9eaeeb0c-88d0-4792-830b-617327598685", "type": 1, "name": "i", "initialValue": 0, "value": 0, "color": "#ddff80", "x": 10, "y": 9},
+    {"id": "43a46d97-3beb-4b3f-b62f-e539b35f1330", "type": 1, "name": "j", "initialValue": 0, "value": 0, "color": "#e280ff", "x": 10, "y": 10},
+    {"id": "f7ec6c8d-f5ca-4cc0-9b5e-cca2450aa0b9", "type": 1, "name": "color", "initialValue": 0, "value": 0, "color": "#ffcf80", "x": 11, "y": 10},
+    {"id": "15c7882b-0451-4dea-85ad-a8bbb6f55f96", "type": 1, "name": "k", "initialValue": 0, "value": 0, "color": "#ff80cf", "x": 12, "y": 9},
+    {"id": "0678a9c3-f5f2-4e45-9d81-022a90a12210", "type": 1, "name": "val", "initialValue": 0, "value": 0, "color": "#ff80b3", "x": 12, "y": 10}
+  ]
 }

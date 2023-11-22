@@ -16,7 +16,7 @@ import {
     getSelectedLines,
     deleteSelection,
     getRegisterByPosition,
-    setRegister,
+    setParameter,
     addParameter,
     removeParameter,
     clickContext,
@@ -83,12 +83,12 @@ function SourceLine({line, depth, selected, sourcePath, registers, setSelectedRe
               {line.code[1]}<span> </span>
               <For each={line.code.slice(2)}>
                 {(p, index) => {
-                    const item = p.substr(2);
+                    const item = p.value;
                     const register = registers.find(r => r.id === item);
                     return (
                         <>
                           <Show
-                            when={p.substr(0, 2) === "r:"}
+                            when={p.type === "register"}
                             fallback={<ValueParam
                                         value={item}
                                         register={register}
@@ -277,7 +277,7 @@ function InputSelection({registers, selectedInput, setSelectedInput}){
                         }
                         else{
                             const {sourcePath, lineId, index} = selectedInput;
-                            setRegister(sourcePath, lineId, index, register.id);
+                            setParameter(sourcePath, lineId, index, "register", register.id);
                             setSelectedInput(null);
                         }
                     }
@@ -291,7 +291,7 @@ function InputSelection({registers, selectedInput, setSelectedInput}){
                     const {sourcePath, lineId, index} = selectedInput;
                     if(reason === "create"){
                         const register = getRegisterByPosition(step().data.x, step().data.y);
-                        setRegister(sourcePath, lineId, index, register.id);
+                        setParameter(sourcePath, lineId, index, "register", register.id);
                     }
                     setSelectedInput(null);
                 }}

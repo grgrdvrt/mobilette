@@ -6,7 +6,7 @@ import {
 
 import {
     getInput,
-    setValue,
+    setParameter,
 } from "../store";
 
 import {types, typesNames } from "../language";
@@ -44,10 +44,10 @@ export function ValueInput({selectedInput, setSelectedInput}){
               }}
             </For>
           </select>
-          <input ref={valueField} id="registerValue" value={input()?.[0] === "v" ? input().substr(2) : ""}/>
+          <input ref={valueField} id="registerValue" value={input()?.type === "value" ? input().value.value : ""}/>
           <button onClick={() => {
               const {sourcePath, lineId, index} = selectedInput;
-              setValue(sourcePath, lineId, index, valueField.value);
+              setParameter(sourcePath, lineId, index, "value", {type:selectedType(), value:valueField.value});
               setSelectedInput(null);
           }}>set</button>
         </div>
