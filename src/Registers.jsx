@@ -18,7 +18,9 @@ import {
 } from "./store";
 const [store, setStore] = useStore();
 
-import {types, typesNames} from "./language";
+import {types, typesNames, defaultValues} from "./language";
+
+import {DataInput} from "./components/ValueInput";
 
 function range(min, max){
     const result = [];
@@ -82,8 +84,9 @@ export function RegisterDetails({registerPosition, onClose}){
     const register = createMemo(() => {
         return getRegisterByPosition(registerPosition.x, registerPosition.y) || makeEmptyRegister(registerPosition.x, registerPosition.y);
     });
-    const [selectedType, setSelectedType] = createSignal(register().type);
-    let valueField, colorField, nameField;
+    const [type, setType] = createSignal(register().type??types.NUMBER);
+    const [value, setValue] = createSignal(register().value.value ?? defaultValues[type()]);
+    let colorField, nameField;
     return (
         <div class="registerDetails">
           <button onClick={() => onClose("close")}>Close</button>
@@ -91,22 +94,7 @@ export function RegisterDetails({registerPosition, onClose}){
 
           <input ref={colorField} type="color" value={register().color}/>
 
-          <div style={{display:"block"}}>
-            <label for="types-select">Type:</label>
-            <select name="types" id="types-select" onInput={(e) => setSelectedType(Number(e.target.value))}>
-              <For each={Object.entries(typesNames)}>
-                {([key, value]) => {
-                    return(
-                        <option value={key} selected={(() => selectedType().toString() === key)()}>{value}</option>
-                    );
-                }}
-              </For>
-            </select>
-          </div>
-
-          <label for="registerValue">value</label>
-          <input ref={valueField} id="registerValue" value={register().value??0}/>
-          <br/>
+          <DataInput type={type} setType={setType} value={value} setValue={setValue}/>
 
           <label for="registerName">name</label>
           <input ref={nameField} id="registerName" value={register().name??""}/>
@@ -116,14 +104,14 @@ export function RegisterDetails({registerPosition, onClose}){
               <button
                 onClick={
                     () => {
-                        saveRegister(register().id, selectedType(), colorField.value, nameField.value, eval(valueField.value));
+                        saveRegister(register().id, type(), colorField.value, nameField.value, value());
                         onClose("save");
                     }
                 }>Save</button>
           }>
             <button onClick={() => onClose("cancel")}>Cancel</button>
             <button onClick={() => {
-                createRegister(registerPosition.x, registerPosition.y, selectedType(), colorField.value, nameField.value, eval(valueField.value));
+                createRegister(registerPosition.x, registerPosition.y, type(), colorField.value, nameField.value, value());
                 onClose("create");
             }}>Create</button>
           </Show>

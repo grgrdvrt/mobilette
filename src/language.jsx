@@ -21,6 +21,16 @@ export const typesNames = {
     [types.COLOR]:"Color",
 };
 
+
+export const defaultValues={
+    [types.ANY]:0,
+    [types.BOOLEAN]:1,
+    [types.NUMBER]:0,
+    [types.STRING]:"",
+    [types.ARRAY]:[],
+    [types.COLOR]:[0,0,0,1],
+};
+
 const num = {type:types.NUMBER};
 const bool = {type:types.BOOLEAN};
 function binop(func, paramsTypes=[types.NUMBER, types.NUMBER, types.NUMBER]){

@@ -156,3 +156,12 @@
     padding:10px;
     width:100%;
 }
+
+.valueInput{
+    display:flex;
+}
+.valueInput,
+.valueInput select,
+.valueInput input {
+    /* font-size:1.2rem; */
+}
