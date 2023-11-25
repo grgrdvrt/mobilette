@@ -2,7 +2,8 @@ import {
     For,
     createSignal,
     Switch,
-    Match
+  Match,
+  createEffect
 } from 'solid-js';
 
 import {
@@ -22,9 +23,9 @@ export function DataInput({type, setType, value, setValue}){
         <div class="valueInput">
           <select name="types" id="types-select" onChange={(e) => {
               const value = Number(e.target.value);
-              if(value !== type){
+              if(value !== type()){
+                  setValue(defaultValues[value]);
                   setType(value);
-                  setValue(defaultValues[type()]);
               }
           }}>
             <For each={Object.entries(typesNames)}>
@@ -59,14 +60,12 @@ export function DataInput({type, setType, value, setValue}){
     );
 }
 export function ValueInput({selectedInput, setSelectedInput}){
-
-
     const input = () => {
         return getInput(selectedInput.sourcePath, selectedInput.lineId, selectedInput.index);
     };
 
     const [type, setType] = createSignal(input().value.type??types.NUMBER);
-    const [value, setValue] = createSignal(input()?.type === "value" ? (input().value.value ?? defaultValues[type()]) : "");
+    const [value, setValue] = createSignal(input()?.type === "value" ? (input().value.value ?? defaultValues[type()]) : defaultValues[type()]);
 
     return(
         <div class="valueInput">
