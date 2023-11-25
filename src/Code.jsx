@@ -11,7 +11,6 @@ import {
 import {
     useStore,
     insertAfter,
-    insertAtIndex,
     setSelection,
     getSelectedLines,
     deleteSelection,
@@ -20,17 +19,18 @@ import {
     addParameter,
     removeParameter,
     clickContext,
+    getInput,
 } from "./store";
 const [store] = useStore();
 
-import {types, instructionsDefinitions} from "./language";
+import {types, defaultValues, instructionsDefinitions} from "./language";
 
 import {hslaToHslaString} from "./utils";
 
 import { RegisterDetails, RegistersGrid} from "./Registers";
 import {InstructionsMenu} from "./InstructionsMenu";
 
-import {ValueInput} from "./components/ValueInput";
+import {DataInput} from "./components/ValueInput";
 
 function RegisterParam({registers, registerId, setSelectedInput, sourcePath, line, index}){
 
@@ -201,52 +201,32 @@ export function Code({source, registers}){
     const hasSelection = () => {
         return store.gui.selection.length > 0;
     };
+
+    function CodeContext({title, key}){
+        return(
+            <>
+              <h3 onClick={() => clickContext(key)}>{title}</h3>
+              <Program
+                source={source[key]}
+                sourcePath={key}
+                registers={registers}
+                setSelectedInput={setSelectedInput}
+              />
+            </>
+        );
+    }
     return(
         <div class="code">
           <div class="codeList">
-            <h3 onClick={() => clickContext("init")}>Init</h3>
-            <Program
-              source={source.init}
-              sourcePath="init"
-              registers={registers}
-              setSelectedInput={setSelectedInput}
-            />
-
+            <CodeContext title="Init" key="init" />
             <hr/>
-            <h3 onClick={() => clickContext("loop")}>Loop</h3>
-            <Program
-              source={source.loop}
-              sourcePath="loop"
-              registers={registers}
-              setSelectedInput={setSelectedInput}
-            />
-
+            <CodeContext title="Loop" key="loop" />
             <hr/>
-            <h3 onClick={() => clickContext("pointerDown")}>On Pointer Down</h3>
-            <Program
-              source={source.pointerDown}
-              sourcePath="pointerDown"
-              registers={registers}
-              setSelectedInput={setSelectedInput}
-            />
-
+            <CodeContext title="On Pointer Down" key="pointerDown" />
             <hr/>
-            <h3></h3>
-            <h3 onClick={() => clickContext("pointerUp")}>On Pointer Up</h3>
-            <Program
-              source={source.pointerUp}
-              sourcePath="pointerUp"
-              registers={registers}
-              setSelectedInput={setSelectedInput}
-            />
-
+            <CodeContext title="On Pointer Up" key="pointerUp" />
             <hr/>
-            <h3 onClick={() => clickContext("pointerMove")}>On Pointer Move</h3>
-            <Program
-              source={source.pointerMove}
-              sourcePath="pointerMove"
-              registers={registers}
-              setSelectedInput={setSelectedInput}/>
+            <CodeContext title="On Pointer Move" key="pointerMove" />
           </div>
           <Show when={showInstruction()}>
             <InstructionsMenu/>
@@ -261,6 +241,27 @@ export function Code({source, registers}){
               setSelectedInput={setSelectedInput}
             />
           </Show>
+        </div>
+    );
+}
+
+
+export function ValueInput({selectedInput, setSelectedInput}){
+    const input = () => {
+        return getInput(selectedInput.sourcePath, selectedInput.lineId, selectedInput.index);
+    };
+
+    const [type, setType] = createSignal(input().value.type??types.NUMBER);
+    const [value, setValue] = createSignal(input()?.type === "value" ? (input().value.value ?? defaultValues[type()]) : defaultValues[type()]);
+
+    return(
+        <div class="valueInput">
+          <DataInput type={type} setType={setType} value={value} setValue={setValue}/>
+          <button onClick={() => {
+              const {sourcePath, lineId, index} = selectedInput;
+              setParameter(sourcePath, lineId, index, "value", {type:type(), value:value()});
+              setSelectedInput(null);
+          }}>set</button>
         </div>
     );
 }

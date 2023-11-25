@@ -2,8 +2,7 @@ import {
     For,
     createSignal,
     Switch,
-  Match,
-  createEffect
+    Match,
 } from 'solid-js';
 
 import {
@@ -56,25 +55,6 @@ export function DataInput({type, setType, value, setValue}){
               }} type="color" value={hslaToHex(...value())}/>
             </Match>
           </Switch>
-        </div>
-    );
-}
-export function ValueInput({selectedInput, setSelectedInput}){
-    const input = () => {
-        return getInput(selectedInput.sourcePath, selectedInput.lineId, selectedInput.index);
-    };
-
-    const [type, setType] = createSignal(input().value.type??types.NUMBER);
-    const [value, setValue] = createSignal(input()?.type === "value" ? (input().value.value ?? defaultValues[type()]) : defaultValues[type()]);
-
-    return(
-        <div class="valueInput">
-          <DataInput type={type} setType={setType} value={value} setValue={setValue}/>
-          <button onClick={() => {
-              const {sourcePath, lineId, index} = selectedInput;
-              setParameter(sourcePath, lineId, index, "value", {type:type(), value:value()});
-              setSelectedInput(null);
-          }}>set</button>
         </div>
     );
 }

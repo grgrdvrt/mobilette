@@ -1,6 +1,7 @@
 import CodePicto from "./assets/article_FILL0_wght400_GRAD0_opsz24.svg";
 // import RegistersPicto from "./assets/grid_view_FILL0_wght400_GRAD0_opsz24.svg";
 
+import HomePicto from "./assets/home_FILL0_wght400_GRAD0_opsz24.svg";
 import PausePicto from "./assets/pause_circle_FILL0_wght400_GRAD0_opsz24.svg";
 import PlayPicto from "./assets/play_circle_FILL0_wght400_GRAD0_opsz24.svg";
 import ResetPicto from "./assets/replay_FILL0_wght400_GRAD0_opsz24.svg";
@@ -36,7 +37,6 @@ const [store, setStore] = useStore();
 import {
     saveDocument,
     getDocuments,
-    updateDocument,
     deleteDatabase,
 } from "./db";
 
@@ -62,7 +62,7 @@ function Console({log}){
     );
 }
 
-function Editor() {
+function Editor({setPage}) {
 
     resetRegisters();
     const [mode, setMode] = createSignal("code");
@@ -90,6 +90,8 @@ function Editor() {
             <Switch fallback={<div>Not Found</div>}>
               <Match when={mode() === "code"}>
                 <>
+                  <button onClick={() => setPage("home")}><img src={HomePicto} /></button>
+
                   <div>
                     <button onClick={() => setTab("code")}><img src={CodePicto} /></button>
                     <button onClick={() => setTab("registers")}><img src={RegistersPicto}/></button>
@@ -197,7 +199,7 @@ function App(){
 
     return (
         <Show when={page() === "editor"} fallback={<Home setPage={setPage}/>}>
-          <Editor/>
+          <Editor setPage={setPage}/>
         </Show>
     );
 }
