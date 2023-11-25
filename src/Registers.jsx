@@ -85,7 +85,7 @@ export function RegisterDetails({registerPosition, onClose}){
         return getRegisterByPosition(registerPosition.x, registerPosition.y) || makeEmptyRegister(registerPosition.x, registerPosition.y);
     });
     const [type, setType] = createSignal(register().type??types.NUMBER);
-    const [value, setValue] = createSignal(register().value.value ?? defaultValues[type()]);
+    const [value, setValue] = createSignal(register().value ?? defaultValues[type()]);
     let colorField, nameField;
     return (
         <div class="registerDetails">
