@@ -32,7 +32,7 @@ export class Interpreter{
     readVal(param){
         switch(param.type){
             case "value":
-                return param.value.value;
+                return JSON.parse(JSON.stringify(param.value.valu))e;
             case "register":
                 return this.getReg(param.value).value;
             default:
