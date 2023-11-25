@@ -31,12 +31,13 @@ export class Interpreter{
 
     readVal(param){
         switch(param.type){
-        case "value":
-            return param.value.value;
-        case "register":
-            return this.getReg(param.value).value;
+            case "value":
+                return param.value.value;
+            case "register":
+                return this.getReg(param.value).value;
+            default:
+                throw new Error(`unknown type ${param.type}`);
         }
-        return 0;
     }
 
     initJumpTable(instructions){
@@ -48,28 +49,28 @@ export class Interpreter{
             const [module, cmd, ...params] = line.code;
             if(module==="ctrl"){
                 switch(cmd){
-                case "if":
-                    ifStack.push([i]);
-                    break;
-                case "elseif":{
-                    ifStack[ifStack.length - 1].push(i);
-                    break;
-                }
-                case "else":{
-                    ifStack[ifStack.length - 1].push(i);
-                    break;
-                }
-                case "endif":
-                    const jumps = ifStack.pop();
-                    jumps.push(i);
-                    this.jumpTable.set(jumps[0], jumps);
-                    break;
-                case "for":
-                    forStack.push(i);
-                    break;
-                case "endfor":
-                    this.jumpTable.set(forStack.pop(), i);
-                    break;
+                    case "if":
+                        ifStack.push([i]);
+                        break;
+                    case "elseif":{
+                        ifStack[ifStack.length - 1].push(i);
+                        break;
+                    }
+                    case "else":{
+                        ifStack[ifStack.length - 1].push(i);
+                        break;
+                    }
+                    case "endif":
+                        const jumps = ifStack.pop();
+                        jumps.push(i);
+                        this.jumpTable.set(jumps[0], jumps);
+                        break;
+                    case "for":
+                        forStack.push(i);
+                        break;
+                    case "endfor":
+                        this.jumpTable.set(forStack.pop(), i);
+                        break;
                 }
             }
         });
@@ -121,11 +122,13 @@ export class Interpreter{
                                         endLine:this.jumpTable.get(this.instructionId)
                                     };
                                     ctrlStack.push(forDefinition);
-                                    this.setVal(forDefinition.targetRegister, begin);
-                                    this.instructionId++;
+                                    this.setVal(forDefinition.targetRegister.value, begin);
                                 }
-                                else if(this.readVal(forDefinition.targetRegister) !== forDefinition.end){
-                                    this.setVal(forDefinition.targetRegister, this.readVal(forDefinition.targetRegister) + forDefinition.step);
+                                else{
+                                    this.setVal(forDefinition.targetRegister.value, this.readVal(forDefinition.targetRegister) + forDefinition.step);
+                                }
+
+                                if(this.readVal(forDefinition.targetRegister) !== forDefinition.end){
                                     this.instructionId++;
                                 }
                                 else{
