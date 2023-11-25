@@ -18,6 +18,8 @@ import {
 } from "./store";
 const [store, setStore] = useStore();
 
+import ClosePicto from "./assets/close_FILL0_wght400_GRAD0_opsz24.svg";
+
 import {types, typesNames, defaultValues} from "./language";
 
 import {DataInput} from "./components/ValueInput";
@@ -89,7 +91,7 @@ export function RegisterDetails({registerPosition, onClose}){
     let colorField, nameField;
     return (
         <div class="registerDetails">
-          <button onClick={() => onClose("close")}>Close</button>
+          <button onClick={() => onClose("close")}><img src={ClosePicto} /></button>
           <p>{register().x}:{register().y}</p>
 
           <input ref={colorField} type="color" value={register().color}/>

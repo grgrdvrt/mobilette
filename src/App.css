@@ -10,6 +10,44 @@
     flex-direction:column;
 }
 
+.home{
+    height:100%;
+    position:relative;
+    text-align:center;
+}
+
+.home-logo{
+    width:100%;
+}
+
+.home-new{
+    font-size:1.3em;
+    margin:1em;
+}
+
+.title{
+    color:white;
+    font-size:2em;
+    line-height:initial;
+    text-align: center;
+    position: absolute;
+    top: 0px;
+    width: 100%;
+}
+
+.documentsList{
+    margin: 0;
+    margin-block: 0;
+    margin-inline: 0;
+    padding-inline: 0;
+}
+
+.documentItem{
+    display: flex;
+    width: 100%;
+    justify-content: space-around;
+}
+
 .nav{
     display:flex;
     justify-content:space-between;

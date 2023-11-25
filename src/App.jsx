@@ -1,7 +1,10 @@
 import CodePicto from "./assets/article_FILL0_wght400_GRAD0_opsz24.svg";
 // import RegistersPicto from "./assets/grid_view_FILL0_wght400_GRAD0_opsz24.svg";
 
+import Logo from "./assets/logo.webp";
+
 import HomePicto from "./assets/home_FILL0_wght400_GRAD0_opsz24.svg";
+import ClosePicto from "./assets/close_FILL0_wght400_GRAD0_opsz24.svg";
 import PausePicto from "./assets/pause_circle_FILL0_wght400_GRAD0_opsz24.svg";
 import PlayPicto from "./assets/play_circle_FILL0_wght400_GRAD0_opsz24.svg";
 import ResetPicto from "./assets/replay_FILL0_wght400_GRAD0_opsz24.svg";
@@ -37,6 +40,7 @@ const [store, setStore] = useStore();
 import {
     saveDocument,
     getDocuments,
+    deleteDocument,
     deleteDatabase,
 } from "./db";
 
@@ -90,12 +94,13 @@ function Editor({setPage}) {
             <Switch fallback={<div>Not Found</div>}>
               <Match when={mode() === "code"}>
                 <>
-                  <button onClick={() => setPage("home")}><img src={HomePicto} /></button>
 
                   <div>
                     <button onClick={() => setTab("code")}><img src={CodePicto} /></button>
                     <button onClick={() => setTab("registers")}><img src={RegistersPicto}/></button>
                   </div>
+
+                  <button onClick={() => setPage("home")}><img src={HomePicto} /></button>
 
                   <button onClick={() => {
                       setMode("play");
@@ -166,29 +171,30 @@ function Editor({setPage}) {
 function Home({setPage}){
     const [documents, {refetch}] = createResource(getDocuments);
     return (
-        <div style={{display:"flex", "flex-direction":"column", height:"50%", "justify-content":"space-between"}}>
-          <div>
-            <For each={documents()}>
-              {(program) => {
-                  return (
-                      <button onClick={() => {
-                          setProgram(program);
-                          setPage("editor");
-                      }}>{program.id}</button>
-                  );
-              }}
-            </For>
-          </div>
-          <button onClick={() => {
+        <div class="home">
+          <h1 class="title">Mobilette</h1>
+          <img class="home-logo" src={Logo}/>
+          <button class="home-new" onClick={() => {
               const program = createEmptyProgram();
               saveDocument(program);
               setProgram(program);
               setPage("editor");
           }}>new</button>
-          <button onClick={() => {
-              deleteDatabase();
-              refetch();
-          }}>clear</button>
+          <ol class="documentsList">
+            <For each={documents()}>
+              {(program) => {
+                  return (
+                      <li class="documentItem">
+                        <button onClick={() => {
+                            setProgram(program);
+                            setPage("editor");
+                        }}>{new Date(program.lastOpened).toUTCString()}</button>
+                        <button onClick={() => {deleteDocument(program.id); refetch();}}><img style={{"vertical-align":"middle"}}src={ClosePicto}/></button>
+                      </li>
+                  );
+              }}
+            </For>
+          </ol>
         </div>
     );
 }

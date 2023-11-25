@@ -104,3 +104,25 @@ export function deleteDatabase() {
 
     });
 }
+
+
+export function deleteDocument(documentId){
+    return new Promise((resolve, reject) => {
+        const request = getRequest();
+
+        request.onsuccess = (event) => {
+            const db = event.target.result;
+            const transaction = db.transaction("documents", 'readwrite');
+            const store = transaction.objectStore("documents");
+
+            const getReq = store.delete(documentId);
+            getReq.onsuccess = () => {
+                resolve();
+            };
+        };
+
+        request.onerror = (event) => {
+            reject(`Database error:, ${event.target.error}`);
+        };
+    });
+}

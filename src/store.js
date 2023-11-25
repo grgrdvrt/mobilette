@@ -49,7 +49,7 @@ const defaultRegisters = [
     makeRegister("1", 1, 9, 12),
     makeRegister("0", 0, 8, 13),
     makeRegister("2", 2, 9, 13),
-    makeRegister("100", 2, 9, 14),
+    makeRegister("100", 100, 9, 14),
 ];
 
 export function createEmptyProgram(){
@@ -309,6 +309,7 @@ export function deleteSelection(){
 }
 
 function save(){
+    setStore("program", "lastOpened", Date.now());
     updateDocument(unwrap(store.program));
 }
 
