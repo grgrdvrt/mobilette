@@ -33,6 +33,7 @@ export const defaultValues={
 
 const num = {type:types.NUMBER};
 const bool = {type:types.BOOLEAN};
+const arr = {type:types.BOOLEAN};
 function binop(func, paramsTypes=[types.NUMBER, types.NUMBER, types.NUMBER]){
     return {
         params:[
@@ -267,13 +268,13 @@ export const instructionsDefinitions = {
         "square":{
             params:[num, num, num],
             effect:(params, env) =>{
-                const [x, y, c] = params.map(env.readVal, env);
-                const hc = c / 2;
-                env.ctx.moveTo(x - hc, y - hc);
-                env.ctx.lineTo(x + hc, y - hc);
-                env.ctx.lineTo(x + hc, y + hc);
-                env.ctx.lineTo(x - hc, y + hc);
-                env.ctx.lineTo(x - hc, y - hc);
+                const [x, y, s] = params.map(env.readVal, env);
+                const hs = s / 2;
+                env.ctx.moveTo(x - hs, y - hs);
+                env.ctx.lineTo(x + hs, y - hs);
+                env.ctx.lineTo(x + hs, y + hs);
+                env.ctx.lineTo(x - hs, y + hs);
+                env.ctx.lineTo(x - hs, y - hs);
             }
         },
         "arc":{
@@ -309,9 +310,155 @@ export const instructionsDefinitions = {
             }
         },
     },
+    gfx2:{
+        "moveTo":{
+            params:[arr],
+            effect:(params, env) => {
+                const v = env.readVal(params[0]);
+                env.ctx.moveTo(v[0],v[1]);
+            }
+        },
+        "lineTo":{
+            params:[arr],
+            effect:(params, env) => {
+                const v = env.readVal(params[0]);
+                env.ctx.lineTo(v[0], v[1]);
+            }
+        },
+        "curve2":{
+            params:[arr, arr],
+            effect:(params, env) => {
+                const c = env.readVal(params[0]);
+                const p = env.readVal(params[1]);
+                env.ctx.curveTo(c[0], c[1], p[0], p[1]);
+            }
+        },
+        "curve3":{
+            params:[arr, arr, arr],
+            effect:(params, env) => {
+                const c1 = env.readVal(params[0]);
+                const c2 = env.readVal(params[1]);
+                const p = env.readVal(params[2]);
+                env.ctx.bezierCurveTo(c1[0], c1[1], c2[0], c2[1], p[0], p[1]);
+            }
+        },
+        "rect":{
+            params:[arr, arr],
+            effect:(params, env) =>{
+                const p1 = env.readVal(params[0]);
+                const p2 = env.readVal(params[1]);
+                env.ctx.moveTo(p1[0], p1[1]);
+                env.ctx.lineTo(p2[0], p1[1]);
+                env.ctx.lineTo(p2[0], p2[1]);
+                env.ctx.lineTo(p1[0], p2[1]);
+                env.ctx.lineTo(p1[0], p1[1]);
+            }
+        },
+        "circle":{
+            params:[arr, num],
+            effect:(params, env) =>{
+                const c = env.readVal(params[0]);
+                const r = env.readVal(params[1]);
+                env.ctx.moveTo(c[0] +r, c[1]);
+                env.ctx.arc(c[0], c[1], r, 0, 2 * Math.PI);
+            }
+        },
+        "square":{
+            params:[arr, num],
+            effect:(params, env) =>{
+                const c = env.readVal(params[0]);
+                const s = env.readVal(params[1]);
+                const hs = s / 2;
+                env.ctx.moveTo(c[0] - hs, c[1] - hs);
+                env.ctx.lineTo(c[0] + hs, c[1] - hs);
+                env.ctx.lineTo(c[0] + hs, c[1] + hs);
+                env.ctx.lineTo(c[0] - hs, c[1] + hs);
+                env.ctx.lineTo(c[0] - hs, c[1] - hs);
+            }
+        },
+        "arc":{
+            params:[arr, num, num, num, num],
+            effect:(params, env) =>{
+                const [c, r, a1, a2, d] = params.map(env.readVal, env);
+                env.ctx.moveTo(c[0] +r, c[1]);
+                env.ctx.arc(c[0]+r, c[1], r, a1, a2, d);
+            }
+        },
+    },
+    "vec":{
+        v2:{
+            params:[{type:types.NUMBER}, {type:types.NUMBER}, {type:types.ARRAY}],
+            effect:(params, env) => {
+                env.setVal(
+                    params[2].value,
+                    [env.readVal(params[0]), env.readVal(params[1])]
+                );
+            }
+        },
+        polar:{
+            params:[{type:types.NUMBER}, {type:types.NUMBER}, {type:types.ARRAY}],
+            effect:(params, env) => {
+                const a = env.readVal(params[0]);
+                const r = env.readVal(params[1]);
+                env.setVal(
+                    params[2].value,
+                    [r * Math.cos(a), r * Math.sin(a)]
+                );
+            }
+        },
+        add:binop((a, b) => {
+            return a.map((c, i) => c + b[i]);
+        }, [types.ARRAY, types.ARRAY, types.ARRAY]),
+        sub:binop((a, b) => {
+            return a.map((c, i) => c - b[i]);
+        }, [types.ARRAY, types.ARRAY, types.ARRAY]),
+        scale:binop((v, s) => {
+            return v.map((c) => c * s);
+        }, [types.ARRAY, types.NUMBER, types.ARRAY]),
+        dist:binop((a, b) => {
+            return Math.hypot(...a.map((c, i) => c - b[i]));
+        }, [types.ARRAY, types.ARRAY, types.NUMBER]),
+        getLen:monop((v) => Math.hypot(...v), [types.ARRAY, types.NUMBER]),
+        setLen:binop((v, l) => {
+            const r = l / Math.hypot(...v);
+            return v.map(c => c * r);
+        }, [types.ARRAY, types.ARRAY, types.NUMBER]),
+        dot:binop((a, b) => {
+            return a.reduce((t, c, i) => c * b[i]);
+        }, [types.ARRAY, types.ARRAY, types.NUMBER]),
+        rot2:binop((v, a) => {
+            const ca = Math.cos(a);
+            const sa = Math.sin(a);
+            return [
+                ca * v[0] - sa * v[1],
+                sa * v[0] + sa * v[1],
+
+            ];
+        }, [types.ARRAY, types.NUMBER, types.ARRAY]),
+        cross2:binop((a, b) => {
+                return a[0] * b[1] - a[1] * b[0];
+        }, [types.ARRAY, types.ARRAY, types.NUMBER]),
+        cross3:binop((a, b) => {
+            return [
+                a[1] * b[2] - a[2] * b[1],
+                a[2] * b[0] - a[0] * b[2],
+                a[0] * b[1] - a[1] * b[0]
+            ];
+        }, [types.ARRAY, types.ARRAY, types.ARRAY]),
+    },
     "algo":{
+        "noise2D2":{
+            params:[arr, num],
+            effect:(params, env) => {
+                const v = env.readVal(params[0]);
+                env.setVal(
+                    params[1].value,
+                    noise2D(v[0], v[1])
+                );
+            }
+        },
         "noise2D":{
-            params:[{type:types.NUMBER}, {type:types.NUMBER}, {type:types.NUMBER}],
+            params:[num, num, num],
             effect:(params, env) => {
                 env.setVal(
                     params[2].value,
@@ -320,7 +467,7 @@ export const instructionsDefinitions = {
             }
         },
         "noise3D":{
-            params:[{type:types.NUMBER}, {type:types.NUMBER}, {type:types.NUMBER}, {type:types.NUMBER}],
+            params:[num, num, num, num],
             effect:(params, env) => {
                 env.setVal(
                     params[3].value,
@@ -333,7 +480,7 @@ export const instructionsDefinitions = {
             }
         },
         "noise4D":{
-            params:[{type:types.NUMBER}, {type:types.NUMBER}, {type:types.NUMBER}, {type:types.NUMBER}, {type:types.NUMBER}],
+            params:[num, num, num, num, num],
             effect:(params, env) => {
                 env.setVal(
                     params[4].value,

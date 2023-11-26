@@ -32,13 +32,20 @@ const defaultRegisters = [
     makeRegister("height", 0, 1, 10),
     makeRegister("cx", 0, 0, 11),
     makeRegister("cy", 0, 1, 11),
+    makeRegister("vs", [0,0], 0, 9),
+    makeRegister("vc", [0,0], 1, 9),
 
     makeRegister("pointerX", 0, 3, 10),
     makeRegister("pointerY", 0, 4, 10),
     makeRegister("pPointerX", 0, 3, 11),
     makeRegister("pPointerY", 0, 4, 11),
+    makeRegister("pointer", [0,0], 3, 9),
+    makeRegister("pPointer", [0,0], 4, 9),
 
     makeRegister("time", 0, 6, 10),
+    makeRegister("00", [0,0], 6, 9),
+    makeRegister("10", [1,0], 7, 9),
+    makeRegister("01", [0,1], 8, 9),
 
     makeRegister("π", Math.PI, 8, 10),
     makeRegister("2π", 2 * Math.PI, 9, 10),
@@ -49,7 +56,8 @@ const defaultRegisters = [
     makeRegister("1", 1, 9, 12),
     makeRegister("0", 0, 8, 13),
     makeRegister("2", 2, 9, 13),
-    makeRegister("100", 100, 9, 14),
+    makeRegister("100", 100, 8, 14),
+    makeRegister("360", 360, 9, 14),
 ];
 
 export function createEmptyProgram(){

@@ -217,6 +217,8 @@ export class Interpreter{
         this.setVal("height", h);
         this.setVal("cx", w/2);
         this.setVal("cy", h/2);
+        this.setVal("vs", [w, h]);
+        this.setVal("vc", [w/2, h/2]);
     }
 
     play(){
@@ -255,6 +257,9 @@ export class Interpreter{
         this.setVal("pointerY", y);
         this.setVal("pPointerX", this.pointerX);
         this.setVal("pPointerY", this.pointerY);
+
+        this.setVal("pointer", [x, y]);
+        this.setVal("pPointer", [this.pointerX, this.pointerY]);
         this.pointerX = x;
         this.pointerY = y;
     }
