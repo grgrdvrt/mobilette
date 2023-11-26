@@ -200,8 +200,8 @@ export const instructionsDefinitions = {
         "clear":{
             params:[],
             effect: (_, env) => {
-                const w = env.readVal("width");
-                const h = env.readVal("height");
+                const w = env.readVal({type:"register", value:"width"});
+                const h = env.readVal({type:"register", value:"height"});
                 env.ctx.save();
                 env.ctx.fillStyle="white";
                 env.ctx.fillRect(0, 0, w, h);
