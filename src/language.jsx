@@ -415,6 +415,9 @@ export const instructionsDefinitions = {
         scale:binop((v, s) => {
             return v.map((c) => c * s);
         }, [types.ARRAY, types.NUMBER, types.ARRAY]),
+        "*":binop((a, b) => {
+            return a.map((c, i) => c * b[i]);
+        }, [types.ARRAY, types.ARRAY, types.ARRAY]),
         dist:binop((a, b) => {
             return Math.hypot(...a.map((c, i) => c - b[i]));
         }, [types.ARRAY, types.ARRAY, types.NUMBER]),
