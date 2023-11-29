@@ -40,6 +40,17 @@ export class Interpreter{
         }
     }
 
+    readType(param){
+        switch(param.type){
+            case "value":
+                return param.value.type;
+            case "register":
+                return this.getReg(param.value).type;
+            default:
+                throw new Error(`unknown type ${param.type}`);
+        }
+    }
+
     initJumpTable(instructions){
         this.jumpTable = new Map();
         const ifStack = [];
@@ -177,7 +188,13 @@ export class Interpreter{
                             }
                         }
                         else{
-                            instructionsDefinitions[module][cmd].effect(params, this);
+                            let instruction = instructionsDefinitions[module][cmd];
+                            if(Array.isArray(instruction)){
+                                instruction = instruction.find(v => {
+                                    return v.params.every((p, i) => p.type == this.readType(params[i]));
+                                });
+                            }
+                            instruction.effect(params, this);
                             this.instructionId++;
                         }
                     }

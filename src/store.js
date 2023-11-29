@@ -64,6 +64,7 @@ export function createEmptyProgram(){
     return {
         id:crypto.randomUUID(),
         lastOpened:Date.now(),
+        thumb:"",
         source:{
             init:[],
             loop:[],
@@ -167,7 +168,12 @@ export function setCommand(module, command){
                 break;
             }
         }
-        const paramsCount = instructionsDefinitions[module][command].params.length;
+        const instruction = instructionsDefinitions[module][command];
+        const paramsCount = (Array.isArray(instruction)
+                             ? instruction.reduce((t, inst) => {
+                                 return Math.max(t, inst.params.length);
+                             }, 0)
+                             : instruction.params.length);
         const params = new Array(paramsCount).fill({type:"register", value:"null"});
         targetLine.code.push(module, command, ...params);
     }));
@@ -278,6 +284,7 @@ export function clearCursor(){
     setStore("gui", "cursor", "context", null);
 }
 
+//click the title of a code section
 export function clickContext(context){
     setStore("gui", "selection", []);
     if(store.gui.cursor.context === context && store.gui.cursor.position === -1){
@@ -314,6 +321,16 @@ export function deleteSelection(){
     }));
     setSelection([]);
     autoSave();
+}
+
+export function setThumb(canvas){
+    canvas.width = 500;
+    canvas.height = 500;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "red";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    setStore("program", "thumb", canvas.toDataURL("image/jpg"));
+    save();
 }
 
 function save(){

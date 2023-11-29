@@ -1,10 +1,12 @@
 import CodePicto from "./assets/article_FILL0_wght400_GRAD0_opsz24.svg";
 // import RegistersPicto from "./assets/grid_view_FILL0_wght400_GRAD0_opsz24.svg";
 
-import Logo from "./assets/logo.webp";
+import Logo from "./assets/logo2.webp";
+import Title from "./assets/title.png";
 
 import HomePicto from "./assets/home_FILL0_wght400_GRAD0_opsz24.svg";
-import ClosePicto from "./assets/close_FILL0_wght400_GRAD0_opsz24.svg";
+import DeletePicto from "./assets/delete_FILL0_wght400_GRAD0_opsz24.svg";
+import ForkPicto from "./assets/arrow_split_FILL0_wght400_GRAD0_opsz24.svg";
 import PausePicto from "./assets/pause_circle_FILL0_wght400_GRAD0_opsz24.svg";
 import PlayPicto from "./assets/play_circle_FILL0_wght400_GRAD0_opsz24.svg";
 import ResetPicto from "./assets/replay_FILL0_wght400_GRAD0_opsz24.svg";
@@ -15,6 +17,7 @@ import RegistersPicto from "./assets/view_module_FILL0_wght400_GRAD0_opsz24.svg"
 
 import {
     createSignal,
+    createSelector,
     createEffect,
     createResource,
     untrack,
@@ -34,6 +37,7 @@ import {
     resetRegisters,
     createEmptyProgram,
     setProgram,
+    setThumb,
 } from "./store";
 const [store, setStore] = useStore();
 
@@ -138,6 +142,7 @@ function Editor({setPage}) {
                         setTab("code");
                         setIsPlaying(false);
                         resetRegisters();
+                        setThumb(interpreter.mainCanvas);
                     }}>
                       <img src={StopPicto}/>
                     </button>
@@ -156,7 +161,7 @@ function Editor({setPage}) {
               </Match>
               <Match when={tab() === "view"}>
                 <div style={{width:"100%", height:"100%"}}>{
-                    interpreter.mainCanvas
+                    interpreter.maincanvas
                 }</div>
               </Match>
               <Match when={tab() === "console"}>
@@ -170,26 +175,53 @@ function Editor({setPage}) {
 
 function Home({setPage}){
     const [documents, {refetch}] = createResource(getDocuments);
+    const [selected, setSelected] = createSignal(null);
+    const isSelected = createSelector(selected);
     return (
-        <div class="home">
-          <h1 class="title">Mobilette</h1>
-          <img class="home-logo" src={Logo}/>
-          <button class="home-new" onClick={() => {
-              const program = createEmptyProgram();
-              saveDocument(program);
-              setProgram(program);
-              setPage("editor");
-          }}>new</button>
+        <div class="home" onClick={() => setSelected(null)}>
+          <h1 class="title">
+            <img class="home-logo" src={Logo}/>
+            <img class="home-title" src={Title}/>
+          </h1>
+          <div class="home-actions">
+            <button class="home-action" onClick={() => {
+            }}>About</button>
+            <button class="home-action" onClick={() => {
+                const program = createEmptyProgram();
+                saveDocument(program);
+                setProgram(program);
+                setPage("editor");
+            }}>new</button>
+            <button class="home-action" onClick={() => {
+                deleteDatabase();
+            }}>clear</button>
+          </div>
           <ol class="documentsList">
             <For each={documents()}>
               {(program) => {
                   return (
-                      <li class="documentItem">
-                        <button onClick={() => {
-                            setProgram(program);
-                            setPage("editor");
-                        }}>{new Date(program.lastOpened).toUTCString()}</button>
-                        <button onClick={() => {deleteDocument(program.id); refetch();}}><img style={{"vertical-align":"middle"}}src={ClosePicto}/></button>
+                      <li class="documentItem" classList={{selected:isSelected(program.id)}}>
+                        <img src={program.thumb??"data:image/png;base64,"}
+                        onClick={e => {
+                            e.stopImmediatePropagation();
+                            setSelected(program.id);
+                        }}/>
+                        <div class="documentItem-overlay">
+                          <button onClick={() => {
+                              setProgram(program);
+                              setPage("editor");
+                          }}> <img style={{height:"3.5em"}}src={PlayPicto}/></button>
+                          <div class="documentItem-actions">
+                            <button onClick={() => {deleteDocument(program.id); refetch();}}><img style={{"vertical-align":"middle"}}src={DeletePicto}/></button>
+                            <button onClick={() => {
+                                const p = JSON.parse(JSON.stringify(program));
+                                p.id = crypto.randomUUID();
+                                saveDocument(p);
+                                setProgram(p);
+                                setPage("editor");
+                            }}><img style={{"vertical-align":"middle"}}src={ForkPicto}/></button>
+                          </div>
+                        </div>
                       </li>
                   );
               }}

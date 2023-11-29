@@ -87,15 +87,50 @@ function map(a, b, c, d, t){
 
 export const instructionsDefinitions = {
     registers:{
-        "set": {
-            params:[{type:types.ANY}, {type:types.ANY}],
-            effect:(params, env) => env.setVal(params[0].value, env.readVal(params[1]))
-        },
+        "set": [
+            {
+                params:[{type:types.ANY}, {type:types.ANY}],
+                effect:(params, env) => env.setVal(params[0].value, env.readVal(params[1]))
+            },
+            {
+                params:[{type:types.ARRAY}, {type:types.NUMBER}, {type:types.ANY}],
+                effect:(params, env) => {
+                    env.readVal(params[0])[env.readVal(params[1])] = env.readVal(params[2]);
+                }
+            }
+        ],
         "print":{
             params:[{type:types.ANY, variadic:true}],
             effect:(params, env) => {
                 const paramsStr = params.map(p =>`${p.value}: ${env.readVal(p)}`).join("; ");
                 env.log(`${env.instructionId}: ${paramsStr}`);
+            }
+        },
+        "get":{
+            params:[{type:types.ARRAY}, {type:types.NUMBER}, {type:types.ANY}],
+            effect:(params, env) => {
+                env.setVal(params[2].value, env.readVal(params[0])[env.readVal(params[1])]);
+            }
+        },
+        "struct":{
+            params:[{type:types.ARRAY}, {type:types.ANY, variadic:true}],
+            effect:(params, env) => {
+                const arr = env.readVal(params[0]);
+                arr.length = 0;
+                for(let i = 1; i < params.length; i++){
+                    arr.push(env.readVal(params[i]));
+                }
+            }
+        },
+        "destruct":{
+            params:[{type:types.ARRAY}, {type:types.ANY, variadic:true}],
+            effect:(params, env) => {
+                const arr = env.readVal(params[0]);
+                console.log("arr", arr);
+                for(let i = 0; i < arr.length; i++){
+                    console.log(arr[i], params[i + 1]);
+                    env.setVal(params[i + 1].value, arr[i]);
+                }
             }
         }
     },
@@ -109,9 +144,24 @@ export const instructionsDefinitions = {
         "continue":{params:[], effect:() => {}},
     },
     maths:{
-        "+": binop((a, b) => a + b),
-        "-": binop((a, b) => a - b),
-        "*": binop((a, b) => a * b),
+        "+": [
+            binop((a, b) => a + b),
+            binop((a, b) => b.map(v => v + a), [types.NUMBER, types.ARRAY, types.ARRAY]),
+            binop((a, b) => a.map(v => v + b), [types.ARRAY, types.NUMBER, types.ARRAY]),
+            binop((a, b) => a.map((v, i) => v + b[i]), [types.ARRAY, types.ARRAY, types.ARRAY])
+        ],
+        "-": [
+            binop((a, b) => a - b),
+            binop((a, b) => b.map(v => v - a), [types.NUMBER, types.ARRAY, types.ARRAY]),
+            binop((a, b) => a.map(v => v - b), [types.ARRAY, types.NUMBER, types.ARRAY]),
+            binop((a, b) => a.map((v, i) => v - b[i]), [types.ARRAY, types.ARRAY, types.ARRAY])
+        ],
+        "*": [
+            binop((a, b) => a * b),
+            binop((a, b) => b.map(v => v * a), [types.NUMBER, types.ARRAY, types.ARRAY]),
+            binop((a, b) => a.map(v => v * b), [types.ARRAY, types.NUMBER, types.ARRAY]),
+            binop((a, b) => a.map((v, i) => v * b[i]), [types.ARRAY, types.ARRAY, types.ARRAY])
+        ],
         "/": binop((a, b) => a / b),
         "%": binop((a, b) => a % b),
         "**": binop((a, b) => Math.pow(a, b)),
@@ -152,39 +202,6 @@ export const instructionsDefinitions = {
         },
     },
     array:{
-        "set":{
-            params:[{type:types.ARRAY}, {type:types.NUMBER}, {type:types.ANY}],
-            effect:(params, env) => {
-                env.readVal(params[0])[env.readVal(params[1])] = env.readVal(params[2]);
-            }
-        },
-        "get":{
-            params:[{type:types.ARRAY}, {type:types.NUMBER}, {type:types.ANY}],
-            effect:(params, env) => {
-                env.setVal(params[2].value, env.readVal(params[0])[env.readVal(params[1])]);
-            }
-        },
-        "struct":{
-            params:[{type:types.ARRAY}, {type:types.ANY, variadic:true}],
-            effect:(params, env) => {
-                const arr = env.readVal(params[0]);
-                arr.length = 0;
-                for(let i = 1; i < params.length; i++){
-                    arr.push(env.readVal(params[i]));
-                }
-            }
-        },
-        "destruct":{
-            params:[{type:types.ARRAY}, {type:types.ANY, variadic:true}],
-            effect:(params, env) => {
-                const arr = env.readVal(params[0]);
-                console.log("arr", arr);
-                for(let i = 0; i < arr.length; i++){
-                    console.log(arr[i], params[i + 1]);
-                    env.setVal(params[i + 1].value, arr[i]);
-                }
-            }
-        }
     },
     bool:{
         "==":comp((a, b) => a == b),
@@ -214,77 +231,166 @@ export const instructionsDefinitions = {
                 env.ctx.beginPath();
             }
         },
-        "moveTo":{
-            params:[num, num],
-            effect:(params, env) => {
-                env.ctx.moveTo(
-                    env.readVal(params[0]),
-                    env.readVal(params[1])
-                );
+        "moveTo":[
+            {
+                params:[num, num],
+                effect:(params, env) => {
+                    env.ctx.moveTo(
+                        env.readVal(params[0]),
+                        env.readVal(params[1])
+                    );
+                }
+            },
+            {
+                params:[arr],
+                effect:(params, env) => {
+                    const v = env.readVal(params[0]);
+                    env.ctx.moveTo(v[0],v[1]);
+                }
             }
-        },
-        "lineTo":{
-            params:[num, num],
-            effect:(params, env) => {
-                env.ctx.lineTo(
-                    env.readVal(params[0]),
-                    env.readVal(params[1])
-                );
+        ],
+        "lineTo":[
+            {
+                params:[num, num],
+                effect:(params, env) => {
+                    env.ctx.lineTo(
+                        env.readVal(params[0]),
+                        env.readVal(params[1])
+                    );
+                }
+            },
+            {
+                params:[arr],
+                effect:(params, env) => {
+                    const v = env.readVal(params[0]);
+                    env.ctx.lineTo(v[0], v[1]);
+                }
             }
-        },
-        "curve2":{
-            params:[num, num, num, num],
-            effect:(params, env) => {
-                const [cx, cy, x, y] = params.map(env.readVal, env);
-                env.ctx.curveTo(cx, cy, x, y);
+        ],
+        "curve2":[
+            {
+                params:[num, num, num, num],
+                effect:(params, env) => {
+                    const [cx, cy, x, y] = params.map(env.readVal, env);
+                    env.ctx.curveTo(cx, cy, x, y);
+                }
+            },
+            {
+                params:[arr, arr],
+                effect:(params, env) => {
+                    const c = env.readVal(params[0]);
+                    const p = env.readVal(params[1]);
+                    env.ctx.curveTo(c[0], c[1], p[0], p[1]);
+                }
             }
-        },
-        "curve3":{
-            params:[num, num, num, num, num, num],
-            effect:(params, env) => {
-                const [c1x, c1y, c2x, c2y, x, y] = params.map(env.readVal, env);
-                env.ctx.bezierCurveTo(c1x, c1y, c2x, c2y, x, y);
+        ],
+        "curve3":[
+            {
+                params:[num, num, num, num, num, num],
+                effect:(params, env) => {
+                    const [c1x, c1y, c2x, c2y, x, y] = params.map(env.readVal, env);
+                    env.ctx.bezierCurveTo(c1x, c1y, c2x, c2y, x, y);
+                }
+            },
+            {
+                params:[arr, arr, arr],
+                effect:(params, env) => {
+                    const c1 = env.readVal(params[0]);
+                    const c2 = env.readVal(params[1]);
+                    const p = env.readVal(params[2]);
+                    env.ctx.bezierCurveTo(c1[0], c1[1], c2[0], c2[1], p[0], p[1]);
+                }
             }
-        },
-        "rect":{
-            params:[num, num, num, num],
-            effect:(params, env) =>{
-                const [x, y, w, h] = params.map(env.readVal, env);
-                env.ctx.moveTo(x, y);
-                env.ctx.lineTo(x+w, y);
-                env.ctx.lineTo(x+w, y+h);
-                env.ctx.lineTo(x, y+h);
-                env.ctx.lineTo(x, y);
+        ],
+        "rect":[
+            {
+                params:[num, num, num, num],
+                effect:(params, env) =>{
+                    const [x, y, w, h] = params.map(env.readVal, env);
+                    env.ctx.moveTo(x, y);
+                    env.ctx.lineTo(x+w, y);
+                    env.ctx.lineTo(x+w, y+h);
+                    env.ctx.lineTo(x, y+h);
+                    env.ctx.lineTo(x, y);
+                }
+            },
+            {
+                params:[arr, arr],
+                effect:(params, env) =>{
+                    const p1 = env.readVal(params[0]);
+                    const p2 = env.readVal(params[1]);
+                    env.ctx.moveTo(p1[0], p1[1]);
+                    env.ctx.lineTo(p2[0], p1[1]);
+                    env.ctx.lineTo(p2[0], p2[1]);
+                    env.ctx.lineTo(p1[0], p2[1]);
+                    env.ctx.lineTo(p1[0], p1[1]);
+                }
             }
-        },
-        "circle":{
-            params:[num, num, num],
-            effect:(params, env) =>{
-                const [x, y, r] = params.map(env.readVal, env);
-                env.ctx.moveTo(x +r, y);
-                env.ctx.arc(x, y, r, 0, 2 * Math.PI);
+        ],
+        "circle":[
+            {
+                params:[num, num, num],
+                effect:(params, env) =>{
+                    const [x, y, r] = params.map(env.readVal, env);
+                    env.ctx.moveTo(x +r, y);
+                    env.ctx.arc(x, y, r, 0, 2 * Math.PI);
+                }
+            },
+            {
+                params:[arr, num],
+                effect:(params, env) =>{
+                    const c = env.readVal(params[0]);
+                    const r = env.readVal(params[1]);
+                    env.ctx.moveTo(c[0] +r, c[1]);
+                    env.ctx.arc(c[0], c[1], r, 0, 2 * Math.PI);
+                }
             }
-        },
-        "square":{
-            params:[num, num, num],
-            effect:(params, env) =>{
-                const [x, y, s] = params.map(env.readVal, env);
-                const hs = s / 2;
-                env.ctx.moveTo(x - hs, y - hs);
-                env.ctx.lineTo(x + hs, y - hs);
-                env.ctx.lineTo(x + hs, y + hs);
-                env.ctx.lineTo(x - hs, y + hs);
-                env.ctx.lineTo(x - hs, y - hs);
+        ],
+        "square":[
+            {
+                params:[num, num, num],
+                effect:(params, env) =>{
+                    const [x, y, s] = params.map(env.readVal, env);
+                    const hs = s / 2;
+                    env.ctx.moveTo(x - hs, y - hs);
+                    env.ctx.lineTo(x + hs, y - hs);
+                    env.ctx.lineTo(x + hs, y + hs);
+                    env.ctx.lineTo(x - hs, y + hs);
+                    env.ctx.lineTo(x - hs, y - hs);
+                }
+            },
+            {
+                params:[arr, num],
+                effect:(params, env) =>{
+                    const c = env.readVal(params[0]);
+                    const s = env.readVal(params[1]);
+                    const hs = s / 2;
+                    env.ctx.moveTo(c[0] - hs, c[1] - hs);
+                    env.ctx.lineTo(c[0] + hs, c[1] - hs);
+                    env.ctx.lineTo(c[0] + hs, c[1] + hs);
+                    env.ctx.lineTo(c[0] - hs, c[1] + hs);
+                    env.ctx.lineTo(c[0] - hs, c[1] - hs);
+                }
             }
-        },
-        "arc":{
-            params:[num, num, num, num, num, num],
-            effect:(params, env) =>{
-                const [x, y, r, a1, a2, d] = params.map(env.readVal, env);
-                env.ctx.moveTo(x +r, y);
-                env.ctx.arc(x+r, y, r, a1, a2, d);
+        ],
+        "arc":[
+            {
+                params:[num, num, num, num, num, num],
+                effect:(params, env) =>{
+                    const [x, y, r, a1, a2, d] = params.map(env.readVal, env);
+                    env.ctx.moveTo(x +r, y);
+                    env.ctx.arc(x+r, y, r, a1, a2, d);
+                }
+            },
+            {
+                params:[arr, num, num, num, num],
+                effect:(params, env) =>{
+                    const [c, r, a1, a2, d] = params.map(env.readVal, env);
+                    env.ctx.moveTo(c[0] +r, c[1]);
+                    env.ctx.arc(c[0]+r, c[1], r, a1, a2, d);
+                }
             }
-        },
+        ],
         "fillStyle":{
             params:[{type:types.COLOR}],
             effect:(params, env) => {
@@ -310,81 +416,6 @@ export const instructionsDefinitions = {
             }
         },
     },
-    gfx2:{
-        "moveTo":{
-            params:[arr],
-            effect:(params, env) => {
-                const v = env.readVal(params[0]);
-                env.ctx.moveTo(v[0],v[1]);
-            }
-        },
-        "lineTo":{
-            params:[arr],
-            effect:(params, env) => {
-                const v = env.readVal(params[0]);
-                env.ctx.lineTo(v[0], v[1]);
-            }
-        },
-        "curve2":{
-            params:[arr, arr],
-            effect:(params, env) => {
-                const c = env.readVal(params[0]);
-                const p = env.readVal(params[1]);
-                env.ctx.curveTo(c[0], c[1], p[0], p[1]);
-            }
-        },
-        "curve3":{
-            params:[arr, arr, arr],
-            effect:(params, env) => {
-                const c1 = env.readVal(params[0]);
-                const c2 = env.readVal(params[1]);
-                const p = env.readVal(params[2]);
-                env.ctx.bezierCurveTo(c1[0], c1[1], c2[0], c2[1], p[0], p[1]);
-            }
-        },
-        "rect":{
-            params:[arr, arr],
-            effect:(params, env) =>{
-                const p1 = env.readVal(params[0]);
-                const p2 = env.readVal(params[1]);
-                env.ctx.moveTo(p1[0], p1[1]);
-                env.ctx.lineTo(p2[0], p1[1]);
-                env.ctx.lineTo(p2[0], p2[1]);
-                env.ctx.lineTo(p1[0], p2[1]);
-                env.ctx.lineTo(p1[0], p1[1]);
-            }
-        },
-        "circle":{
-            params:[arr, num],
-            effect:(params, env) =>{
-                const c = env.readVal(params[0]);
-                const r = env.readVal(params[1]);
-                env.ctx.moveTo(c[0] +r, c[1]);
-                env.ctx.arc(c[0], c[1], r, 0, 2 * Math.PI);
-            }
-        },
-        "square":{
-            params:[arr, num],
-            effect:(params, env) =>{
-                const c = env.readVal(params[0]);
-                const s = env.readVal(params[1]);
-                const hs = s / 2;
-                env.ctx.moveTo(c[0] - hs, c[1] - hs);
-                env.ctx.lineTo(c[0] + hs, c[1] - hs);
-                env.ctx.lineTo(c[0] + hs, c[1] + hs);
-                env.ctx.lineTo(c[0] - hs, c[1] + hs);
-                env.ctx.lineTo(c[0] - hs, c[1] - hs);
-            }
-        },
-        "arc":{
-            params:[arr, num, num, num, num],
-            effect:(params, env) =>{
-                const [c, r, a1, a2, d] = params.map(env.readVal, env);
-                env.ctx.moveTo(c[0] +r, c[1]);
-                env.ctx.arc(c[0]+r, c[1], r, a1, a2, d);
-            }
-        },
-    },
     "vec":{
         v2:{
             params:[{type:types.NUMBER}, {type:types.NUMBER}, {type:types.ARRAY}],
@@ -406,18 +437,6 @@ export const instructionsDefinitions = {
                 );
             }
         },
-        add:binop((a, b) => {
-            return a.map((c, i) => c + b[i]);
-        }, [types.ARRAY, types.ARRAY, types.ARRAY]),
-        sub:binop((a, b) => {
-            return a.map((c, i) => c - b[i]);
-        }, [types.ARRAY, types.ARRAY, types.ARRAY]),
-        scale:binop((v, s) => {
-            return v.map((c) => c * s);
-        }, [types.ARRAY, types.NUMBER, types.ARRAY]),
-        "*":binop((a, b) => {
-            return a.map((c, i) => c * b[i]);
-        }, [types.ARRAY, types.ARRAY, types.ARRAY]),
         dist:binop((a, b) => {
             return Math.hypot(...a.map((c, i) => c - b[i]));
         }, [types.ARRAY, types.ARRAY, types.NUMBER]),
@@ -450,25 +469,27 @@ export const instructionsDefinitions = {
         }, [types.ARRAY, types.ARRAY, types.ARRAY]),
     },
     "algo":{
-        "noise2D2":{
-            params:[arr, num],
-            effect:(params, env) => {
-                const v = env.readVal(params[0]);
-                env.setVal(
-                    params[1].value,
-                    noise2D(v[0], v[1])
-                );
+        "noise2D":[
+            {
+                params:[num, num, num],
+                effect:(params, env) => {
+                    env.setVal(
+                        params[2].value,
+                        noise2D(env.readVal(params[0]), env.readVal(params[1]))
+                    );
+                }
+            },
+            {
+                params:[arr, num],
+                effect:(params, env) => {
+                    const v = env.readVal(params[0]);
+                    env.setVal(
+                        params[1].value,
+                        noise2D(v[0], v[1])
+                    );
+                }
             }
-        },
-        "noise2D":{
-            params:[num, num, num],
-            effect:(params, env) => {
-                env.setVal(
-                    params[2].value,
-                    noise2D(env.readVal(params[0]), env.readVal(params[1]))
-                );
-            }
-        },
+        ],
         "noise3D":{
             params:[num, num, num, num],
             effect:(params, env) => {

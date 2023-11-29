@@ -71,7 +71,15 @@ function ValueParam({valueInput, setSelectedInput, sourcePath, line, index}){
 function SourceLine({line, depth, selected, sourcePath, registers, setSelectedInput, order}){
     const canAddParam = (line) => {
         if(!line.code.length)return false;
-        const def = instructionsDefinitions[line.code[0]][line.code[1]];
+
+        const [module, command] = line.code;
+        const instruction = instructionsDefinitions[module][command];
+        const params= (Array.isArray(instruction)
+                             ? instruction.reduce((longestInst, inst) => {
+                                 return Math.max(t, inst.params.length);
+                             }, instruction[0])
+
+                             : instruction.params);
         return def.params[def.params.length - 1]?.variadic;
     };
     const canRemoveParam = (line) => {
