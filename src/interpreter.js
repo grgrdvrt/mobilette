@@ -189,9 +189,12 @@ export class Interpreter{
                             }
                         }
                         else{
+                            const filteredParams = params.filter(p => p.type !== "empty");
                             let instruction = instructionsDefinitions[module][cmd].find(v => {
-                                return v.params.every((p, i) => p.type === types.ANY || p.type == this.readType(params[i]));
+                                return v.params.every((p, i) => (p.type === types.ANY
+                                                                 || p.type == this.readType(filteredParams[i])));
                             });
+                            console.log(instructionsDefinitions[module][cmd], filteredParams);
                             if(!instruction){
                                 this.log(`${this.instructionId}: ERROR: can't find matching implementation : ${JSON.stringify(line.code)}`);
                             }

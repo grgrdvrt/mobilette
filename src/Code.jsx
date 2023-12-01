@@ -117,12 +117,14 @@ function SourceLine({line, depth, selected, sourcePath, registers, setSelectedIn
                         <>
                           <Switch>
                             <Match when={input.type === "empty"}>
-                              <EmptySlot
-                                valueInput={input.value}
-                                setSelectedInput={setSelectedInput}
-                                sourcePath={sourcePath}
-                                line={line}
-                                index={index()}/>
+                              <Show when={selected()}>
+                                <EmptySlot
+                                    valueInput={input.value}
+                                    setSelectedInput={setSelectedInput}
+                                    sourcePath={sourcePath}
+                                    line={line}
+                                    index={index()}/>
+                              </Show>
                             </Match>
                             <Match when={input.type === "value"}>
                               <ValueParam

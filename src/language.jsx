@@ -33,7 +33,7 @@ export const defaultValues={
 
 const num = {type:types.NUMBER};
 const bool = {type:types.BOOLEAN};
-const arr = {type:types.BOOLEAN};
+const arr = {type:types.ARRAY};
 function binop(func, paramsTypes=[types.NUMBER, types.NUMBER, types.NUMBER]){
     return {
         params:[
