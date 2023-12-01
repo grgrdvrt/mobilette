@@ -1,6 +1,8 @@
 import {
     Show,
     For,
+    Switch,
+    Match,
     createSignal,
     createMemo,
 } from 'solid-js';
@@ -31,6 +33,22 @@ import { RegisterDetails, RegistersGrid} from "./Registers";
 import {InstructionsMenu} from "./InstructionsMenu";
 
 import {DataInput} from "./components/ValueInput";
+
+function EmptySlot({setSelectedInput, sourcePath, line, index}){
+
+    return(
+        <button
+        class="codeRegister"
+          style={{}}
+          onClick={e => {
+              e.stopPropagation();
+              setSelectedInput({sourcePath:sourcePath, lineId:line.id, value:null, index:index});
+          }}
+        >
+          {"slot"}
+        </button>
+    );
+}
 
 function RegisterParam({registers, registerId, setSelectedInput, sourcePath, line, index}){
 
@@ -73,20 +91,16 @@ function SourceLine({line, depth, selected, sourcePath, registers, setSelectedIn
         if(!line.code.length)return false;
 
         const [module, command] = line.code;
-        const instruction = instructionsDefinitions[module][command];
-        const params= (Array.isArray(instruction)
-                             ? instruction.reduce((longestInst, inst) => {
-                                 return Math.max(t, inst.params.length);
-                             }, instruction[0])
-
-                             : instruction.params);
-        return def.params[def.params.length - 1]?.variadic;
+        const def = instructionsDefinitions[module][command];
+        return def.some(d => d.params[d.params.length - 1]?.variadic);
     };
     const canRemoveParam = (line) => {
         if(!line.code.length)return false;
         const def = instructionsDefinitions[line.code[0]][line.code[1]];
-        const isVariadic = def.params[def.params.length - 1]?.variadic;
-        const canRemove = line.code.length > def.params.length;
+        // a function is variadic if at least one of its implementations is variadic
+        const isVariadic = def.some(d => d.params[d.params.length - 1]?.variadic);
+        const minLength = def.reduce((m, d) => Math.min(m, d.params.length), Number.MAX_SAFE_INTEGER);
+        const canRemove = line.code.length > minLength;
         return isVariadic && canRemove;
     };
     return (
@@ -101,25 +115,35 @@ function SourceLine({line, depth, selected, sourcePath, registers, setSelectedIn
                 {(input, index) => {
                     return (
                         <>
-                          <Show
-                            when={input.type === "register"}
-                            fallback={<ValueParam
-                                        valueInput={input.value}
-                                        setSelectedInput={setSelectedInput}
-                                        sourcePath={sourcePath}
-                                        line={line}
-                                        index={index()}/>}
-                          >
-                            <RegisterParam
-                              registerId={input.value}
-                              registers={registers}
-                              setSelectedInput={setSelectedInput}
-                              sourcePath={sourcePath}
-                              line={line}
-                              index={index()}
-                            />
-                          </Show>
-                            <span> </span>
+                          <Switch>
+                            <Match when={input.type === "empty"}>
+                              <EmptySlot
+                                valueInput={input.value}
+                                setSelectedInput={setSelectedInput}
+                                sourcePath={sourcePath}
+                                line={line}
+                                index={index()}/>
+                            </Match>
+                            <Match when={input.type === "value"}>
+                              <ValueParam
+                                valueInput={input.value}
+                                setSelectedInput={setSelectedInput}
+                                sourcePath={sourcePath}
+                                line={line}
+                                index={index()}/>
+                            </Match>
+                            <Match when={input.type === "register"}>
+                              <RegisterParam
+                                registerId={input.value}
+                                registers={registers}
+                                setSelectedInput={setSelectedInput}
+                                sourcePath={sourcePath}
+                                line={line}
+                                index={index()}
+                              />
+                            </Match>
+                          </Switch>
+                          <span> </span>
                         </>
                     );
                 }}

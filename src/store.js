@@ -12,11 +12,11 @@ import {
 import {types, instructionsDefinitions} from "./language";
 
 
-function makeRegister(name, value, x, y, color){
+function makeRegister(name, type, value, x, y, color){
     return {
         id:name,
         name,
-        type:types.NUMBER,
+        type,
         initialValue:value,
         value,
         x,
@@ -26,38 +26,38 @@ function makeRegister(name, value, x, y, color){
 }
 
 const defaultRegisters = [
-    makeRegister("null", null, -1, -1),
+    makeRegister("null", types.ANY, null, -1, -1),
 
-    makeRegister("width", 0, 0, 10),
-    makeRegister("height", 0, 1, 10),
-    makeRegister("cx", 0, 0, 11),
-    makeRegister("cy", 0, 1, 11),
-    makeRegister("vs", [0,0], 0, 9),
-    makeRegister("vc", [0,0], 1, 9),
+    makeRegister("width", types.NUMBER, 0, 0, 10),
+    makeRegister("height", types.NUMBER, 0, 1, 10),
+    makeRegister("cx", types.NUMBER, 0, 0, 11),
+    makeRegister("cy", types.NUMBER, 0, 1, 11),
+    makeRegister("vs", types.ARRAY, [0,0], 0, 9),
+    makeRegister("vc", types.ARRAY, [0,0], 1, 9),
 
-    makeRegister("pointerX", 0, 3, 10),
-    makeRegister("pointerY", 0, 4, 10),
-    makeRegister("pPointerX", 0, 3, 11),
-    makeRegister("pPointerY", 0, 4, 11),
-    makeRegister("pointer", [0,0], 3, 9),
-    makeRegister("pPointer", [0,0], 4, 9),
+    makeRegister("pointerX", types.NUMBER, 0, 3, 10),
+    makeRegister("pointerY", types.NUMBER, 0, 4, 10),
+    makeRegister("pPointerX", types.NUMBER, 0, 3, 11),
+    makeRegister("pPointerY", types.NUMBER, 0, 4, 11),
+    makeRegister("pointer", types.ARRAY, [0,0], 3, 9),
+    makeRegister("pPointer", types.ARRAY, [0,0], 4, 9),
 
-    makeRegister("time", 0, 6, 10),
-    makeRegister("00", [0,0], 6, 9),
-    makeRegister("10", [1,0], 7, 9),
-    makeRegister("01", [0,1], 8, 9),
+    makeRegister("time", types.NUMBER, 0, 6, 10),
+    makeRegister("00", types.ARRAY, [0,0], 6, 9),
+    makeRegister("10", types.ARRAY, [1,0], 7, 9),
+    makeRegister("01", types.ARRAY, [0,1], 8, 9),
 
-    makeRegister("π", Math.PI, 8, 10),
-    makeRegister("2π", 2 * Math.PI, 9, 10),
-    makeRegister("√2", Math.SQRT2, 8, 11),
-    makeRegister("√2/2", Math.SQRT1_2, 9, 11),
+    makeRegister("π", types.NUMBER, Math.PI, 8, 10),
+    makeRegister("2π", types.NUMBER, 2 * Math.PI, 9, 10),
+    makeRegister("√2", types.NUMBER, Math.SQRT2, 8, 11),
+    makeRegister("√2/2", types.NUMBER, Math.SQRT1_2, 9, 11),
 
-    makeRegister("-1", -1, 8, 12),
-    makeRegister("1", 1, 9, 12),
-    makeRegister("0", 0, 8, 13),
-    makeRegister("2", 2, 9, 13),
-    makeRegister("100", 100, 8, 14),
-    makeRegister("360", 360, 9, 14),
+    makeRegister("-1", types.NUMBER, -1, 8, 12),
+    makeRegister("1", types.NUMBER, 1, 9, 12),
+    makeRegister("0", types.NUMBER, 0, 8, 13),
+    makeRegister("2", types.NUMBER, 2, 9, 13),
+    makeRegister("100", types.NUMBER, 100, 8, 14),
+    makeRegister("360", types.NUMBER, 360, 9, 14),
 ];
 
 export function createEmptyProgram(){
@@ -169,12 +169,10 @@ export function setCommand(module, command){
             }
         }
         const instruction = instructionsDefinitions[module][command];
-        const paramsCount = (Array.isArray(instruction)
-                             ? instruction.reduce((t, inst) => {
-                                 return Math.max(t, inst.params.length);
-                             }, 0)
-                             : instruction.params.length);
-        const params = new Array(paramsCount).fill({type:"register", value:"null"});
+        const paramsCount = instruction.reduce((t, inst) => {
+            return Math.max(t, inst.params.length);
+        }, 0);
+        const params = new Array(paramsCount).fill({type:"empty", value:""});
         targetLine.code.push(module, command, ...params);
     }));
     autoSave();
@@ -183,7 +181,7 @@ export function setCommand(module, command){
 export function addParameter(sourcePath, lineId){
     setStore(produce(store => {
         const line = store.program.source[sourcePath].find(l => l.id === lineId);
-        line.code.push({type:"register", value:"null"});
+        line.code.push({type:"empty", value:""});
     }));
 }
 

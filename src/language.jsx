@@ -99,20 +99,20 @@ export const instructionsDefinitions = {
                 }
             }
         ],
-        "print":{
+        "print":[{
             params:[{type:types.ANY, variadic:true}],
             effect:(params, env) => {
                 const paramsStr = params.map(p =>`${p.value}: ${env.readVal(p)}`).join("; ");
                 env.log(`${env.instructionId}: ${paramsStr}`);
             }
-        },
-        "get":{
+        }],
+        "get":[{
             params:[{type:types.ARRAY}, {type:types.NUMBER}, {type:types.ANY}],
             effect:(params, env) => {
                 env.setVal(params[2].value, env.readVal(params[0])[env.readVal(params[1])]);
             }
-        },
-        "struct":{
+        }],
+        "struct":[{
             params:[{type:types.ARRAY}, {type:types.ANY, variadic:true}],
             effect:(params, env) => {
                 const arr = env.readVal(params[0]);
@@ -121,8 +121,8 @@ export const instructionsDefinitions = {
                     arr.push(env.readVal(params[i]));
                 }
             }
-        },
-        "destruct":{
+        }],
+        "destruct":[{
             params:[{type:types.ARRAY}, {type:types.ANY, variadic:true}],
             effect:(params, env) => {
                 const arr = env.readVal(params[0]);
@@ -132,16 +132,16 @@ export const instructionsDefinitions = {
                     env.setVal(params[i + 1].value, arr[i]);
                 }
             }
-        }
+        }]
     },
     ctrl:{
-        "if":{params:[bool], effect:() => {}},
-        "endif":{params:[], effect:() => {}},
-        "else":{params:[], effect:() => {}},
-        "for":{params:[num, num, num], effect:() => {}},
-        "endfor":{params:[], effect:() => {}},
-        "break":{params:[], effect:() => {}},
-        "continue":{params:[], effect:() => {}},
+        "if":[{params:[bool], effect:() => {}}],
+        "endif":[{params:[], effect:() => {}}],
+        "else":[{params:[], effect:() => {}}],
+        "for":[{params:[num, num, num], effect:() => {}}],
+        "endfor":[{params:[], effect:() => {}}],
+        "break":[{params:[], effect:() => {}}],
+        "continue":[{params:[], effect:() => {}}],
     },
     maths:{
         "+": [
@@ -162,59 +162,57 @@ export const instructionsDefinitions = {
             binop((a, b) => a.map(v => v * b), [types.ARRAY, types.NUMBER, types.ARRAY]),
             binop((a, b) => a.map((v, i) => v * b[i]), [types.ARRAY, types.ARRAY, types.ARRAY])
         ],
-        "/": binop((a, b) => a / b),
-        "%": binop((a, b) => a % b),
-        "**": binop((a, b) => Math.pow(a, b)),
-        "min": binop((a, b) => Math.min(a, b)),
-        "max": binop((a, b) => Math.max(a, b)),
-        "sqrt": monop(Math.sqrt),
-        "sin": monop(Math.sin),
-        "cos": monop(Math.cos),
-        "tan": monop(Math.tan),
-        "asin": monop(Math.asin),
-        "acos": monop(Math.acos),
-        "atan": monop(Math.atan),
-        "exp": monop(Math.exp),
-        "log": monop(Math.log),
-        "round": monop(Math.round),
-        "ceil": monop(Math.ceil),
+        "/": [binop((a, b) => a / b)],
+        "%": [binop((a, b) => a % b)],
+        "**": [binop((a, b) => Math.pow(a, b))],
+        "min": [binop((a, b) => Math.min(a, b))],
+        "max": [binop((a, b) => Math.max(a, b))],
+        "sqrt": [monop(Math.sqrt)],
+        "sin": [monop(Math.sin)],
+        "cos": [monop(Math.cos)],
+        "tan": [monop(Math.tan)],
+        "asin": [monop(Math.asin)],
+        "acos": [monop(Math.acos)],
+        "atan": [monop(Math.atan)],
+        "exp": [monop(Math.exp)],
+        "log": [monop(Math.log)],
+        "round": [monop(Math.round)],
+        "ceil": [monop(Math.ceil)],
         "floor": monop(Math.floor),
-        "random":{
+        "random":[{
             params:[num, num, num],
             effect:(params, env) => {
                 const [min, max] = params.slice(0, 2).map(env.readVal, env);
                 env.setVal(params[2].value, lerp(min, max, Math.random()));
             }
-        },
-        "lerp":{
+        }],
+        "lerp":[{
             params:[num, num, num, num],
             effect:(params, env) => {
                 const [a, b, t] = params.slice(0, 3).map(env.readVal, env);
                 env.setVal(params[3].value, lerp(a, b, t));
             }
-        },
-        "map":{
+        }],
+        "map":[{
             params:[num, num, num, num, num, num],
             effect:(params, env) => {
                 const [a, b, c, d, t] = params.slice(0, 3).map(env.readVal, env);
                 env.setVal(params[4].value, map(a, b, c, d, t));
             }
-        },
-    },
-    array:{
+        }],
     },
     bool:{
-        "==":comp((a, b) => a == b),
-        ">=":comp((a, b) => a >= b),
-        "<=":comp((a, b) => a <= b),
-        ">":comp((a, b) => a > b),
-        "<":comp((a, b) => a < b),
-        "&&":binop((a, b) => a && b, [types.BOOLEAN, types.BOOLEAN, types.BOOLEAN]),
-        "||":binop((a, b) => a || b, [types.BOOLEAN, types.BOOLEAN, types.BOOLEAN]),
-        "!": monop(v => !v, [types.BOOLEAN]),
+        "==":[comp((a, b) => a == b)],
+        ">=":[comp((a, b) => a >= b)],
+        "<=":[comp((a, b) => a <= b)],
+        ">":[comp((a, b) => a > b)],
+        "<":[comp((a, b) => a < b)],
+        "&&":[binop((a, b) => a && b, [types.BOOLEAN, types.BOOLEAN, types.BOOLEAN])],
+        "||":[binop((a, b) => a || b, [types.BOOLEAN, types.BOOLEAN, types.BOOLEAN])],
+        "!": [monop(v => !v, [types.BOOLEAN])],
     },
     gfx:{
-        "clear":{
+        "clear":[{
             params:[],
             effect: (_, env) => {
                 const w = env.readVal({type:"register", value:"width"});
@@ -224,13 +222,13 @@ export const instructionsDefinitions = {
                 env.ctx.fillRect(0, 0, w, h);
                 env.ctx.restore();
             }
-        },
-        "beginPath":{
+        }],
+        "beginPath":[{
             params:[],
             effect:(_, env) => {
                 env.ctx.beginPath();
             }
-        },
+        }],
         "moveTo":[
             {
                 params:[num, num],
@@ -391,33 +389,33 @@ export const instructionsDefinitions = {
                 }
             }
         ],
-        "fillStyle":{
+        "fillStyle":[{
             params:[{type:types.COLOR}],
             effect:(params, env) => {
                 env.ctx.fillStyle=hsla(env.readVal(params[0]));
             }
-        },
-        "strokeStyle":{
+        }],
+        "strokeStyle":[{
             params:[{type:types.COLOR}],
             effect:(params, env) => {
                 env.ctx.strokeStyle=hsla(env.readVal(params[0]));
             }
-        },
-        "fill":{
+        }],
+        "fill":[{
             params:[],
             effect:(_, env) => {
                 env.ctx.fill();
             }
-        },
-        "stroke":{
+        }],
+        "stroke":[{
             params:[],
             effect:(_, env) => {
                 env.ctx.stroke();
             }
-        },
+        }],
     },
     "vec":{
-        v2:{
+        v2:[{
             params:[{type:types.NUMBER}, {type:types.NUMBER}, {type:types.ARRAY}],
             effect:(params, env) => {
                 env.setVal(
@@ -425,8 +423,8 @@ export const instructionsDefinitions = {
                     [env.readVal(params[0]), env.readVal(params[1])]
                 );
             }
-        },
-        polar:{
+        }],
+        polar:[{
             params:[{type:types.NUMBER}, {type:types.NUMBER}, {type:types.ARRAY}],
             effect:(params, env) => {
                 const a = env.readVal(params[0]);
@@ -436,19 +434,19 @@ export const instructionsDefinitions = {
                     [r * Math.cos(a), r * Math.sin(a)]
                 );
             }
-        },
-        dist:binop((a, b) => {
+        }],
+        dist:[binop((a, b) => {
             return Math.hypot(...a.map((c, i) => c - b[i]));
-        }, [types.ARRAY, types.ARRAY, types.NUMBER]),
-        getLen:monop((v) => Math.hypot(...v), [types.ARRAY, types.NUMBER]),
-        setLen:binop((v, l) => {
+        }, [types.ARRAY, types.ARRAY, types.NUMBER])],
+        getLen:[monop((v) => Math.hypot(...v), [types.ARRAY, types.NUMBER])],
+        setLen:[binop((v, l) => {
             const r = l / Math.hypot(...v);
             return v.map(c => c * r);
-        }, [types.ARRAY, types.ARRAY, types.NUMBER]),
-        dot:binop((a, b) => {
+        }, [types.ARRAY, types.ARRAY, types.NUMBER])],
+        dot:[binop((a, b) => {
             return a.reduce((t, c, i) => c * b[i]);
-        }, [types.ARRAY, types.ARRAY, types.NUMBER]),
-        rot2:binop((v, a) => {
+        }, [types.ARRAY, types.ARRAY, types.NUMBER])],
+        rot2:[binop((v, a) => {
             const ca = Math.cos(a);
             const sa = Math.sin(a);
             return [
@@ -456,17 +454,17 @@ export const instructionsDefinitions = {
                 sa * v[0] + sa * v[1],
 
             ];
-        }, [types.ARRAY, types.NUMBER, types.ARRAY]),
-        cross2:binop((a, b) => {
+        }, [types.ARRAY, types.NUMBER, types.ARRAY])],
+        cross2:[binop((a, b) => {
                 return a[0] * b[1] - a[1] * b[0];
-        }, [types.ARRAY, types.ARRAY, types.NUMBER]),
-        cross3:binop((a, b) => {
+        }, [types.ARRAY, types.ARRAY, types.NUMBER])],
+        cross3:[binop((a, b) => {
             return [
                 a[1] * b[2] - a[2] * b[1],
                 a[2] * b[0] - a[0] * b[2],
                 a[0] * b[1] - a[1] * b[0]
             ];
-        }, [types.ARRAY, types.ARRAY, types.ARRAY]),
+        }, [types.ARRAY, types.ARRAY, types.ARRAY])],
     },
     "algo":{
         "noise2D":[
@@ -490,7 +488,7 @@ export const instructionsDefinitions = {
                 }
             }
         ],
-        "noise3D":{
+        "noise3D":[{
             params:[num, num, num, num],
             effect:(params, env) => {
                 env.setVal(
@@ -502,8 +500,8 @@ export const instructionsDefinitions = {
                     )
                 );
             }
-        },
-        "noise4D":{
+        }],
+        "noise4D":[{
             params:[num, num, num, num, num],
             effect:(params, env) => {
                 env.setVal(
@@ -516,7 +514,7 @@ export const instructionsDefinitions = {
                     )
                 );
             }
-        },
+        }],
     }
 
 };

@@ -161,7 +161,7 @@ function Editor({setPage}) {
               </Match>
               <Match when={tab() === "view"}>
                 <div style={{width:"100%", height:"100%"}}>{
-                    interpreter.maincanvas
+                    interpreter.mainCanvas
                 }</div>
               </Match>
               <Match when={tab() === "console"}>

@@ -1,5 +1,5 @@
 import {createSignal, untrack} from "solid-js";
-import {instructionsDefinitions} from "./language";
+import {types, instructionsDefinitions} from "./language";
 
 export class Interpreter{
     constructor(onExecuted){
@@ -99,7 +99,8 @@ export class Interpreter{
             // try{
                 if(line.code.length){
                     const [module, cmd, ...params] = line.code;
-                    const hasNull = params.some(p => p.value === "null");
+                    // const hasNull = params.some(p => p.value === "null");
+                    const hasNull = false;
                     if(!hasNull){
                         if(module === "ctrl"){
                             if(cmd === "if"){
@@ -188,11 +189,11 @@ export class Interpreter{
                             }
                         }
                         else{
-                            let instruction = instructionsDefinitions[module][cmd];
-                            if(Array.isArray(instruction)){
-                                instruction = instruction.find(v => {
-                                    return v.params.every((p, i) => p.type == this.readType(params[i]));
-                                });
+                            let instruction = instructionsDefinitions[module][cmd].find(v => {
+                                return v.params.every((p, i) => p.type === types.ANY || p.type == this.readType(params[i]));
+                            });
+                            if(!instruction){
+                                this.log(`${this.instructionId}: ERROR: can't find matching implementation : ${JSON.stringify(line.code)}`);
                             }
                             instruction.effect(params, this);
                             this.instructionId++;
