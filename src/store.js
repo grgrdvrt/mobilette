@@ -322,11 +322,6 @@ export function deleteSelection(){
 }
 
 export function setThumb(canvas){
-    canvas.width = 500;
-    canvas.height = 500;
-    const ctx = canvas.getContext("2d");
-    ctx.fillStyle = "red";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
     setStore("program", "thumb", canvas.toDataURL("image/jpg"));
     save();
 }
