@@ -201,11 +201,14 @@ function Home({setPage}){
               {(program) => {
                   return (
                       <li class="documentItem" classList={{selected:isSelected(program.id)}}>
-                        <img src={program.thumb??"data:image/png;base64,"}
-                        onClick={e => {
-                            e.stopImmediatePropagation();
-                            setSelected(program.id);
-                        }}/>
+                        <div
+                          class="documentItem-thumb"
+                          style={{"background-image":`url(${program.thumb??"data:image/png;base64,"})`}}
+                          onClick={e => {
+                              e.stopImmediatePropagation();
+                              setSelected(program.id);
+                          }}
+                        />
                         <div class="documentItem-overlay">
                           <button onClick={() => {
                               setProgram(program);

@@ -64,6 +64,13 @@
     overflow:hidden;
 }
 
+.documentItem-thumb{
+    width:100%;
+    height:100%;
+    background-position: center;
+    background-size: cover;
+}
+
 .documentItem-overlay{
     display:none;
     flex-direction:column;
