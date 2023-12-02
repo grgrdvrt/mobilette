@@ -196,7 +196,7 @@ export class Interpreter{
                             });
                             console.log(instructionsDefinitions[module][cmd], filteredParams);
                             if(!instruction){
-                                this.log(`${this.instructionId}: ERROR: can't find matching implementation : ${JSON.stringify(line.code)}`);
+                                this.log(`${this.instructionId}: ERROR: can't find matching implementation : ${JSON.stringify(line.code)}; ${params.map(p => this.readType(p))}`);
                             }
                             instruction.effect(params, this);
                             this.instructionId++;
