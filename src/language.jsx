@@ -93,7 +93,7 @@ export const instructionsDefinitions = {
                 effect:(params, env) => env.setVal(params[0].value, env.readVal(params[1]))
             },
             {
-                params:[{type:types.ARRAY}, {type:types.NUMBER}, {type:types.ANY}],
+                params:[{type:types.ANY}, {type:types.NUMBER}, {type:types.ANY}],
                 effect:(params, env) => {
                     env.readVal(params[0])[env.readVal(params[1])] = env.readVal(params[2]);
                 }
@@ -196,8 +196,8 @@ export const instructionsDefinitions = {
         "map":[{
             params:[num, num, num, num, num, num],
             effect:(params, env) => {
-                const [a, b, c, d, t] = params.slice(0, 3).map(env.readVal, env);
-                env.setVal(params[4].value, map(a, b, c, d, t));
+                const [a, b, c, d, t] = params.slice(0, 5).map(env.readVal, env);
+                env.setVal(params[5].value, map(a, b, c, d, t));
             }
         }],
     },

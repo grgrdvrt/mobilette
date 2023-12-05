@@ -95,7 +95,7 @@ export class Interpreter{
         const ctrlStack = [];
         while(this.instructionId < instructions.length){
             const line = instructions[this.instructionId];
-            console.log(this.instructionId, JSON.stringify(line.code));
+            // console.log(this.instructionId, JSON.stringify(line.code));
             // try{
                 if(line.code.length){
                     const [module, cmd, ...params] = line.code;
@@ -194,7 +194,6 @@ export class Interpreter{
                                 return v.params.every((p, i) => (p.type === types.ANY
                                                                  || p.type == this.readType(filteredParams[i])));
                             });
-                            console.log(instructionsDefinitions[module][cmd], filteredParams);
                             if(!instruction){
                                 this.log(`${this.instructionId}: ERROR: can't find matching implementation : ${JSON.stringify(line.code)}; ${params.map(p => this.readType(p))}`);
                             }
