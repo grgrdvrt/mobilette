@@ -16,8 +16,6 @@ import {hexToHSLA, hslaToHex} from "../utils";
 
 export function DataInput({type, setType, value, setValue}){
 
-    let valueField;
-
     return(
         <div class="valueInput">
           <select name="types" id="types-select" onChange={(e) => {
@@ -35,7 +33,7 @@ export function DataInput({type, setType, value, setValue}){
               }}
             </For>
           </select>
-          <Switch fallback={<input ref={valueField} onInput={(e) => setValue(e.target.value)} value={value()}/>}>
+          <Switch fallback={<input onInput={(e) => setValue(e.target.value)} value={value()}/>}>
             <Match when={type() === types.BOOLEAN}>
               <select name="boolean" onChange={(e) => setValue(Number(e.target.value))}>
                 <option value={1} selected={value() == 1}>True</option>
@@ -44,15 +42,18 @@ export function DataInput({type, setType, value, setValue}){
             </Match>
             <Match when={type() === types.NUMBER || type() === types.ARRAY}>
               <input
-                ref={valueField}
-                onInput={(e) => setValue(JSON.parse(e.target.value))}
+                onChange = {() => setValue(JSON.parse(e.target.value))}
                 value={JSON.stringify(value())}
               />
             </Match>
             <Match when={type() === types.COLOR}>
               <input onChange={e => {
-                  setValue(hexToHSLA(e.target.value));
+                  setValue(hexToHSLA(e.target.value, value()[3]));
               }} type="color" value={hslaToHex(...value())}/>
+              <input
+                onChange = {e => setValue([...(value().slice(0, 3)), JSON.parse(e.target.value)])}
+                value={JSON.stringify(value()[3])}
+              />
             </Match>
           </Switch>
         </div>

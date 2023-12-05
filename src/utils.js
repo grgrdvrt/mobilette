@@ -1,6 +1,6 @@
 //via chatGPT
 
-export function hexToHSLA(hex) {
+export function hexToHSLA(hex, a) {
     // Convert hex to RGB first
     let r = 0, g = 0, b = 0;
     if (hex.length === 7) {
@@ -33,7 +33,7 @@ export function hexToHSLA(hex) {
         h /= 6;
     }
 
-    return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100), 1.0];
+    return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100), a];
 }
 
 
@@ -54,12 +54,7 @@ export function hslaToHex(h, s, l, a) {
 
     // Convert RGB to Hex
     const toHex = c => ('0' + c.toString(16)).slice(-2);
-    const hex = `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-
-    // Include alpha in Hex if it's not fully opaque
-    const result = a < 1 ? `${hex}${toHex(alpha)}` : hex;
-    console.log(result);
-    return result;
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
 
