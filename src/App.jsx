@@ -192,9 +192,9 @@ function Home({setPage}){
                 setProgram(program);
                 setPage("editor");
             }}>new</button>
-            <button class="home-action" onClick={() => {
-                deleteDatabase();
-            }}>clear</button>
+            {/* <button class="home-action" onClick={() => { */}
+            {/*     deleteDatabase(); */}
+            {/* }}>clear</button> */}
           </div>
           <ol class="documentsList">
             <For each={documents()}>
