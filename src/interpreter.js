@@ -284,8 +284,8 @@ export class Interpreter {
 
   updatePointer(pointerX, pointerY) {
     const rect = this.mainCanvas.getBoundingClientRect();
-    const x = pointerX + rect.top;
-    const y = pointerY + rect.left;
+    const x = pointerX + rect.left;
+    const y = pointerY + rect.top;
     this.setVal("pointerX", x);
     this.setVal("pointerY", y);
     this.setVal("pPointerX", this.pointerX);
