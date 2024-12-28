@@ -50,7 +50,13 @@ export function DataInput({ type, setType, value, setValue }) {
             </option>
           </select>
         </Match>
-        <Match when={type() === types.NUMBER || type() === types.ARRAY}>
+        <Match
+          when={
+            type() === types.ANY ||
+            type() === types.NUMBER ||
+            type() === types.ARRAY
+          }
+        >
           <input
             onChange={(e) => setValue(JSON.parse(e.target.value))}
             value={JSON.stringify(value())}

@@ -101,7 +101,7 @@ export function RegisterDetails({ registerPosition, onClose }) {
       makeEmptyRegister(registerPosition.x, registerPosition.y)
     );
   });
-  const [type, setType] = createSignal(register().type ?? types.NUMBER);
+  const [type, setType] = createSignal(register().type ?? types.ANY);
   const [value, setValue] = createSignal(
     register().value ?? defaultValues[type()],
   );
