@@ -437,15 +437,15 @@ export const instructionsDefinitions = {
         params: [num, num, num, num, num, num],
         effect: (params, env) => {
           const [x, y, r, a1, a2, d] = params.map(env.readVal, env);
-          env.ctx.moveTo(x + r, y);
-          env.ctx.arc(x + r, y, r, a1, a2, d);
+          env.ctx.moveTo(x + r * Math.cos(a1), y + r * Math.sin(a1));
+          env.ctx.arc(x, y, r, a1, a2, d);
         },
       },
       {
         params: [arr, num, num, num, num],
         effect: (params, env) => {
           const [c, r, a1, a2, d] = params.map(env.readVal, env);
-          env.ctx.moveTo(c[0] + r, c[1]);
+          env.ctx.moveTo(x + r * Math.cos(a1), y + r * Math.sin(a1));
           env.ctx.arc(c[0] + r, c[1], r, a1, a2, d);
         },
       },
