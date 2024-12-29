@@ -51,6 +51,17 @@ export class Interpreter {
     }
   }
 
+  readParam(param) {
+    switch (param.type) {
+      case "value":
+        return param.value;
+      case "register":
+        return this.getReg(param.value);
+      default:
+        throw new Error(`unknown type ${param.type}`);
+    }
+  }
+
   initJumpTable(instructions) {
     this.jumpTable = new Map();
     const ifStack = [];

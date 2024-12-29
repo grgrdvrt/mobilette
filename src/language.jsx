@@ -113,8 +113,18 @@ export const instructionsDefinitions = {
         params: [{ type: types.ANY, variadic: true }],
         effect: (params, env) => {
           const paramsStr = params
-            .map((p) => `${p.value}: ${env.readVal(p)}`)
-            .join("; ");
+            .map((param) => {
+              switch (param.type) {
+                case "value":
+                  return `[${env.readVal(param)}]`;
+                  break;
+                case "register":
+                  const register = env.getReg(param.value);
+                  return `[${register.name || register.y + ":" + register.x} ${register.value}]`;
+                  break;
+              }
+            })
+            .join(" ");
           env.log(`${env.instructionId}: ${paramsStr}`);
         },
       },
