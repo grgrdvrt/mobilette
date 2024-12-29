@@ -206,21 +206,20 @@ export class Interpreter {
             }
           } else {
             const filteredParams = params.filter((p) => p.type !== "empty");
-            const instructions = instructionsDefinitions[module][cmd]
-              .filter((v) => {
-                return v.params.every(
+            const instruction = instructionsDefinitions[module][cmd]
+              .find((v) => {
+                return v.params.length === filteredParams.length && v.params.every(
                   (p, i) =>
                     p.type === types.ANY ||
                     p.type == this.readType(filteredParams[i]),
                 );
-              })
-              .sort((a, b) => b.params.length - a.params.length);
-            if (!instructions.length) {
+              });
+            if (!instruction) {
               this.log(
                 `${this.instructionId}: ERROR: can't find matching implementation : ${JSON.stringify(line.code)}; ${params.map((p) => this.readType(p))}`,
               );
             }
-            instructions[0].effect(params, this);
+            instruction.effect(params, this);
             this.instructionId++;
           }
         } else {
