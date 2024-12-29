@@ -1,249 +1,240 @@
 #root {
-    width:100%;
-    height:100%;
+    width: 100%;
+    height: 100%;
 }
 
-.app{
-    width:100%;
-    height:100%;
-    display:flex;
-    flex-direction:column;
+.app {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
-.home{
-    height:100%;
-    position:relative;
-    text-align:center;
+.home {
+    height: 100%;
+    position: relative;
+    text-align: center;
 }
 
-.home-actions{
-    display:flex;
-    flex-direction:column;
+.home-actions {
+    display: flex;
+    flex-direction: column;
 }
 
-.home-action{
-    font-size:1.3em;
-    margin:0.5em;
+.home-action {
+    font-size: 1.3em;
+    margin: 0.5em;
 }
 
-.title{
-    font-size:2em;
-    line-height:initial;
+.title {
+    font-size: 2em;
+    line-height: initial;
     text-align: center;
     width: 100%;
 }
 
-.home-logo{
-    height:4em;
-    vertical-align:middle;
+.home-logo {
+    height: 4em;
+    vertical-align: middle;
 }
 
-
-.home-title{
-    height:3em;
-    vertical-align:middle;
+.home-title {
+    height: 3em;
+    vertical-align: middle;
 }
 
-.documentsList{
-    display:flex;
-    flex-wrap:wrap;
-    justify-content:space-around;
+.documentsList {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
     margin: 0;
     margin-block: 0;
     margin-inline: 0;
     padding-inline: 0;
 }
 
-.documentItem{
+.documentItem {
     display: flex;
     width: 40vw;
     height: 40vw;
     justify-content: space-around;
-    position:relative;
-    border-radius:10px;
-    overflow:hidden;
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
 }
 
-.documentItem-thumb{
-    width:100%;
-    height:100%;
+.documentItem-thumb {
+    width: 100%;
+    height: 100%;
     background-position: center;
     background-size: cover;
 }
 
-.documentItem-overlay{
-    display:none;
-    flex-direction:column;
-    justify-content:space-around;
-    position:absolute;
-    top:0px;
-    left:0px;
-    width:100%;
-    height:100%;
+.documentItem-overlay {
+    display: none;
+    flex-direction: column;
+    justify-content: space-around;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
 }
 
-.documentItem.selected .documentItem-overlay{
-    display:flex;
+.documentItem.selected .documentItem-overlay {
+    display: flex;
 }
 
-.documentItem-actions{
-    display:flex;
-    justify-content:space-around;
+.documentItem-actions {
+    display: flex;
+    justify-content: space-around;
 }
 
-.nav{
-    display:flex;
-    justify-content:space-between;
+.nav {
+    display: flex;
+    justify-content: space-between;
 }
 
-.nav button{
-    background:none;
+.nav button {
+    background: none;
 }
 
-.nav button img{
-    width:30px;
-    height:30px;
+.nav button img {
+    width: 30px;
+    height: 30px;
 }
 
-.content{
-    width:100%;
-    flex-grow:1;
-    position:relative;
-    overflow:hidden;
+.content {
+    width: 100%;
+    flex-grow: 1;
+    position: relative;
+    overflow: hidden;
 }
 
-
-
-.registers{
-    width:100%;
-    height:100%;
+.registers {
+    width: 100%;
+    height: 100%;
 }
 
-.registersGrid{
+.registersGrid {
     display: grid;
     grid-template-columns: repeat(10, calc(10vw - 1px));
     grid-template-rows: repeat(40, calc(10vw - 1px));
-    gap:1px;
-    width:100%;
-    height:100%;
-    overflow:auto;
+    gap: 1px;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
 }
 
-.registerCell{
-    width:100%;
-    height:100%;
-    border-radius:5px;
-    display:flex;
-    align-items:center;
-    justify-content:space-around;
+.registerCell {
+    width: 100%;
+    height: 100%;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
 }
 
-
-.registerDetails{
-    position:absolute;
-    top:50%;
-    left:50%;
-    width:80vw;
-    height:80vw;
-    padding:5%;
-    border-radius:10px;
-    transform:translate(-50%, -50%);
-    background-color:white;
+.registerDetails {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 80vw;
+    height: 80vw;
+    padding: 5%;
+    border-radius: 10px;
+    transform: translate(-50%, -50%);
+    background-color: white;
 }
 
-
-
-.code{
-    height:100%;
-    overflow:hidden;
-    font-family:"monospace";
-    display:flex;
-    flex-direction:column;
+.code {
+    height: 100%;
+    overflow: hidden;
+    font-family: "monospace";
+    display: flex;
+    flex-direction: column;
 }
 
-.codeList{
-    overflow-x:hidden;
-    overflow-y:auto;
-    flex-grow:1;
-    margin:10px;
+.codeList {
+    overflow-x: hidden;
+    overflow-y: auto;
+    flex-grow: 1;
+    margin: 10px;
 }
 
-.codeDeleteBtn{
-    position:absolute;
-    top:5px;
-    right:5px;
+.codeDeleteBtn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
 }
 
-
-.sourceLine p{
-    margin:2px;
-    padding:2px;
+.sourceLine p {
+    margin: 2px;
+    padding: 2px;
 }
-.sourceLine p *{
-    pointer-events:none;
-}
-
-.sourceLine.selected p *{
-    pointer-events:auto;
+.sourceLine p * {
+    pointer-events: none;
 }
 
-.sourceLine.selected p{
-    background-color:#eeeeee;
+.sourceLine.selected p * {
+    pointer-events: auto;
+}
+
+.sourceLine.selected p {
+    background-color: #eeeeee;
 }
 
 .codeRegister {
-    padding:2px 3px;
-    border-radius:3px;
+    padding: 2px 3px;
+    border-radius: 3px;
 }
 
-.inputSelection{
-    position:absolute;
-    top:0px;
-    left:0px;
-    width:100%;
-    height:100%;
-    background-color:white;
+.inputSelection {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    background-color: white;
 }
 
-.registerPicker{
-    width:100%;
-    height:100%;
-    overflow:auto;
+.registerPicker {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
 }
 
-.insertionButton{
-    width:100%;
+.insertionButton {
+    width: 100%;
 }
 
-
-.instructionsMenu{
-    width:100%;
-    background-color:#eeeeee;
-    text-align:center;
+.instructionsMenu {
+    width: 100%;
+    background-color: #eeeeee;
+    text-align: center;
 }
 
-.instructionsMenu ul{
-    width:100%;
-    display:flex;
-    justify-content:space-between;
-    padding:0;
-    flex-wrap:wrap;
+.instructionsMenu ul {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0;
+    flex-wrap: wrap;
 }
 
-.instructionsMenu li{
-    list-style:none;
-    flex-grow:1;
-    margin:2px;
+.instructionsMenu li {
+    list-style: none;
+    flex-grow: 1;
+    margin: 2px;
 }
 
-
-.instructionsMenu button{
-    padding:10px;
-    width:100%;
+.instructionsMenu button {
+    padding: 10px;
+    width: 100%;
 }
 
-.valueInput{
-    display:flex;
+.valueInput {
+    display: flex;
 }
 .valueInput,
 .valueInput select,
