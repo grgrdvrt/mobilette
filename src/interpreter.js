@@ -209,7 +209,7 @@ export class Interpreter {
             const instruction = instructionsDefinitions[module][cmd].find(
               (v) => {
                 return (
-                  (v.params[v.params.length - 1].variadic ||
+                  (v.params[v.params.length - 1]?.variadic ||
                     v.params.length === filteredParams.length) &&
                   v.params.every(
                     (p, i) =>
