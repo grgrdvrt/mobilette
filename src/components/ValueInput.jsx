@@ -56,7 +56,8 @@ export function DataInput({ type, setType, value, setValue }) {
         </Match>
         <Match when={type() === types.NUMBER}>
           <input
-            type="number"
+            type="text"
+            inputmode="numeric"
             onChange={(e) => setValue(JSON.parse(e.target.value))}
             value={JSON.stringify(value())}
           />
