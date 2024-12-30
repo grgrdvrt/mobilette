@@ -297,6 +297,17 @@ export const instructionsDefinitions = {
           env.ctx.restore();
         },
       },
+      {
+        params: [{ type: types.COLOR }],
+        effect: (params, env) => {
+          const w = env.readVal({ type: "register", value: "width" });
+          const h = env.readVal({ type: "register", value: "height" });
+          env.ctx.save();
+          env.ctx.fillStyle = hsla(env.readVal(params[0]));
+          env.ctx.fillRect(0, 0, w, h);
+          env.ctx.restore();
+        },
+      },
     ],
     beginPath: [
       {
