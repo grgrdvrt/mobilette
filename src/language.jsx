@@ -64,13 +64,13 @@ function monop(func, paramsTypes = [types.NUMBER, types.NUMBER]) {
   };
 }
 
-function comp(fun) {
+function comp(func) {
   return {
-    params: [num, num, num],
+    params: [num, num, bool],
     effect: (params, env) => {
       env.setVal(
         params[2].value,
-        fun(env.readVal(params[0]), env.readVal(params[1])) ? 1 : 0,
+        func(env.readVal(params[0]), env.readVal(params[1])) ? 1 : 0,
       );
     },
   };
