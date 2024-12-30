@@ -11,6 +11,12 @@
     flex-direction: column;
 }
 
+.about {
+    height: 100%;
+    position: relative;
+    text-align: center;
+}
+
 .home {
     height: 100%;
     position: relative;
