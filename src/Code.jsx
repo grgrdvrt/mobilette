@@ -345,7 +345,7 @@ export function ValueInput({ selectedInput, setSelectedInput }) {
     );
   };
 
-  const [type, setType] = createSignal(input().value.type ?? types.ANY);
+  const [type, setType] = createSignal(input().value.type ?? types.NUMBER);
   const [value, setValue] = createSignal(
     input()?.type === "value"
       ? (input().value.value ?? defaultValues[type()])
