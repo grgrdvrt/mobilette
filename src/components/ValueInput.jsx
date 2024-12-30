@@ -19,7 +19,11 @@ export function DataInput({ type, setType, value, setValue }) {
           }
         }}
       >
-        <For each={Object.entries(typesNames)}>
+        <For
+          each={Object.entries(typesNames).filter(
+            ([key]) => key !== types.ANY.toString(),
+          )}
+        >
           {([key, value]) => {
             return (
               <option

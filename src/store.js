@@ -228,7 +228,7 @@ function randomRegisterColor() {
 export function makeEmptyRegister(x, y) {
   return {
     id: "empty",
-    type: types.ANY,
+    type: types.NUMBER,
     name: "",
     initialValue: 0,
     value: 0,
