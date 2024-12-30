@@ -471,6 +471,14 @@ export const instructionsDefinitions = {
         },
       },
     ],
+    lineWidth: [
+      {
+        params: [num],
+        effect: (params, env) => {
+          env.ctx.lineWidth = env.readVal(params[0]);
+        },
+      },
+    ],
     fillStyle: [
       {
         params: [{ type: types.COLOR }],
