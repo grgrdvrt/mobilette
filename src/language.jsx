@@ -241,7 +241,7 @@ export const instructionsDefinitions = {
     log: [monop(Math.log)],
     round: [monop(Math.round)],
     ceil: [monop(Math.ceil)],
-    floor: monop(Math.floor),
+    floor: [monop(Math.floor)],
     random: [
       {
         params: [num, num, num],
