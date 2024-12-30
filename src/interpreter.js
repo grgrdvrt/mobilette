@@ -206,14 +206,19 @@ export class Interpreter {
             }
           } else {
             const filteredParams = params.filter((p) => p.type !== "empty");
-            const instruction = instructionsDefinitions[module][cmd]
-              .find((v) => {
-                return v.params.length === filteredParams.length && v.params.every(
-                  (p, i) =>
-                    p.type === types.ANY ||
-                    p.type == this.readType(filteredParams[i]),
+            const instruction = instructionsDefinitions[module][cmd].find(
+              (v) => {
+                return (
+                  (v.params[v.params.length - 1].variadic ||
+                    v.params.length === filteredParams.length) &&
+                  v.params.every(
+                    (p, i) =>
+                      p.type === types.ANY ||
+                      p.type == this.readType(filteredParams[i]),
+                  )
                 );
-              });
+              },
+            );
             if (!instruction) {
               this.log(
                 `${this.instructionId}: ERROR: can't find matching implementation : ${JSON.stringify(line.code)}; ${params.map((p) => this.readType(p))}`,
