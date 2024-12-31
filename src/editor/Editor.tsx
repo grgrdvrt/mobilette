@@ -9,6 +9,7 @@ import {
   Program,
   Instruction,
   Register,
+  ProgramContextId,
 } from "../store";
 const [store] = useStore();
 
@@ -18,7 +19,7 @@ import { SourceLine } from "./SourceLine";
 
 function ProgramInterface(props: {
   source: Instruction[];
-  sourcePath: keyof Program["source"];
+  sourcePath: ProgramContextId;
   registers: Register[];
   setSelectedInput: Setter<any>;
 }) {
@@ -44,7 +45,7 @@ function ProgramInterface(props: {
     <div style={{ display: "flex", "flex-direction": "column" }}>
       <Show
         when={
-          store.gui.cursor.context === props.sourcePath &&
+          store.gui.cursor.programContextId === props.sourcePath &&
           store.gui.cursor.position === -1
         }
       >
@@ -70,7 +71,7 @@ function ProgramInterface(props: {
               />
               <Show
                 when={
-                  store.gui.cursor.context === props.sourcePath &&
+                  store.gui.cursor.programContextId === props.sourcePath &&
                   store.gui.cursor.position === i()
                 }
               >
@@ -96,16 +97,24 @@ export function Editor(props: {
   const [selectedInput, setSelectedInput] = createSignal(null);
   const showInstruction = () => {
     const selectedLines = getSelectedLines();
-    return selectedLines.length === 1 && selectedLines[0].code.length === 0;
+    console.log(
+      selectedLines.length === 1 &&
+        (selectedLines[0].code.length === 0 ||
+          selectedLines[0]?.code[0] === "" ||
+          selectedLines[0]?.code[1] === ""),
+    );
+    return (
+      selectedLines.length === 1 &&
+      (selectedLines[0].code.length === 0 ||
+        selectedLines[0].code[0] === "" ||
+        selectedLines[0].code[1] === "")
+    );
   };
   const hasSelection = () => {
     return store.gui.selection.length > 0;
   };
 
-  function CodeContext(ctxProps: {
-    title: string;
-    key: keyof Program["source"];
-  }) {
+  function CodeContext(ctxProps: { title: string; key: ProgramContextId }) {
     return (
       <>
         <h3 onClick={() => clickContext(ctxProps.key)}>{ctxProps.title}</h3>

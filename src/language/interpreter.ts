@@ -1,6 +1,6 @@
 import { Accessor, createSignal, Setter, untrack } from "solid-js";
 import { Param, types, instructionsDefinitions } from "./language";
-import { Instruction, Program, Register, Source } from "../store";
+import { Instruction, Program, Register, ProgramContext } from "../store";
 
 type IfDefinition = {
   type: "if";
@@ -26,7 +26,7 @@ export class Interpreter {
   instructionId: number = 0;
 
   registers: Register[] = [];
-  source: Record<string, Source> = {};
+  source: Record<string, ProgramContext> = {};
   jumpTable: Map<number, number | number[]> = new Map();
   initialTime: number = 0;
 
@@ -98,7 +98,7 @@ export class Interpreter {
     }
   }
 
-  initJumpTable(instructions: Source) {
+  initJumpTable(instructions: ProgramContext) {
     this.jumpTable = new Map();
     const ifStack: number[][] = [];
     const forStack: number[] = [];

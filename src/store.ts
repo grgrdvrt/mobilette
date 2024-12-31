@@ -14,8 +14,10 @@ export type Type = number;
 export type Instruction = {
   id: string;
   params: Param[];
-  code: [string, string, ...any];
+  inputs: Param[];
+  definition: [string, string];
 };
+
 export type Register = {
   id: string;
   type: Type;
@@ -27,26 +29,27 @@ export type Register = {
   color: string;
 };
 
-export type Source = Instruction[];
+export type ProgramContext = Instruction[];
 export type Program = {
   id: string;
   lastOpened: number;
   thumb: string;
   source: {
-    init: Source;
-    loop: Source;
-    pointerDown: Source;
-    pointerUp: Source;
-    pointerMove: Source;
+    init: ProgramContext;
+    loop: ProgramContext;
+    pointerDown: ProgramContext;
+    pointerUp: ProgramContext;
+    pointerMove: ProgramContext;
   };
   registers: Register[];
 };
 
-export type CodeContext = {};
+export type ProgramContextId = keyof Program["source"];
+
 export type AppStore = {
   gui: {
     cursor: {
-      context: null | CodeContext;
+      programContextId: null | ProgramContextId;
       position: null | number;
     };
     selection: string[];
@@ -65,7 +68,7 @@ function makeRegister(
   x: number,
   y: number,
   color?: string,
-) {
+): Register {
   return {
     id: name,
     name,
@@ -131,7 +134,7 @@ export function createEmptyProgram(): Program {
 const [store, setStore] = createStore<AppStore>({
   gui: {
     cursor: {
-      context: null,
+      programContextId: null,
       position: null,
     },
     selection: [],
@@ -157,7 +160,7 @@ Object.defineProperty(window, "store", {
 export function getSelectedLines() {
   const lines: Instruction[] = [];
   for (let contextName in store.program.source) {
-    store.program.source[contextName as keyof Program["source"]].filter(
+    store.program.source[contextName as ProgramContextId].filter(
       (line: Instruction) => {
         return store.gui.selection.includes(line.id);
       },
@@ -167,7 +170,7 @@ export function getSelectedLines() {
 }
 
 export function getInput(
-  sourcePath: keyof Program["source"],
+  sourcePath: ProgramContextId,
   lineId: string,
   index: number,
 ) {
@@ -194,14 +197,11 @@ export function setProgram(program: Program) {
   );
 }
 
-export function insertAfter(
-  sourcePath: keyof Program["source"],
-  id: string | null,
-) {
+export function insertAfter(sourcePath: ProgramContextId, id: string | null) {
   const newLineId = crypto.randomUUID();
   setStore(
     produce((store) => {
-      const source = store.program.source[sourcePath] as Source;
+      const source = store.program.source[sourcePath] as ProgramContext;
       const i = id === null ? 0 : source.findIndex((line) => line.id === id);
       source.splice(i + (id === null ? 0 : 1), 0, {
         id: newLineId,
@@ -214,10 +214,7 @@ export function insertAfter(
   autoSave();
 }
 
-export function insertAtIndex(
-  sourcePath: keyof Program["source"],
-  index: number,
-) {
+export function insertAtIndex(sourcePath: ProgramContextId, index: number) {
   setStore(
     produce((store) => {
       const source = store.program.source[sourcePath];
@@ -238,7 +235,7 @@ export function setCommand(module: string, command: string) {
     produce((store) => {
       let targetLine = null;
       for (let k in store.program.source) {
-        targetLine = store.program.source[k as keyof Program["source"]].find(
+        targetLine = store.program.source[k as ProgramContextId].find(
           (line) => {
             return store.gui.selection.indexOf(line.id) !== -1;
           },
@@ -261,10 +258,7 @@ export function setCommand(module: string, command: string) {
   autoSave();
 }
 
-export function addParameter(
-  sourcePath: keyof Program["source"],
-  lineId: string,
-) {
+export function addParameter(sourcePath: ProgramContextId, lineId: string) {
   setStore(
     produce((store) => {
       const line = store.program.source[sourcePath].find(
@@ -275,10 +269,7 @@ export function addParameter(
   );
 }
 
-export function removeParameter(
-  sourcePath: keyof Program["source"],
-  lineId: string,
-) {
+export function removeParameter(sourcePath: ProgramContextId, lineId: string) {
   setStore(
     produce((store) => {
       const line = store.program.source[sourcePath].find(
@@ -291,7 +282,7 @@ export function removeParameter(
 }
 
 export function setParameter(
-  sourcePath: keyof Program["source"],
+  sourcePath: ProgramContextId,
   lineId: string,
   registerIndex: number,
   type: "empty" | "register" | "value",
@@ -392,7 +383,7 @@ export function setSelection(ids: string[]) {
     let cursor = undefined;
     const source = store.program.source;
     for (let context in source) {
-      const candidate = source[context as keyof Program["source"]].findIndex(
+      const candidate = source[context as ProgramContextId].findIndex(
         (l) => l.id === ids[0],
       );
       if (candidate !== -1) {
@@ -416,20 +407,20 @@ export function clearCursor() {
 }
 
 //click the title of a code section
-export function clickContext(context: keyof Program["source"]) {
+export function clickContext(context: ProgramContextId) {
   setStore("gui", "selection", []);
   if (
-    store.gui.cursor.context === context &&
+    store.gui.cursor.programContextId === context &&
     store.gui.cursor.position === -1
   ) {
-    setStore("gui", "cursor", { context, position: null });
+    setStore("gui", "cursor", { programContextId: context, position: null });
   } else {
-    setStore("gui", "cursor", { context, position: -1 });
+    setStore("gui", "cursor", { programContextId: context, position: -1 });
   }
 }
 
-export function setCursor(context: keyof Program["source"], position: number) {
-  setStore("gui", "cursor", { context, position });
+export function setCursor(context: ProgramContextId, position: number) {
+  setStore("gui", "cursor", { programContextId: context, position });
 }
 
 export function addToSelection(id: string) {
@@ -446,7 +437,7 @@ export function deleteSelection() {
       const source = store.program.source;
       store.gui.selection.forEach((idToDelete) => {
         for (let key in source) {
-          const sourceEntry = source[key as keyof Program["source"]];
+          const sourceEntry = source[key as ProgramContextId];
           for (let i = sourceEntry.length - 1; i >= 0; i--) {
             const line = sourceEntry[i];
             if (line.id === idToDelete) {

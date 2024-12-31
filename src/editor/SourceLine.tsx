@@ -15,6 +15,7 @@ import {
   Program,
   Instruction,
   Register,
+  ProgramContextId,
 } from "../store";
 
 import { types, instructionsDefinitions } from "../language/language";
@@ -23,12 +24,12 @@ import { hslaToHslaString } from "../utils";
 
 function EmptySlot(props: {
   setSelectedInput: Setter<{
-    sourcePath: keyof Program["source"];
+    sourcePath: ProgramContextId;
     lineId: Instruction["id"];
     value: any;
     index: number;
   }>;
-  sourcePath: keyof Program["source"];
+  sourcePath: ProgramContextId;
   line: Instruction;
   index: number;
 }) {
@@ -55,7 +56,7 @@ function RegisterParam(props: {
   registers: Register[];
   registerId: Register["id"];
   setSelectedInput: Setter<any>;
-  sourcePath: keyof Program["source"];
+  sourcePath: ProgramContextId;
   line: Instruction;
   index: number;
 }) {
@@ -88,7 +89,7 @@ function RegisterParam(props: {
 function ValueParam(props: {
   valueInput: any;
   setSelectedInput: Setter<any>;
-  sourcePath: keyof Program["source"];
+  sourcePath: ProgramContextId;
   line: Instruction;
   index: number;
 }) {
@@ -126,7 +127,7 @@ export function SourceLine(props: {
   line: Instruction;
   depth: Accessor<number>;
   selected: Accessor<boolean>;
-  sourcePath: keyof Program["source"];
+  sourcePath: ProgramContextId;
   registers: Register[];
   setSelectedInput: Setter<any>;
   order: string;
@@ -135,12 +136,19 @@ export function SourceLine(props: {
     if (!line.code.length) return false;
 
     const [module, command] = line.code;
+    if (module === "" || command === "") {
+      return false;
+    }
     const def = instructionsDefinitions[module][command];
     return def.some((d) => d.params[d.params.length - 1]?.variadic);
   };
   const canRemoveParam = (line: Instruction) => {
     if (!line.code.length) return false;
-    const def = instructionsDefinitions[line.code[0]][line.code[1]];
+    const [module, command] = line.code;
+    if (module === "" || command === "") {
+      return false;
+    }
+    const def = instructionsDefinitions[module][command];
     // a function is variadic if at least one of its implementations is variadic
     const isVariadic = def.some((d) => d.params[d.params.length - 1]?.variadic);
     const minLength = def.reduce(
@@ -162,7 +170,14 @@ export function SourceLine(props: {
           props.selected() ? setSelection([]) : setSelection([props.line.id])
         }
       >
-        <Show when={props.line.code.length} fallback={<p>//</p>}>
+        <Show
+          when={
+            props.line.code.length &&
+            props.line.code[0] !== "" &&
+            props.line.code[1] !== ""
+          }
+          fallback={<p>//</p>}
+        >
           {props.line.code[1]}
           <span> </span>
           <For each={props.line.code.slice(2)}>
