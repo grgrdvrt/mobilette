@@ -1,5 +1,13 @@
-import { Show, For, Switch, Match, createSignal, createMemo } from "solid-js";
-import { Dynamic } from "solid-js/web";
+import {
+  Show,
+  For,
+  Switch,
+  Match,
+  createSignal,
+  createMemo,
+  Setter,
+  Accessor,
+} from "solid-js";
 
 import {
   useStore,
@@ -13,6 +21,9 @@ import {
   removeParameter,
   clickContext,
   getInput,
+  Program,
+  Instruction,
+  Register,
 } from "./store";
 const [store] = useStore();
 
@@ -25,18 +36,28 @@ import { InstructionsMenu } from "./InstructionsMenu";
 
 import { DataInput } from "./components/ValueInput";
 
-function EmptySlot({ setSelectedInput, sourcePath, line, index }) {
+function EmptySlot(props: {
+  setSelectedInput: Setter<{
+    sourcePath: keyof Program["source"];
+    lineId: Instruction["id"];
+    value: any;
+    index: number;
+  }>;
+  sourcePath: keyof Program["source"];
+  line: Instruction;
+  index: number;
+}) {
   return (
     <button
       class="codeRegister"
       style={{}}
       onClick={(e) => {
         e.stopPropagation();
-        setSelectedInput({
-          sourcePath: sourcePath,
-          lineId: line.id,
+        props.setSelectedInput({
+          sourcePath: props.sourcePath,
+          lineId: props.line.id,
           value: null,
-          index: index,
+          index: props.index,
         });
       }}
     >
@@ -45,26 +66,32 @@ function EmptySlot({ setSelectedInput, sourcePath, line, index }) {
   );
 }
 
-function RegisterParam({
-  registers,
-  registerId,
-  setSelectedInput,
-  sourcePath,
-  line,
-  index,
+function RegisterParam(props: {
+  registers: Register[];
+  registerId: Register["id"];
+  setSelectedInput: Setter<any>;
+  sourcePath: keyof Program["source"];
+  line: Instruction;
+  index: number;
 }) {
-  const register = createMemo(() => registers.find((r) => r.id === registerId));
+  const register = createMemo(() => {
+    const register = props.registers.find((r) => r.id === props.registerId);
+    if (!register) {
+      throw new Error("Register not found");
+    }
+    return register;
+  });
   return (
     <button
       class="codeRegister"
       style={{ "background-color": register().color }}
       onClick={(e) => {
         e.stopPropagation();
-        setSelectedInput({
-          sourcePath: sourcePath,
-          lineId: line.id,
+        props.setSelectedInput({
+          sourcePath: props.sourcePath,
+          lineId: props.line.id,
           value: register(),
-          index: index,
+          index: props.index,
         });
       }}
     >
@@ -73,53 +100,60 @@ function RegisterParam({
   );
 }
 
-function ValueParam({ valueInput, setSelectedInput, sourcePath, line, index }) {
+function ValueParam(props: {
+  valueInput: any;
+  setSelectedInput: Setter<any>;
+  sourcePath: keyof Program["source"];
+  line: Instruction;
+  index: number;
+}) {
   return (
     <button
       class="codeRegister"
       style={{
         border: "solid 1px black",
         "background-color":
-          valueInput.type === types.COLOR
-            ? hslaToHslaString(valueInput.value)
+          props.valueInput.type === types.COLOR
+            ? hslaToHslaString(props.valueInput.value)
             : "white",
         color:
-          valueInput.type === types.COLOR && valueInput.value[2] < 50
+          props.valueInput.type === types.COLOR &&
+          props.valueInput.value[2] < 50
             ? "white"
             : "black",
       }}
       onClick={(e) => {
         e.stopPropagation();
-        setSelectedInput({
-          sourcePath: sourcePath,
-          lineId: line.id,
-          value: valueInput,
-          index: index,
+        props.setSelectedInput({
+          sourcePath: props.sourcePath,
+          lineId: props.line.id,
+          value: props.valueInput,
+          index: props.index,
         });
       }}
     >
-      {JSON.stringify(valueInput.value)}
+      {JSON.stringify(props.valueInput.value)}
     </button>
   );
 }
 
-function SourceLine({
-  line,
-  depth,
-  selected,
-  sourcePath,
-  registers,
-  setSelectedInput,
-  order,
+function SourceLine(props: {
+  line: Instruction;
+  depth: Accessor<number>;
+  selected: Accessor<boolean>;
+  sourcePath: keyof Program["source"];
+  registers: Register[];
+  setSelectedInput: Setter<any>;
+  order: string;
 }) {
-  const canAddParam = (line) => {
+  const canAddParam = (line: Instruction) => {
     if (!line.code.length) return false;
 
     const [module, command] = line.code;
     const def = instructionsDefinitions[module][command];
     return def.some((d) => d.params[d.params.length - 1]?.variadic);
   };
-  const canRemoveParam = (line) => {
+  const canRemoveParam = (line: Instruction) => {
     if (!line.code.length) return false;
     const def = instructionsDefinitions[line.code[0]][line.code[1]];
     // a function is variadic if at least one of its implementations is variadic
@@ -134,30 +168,29 @@ function SourceLine({
   return (
     <div
       class="sourceLine"
-      classList={{ selected: selected() }}
-      style={{ order: order }}
+      classList={{ selected: props.selected() }}
+      style={{ order: props.order }}
     >
       <p
-        style={{ "padding-left": 15 * depth() + "px" }}
+        style={{ "padding-left": 15 * props.depth() + "px" }}
         onClick={() =>
-          selected() ? setSelection([]) : setSelection([line.id])
+          props.selected() ? setSelection([]) : setSelection([props.line.id])
         }
       >
-        <Show when={line.code.length} fallback={<p>//</p>}>
-          {line.code[1]}
+        <Show when={props.line.code.length} fallback={<p>//</p>}>
+          {props.line.code[1]}
           <span> </span>
-          <For each={line.code.slice(2)}>
+          <For each={props.line.code.slice(2)}>
             {(input, index) => {
               return (
                 <>
                   <Switch>
                     <Match when={input.type === "empty"}>
-                      <Show when={selected()}>
+                      <Show when={props.selected()}>
                         <EmptySlot
-                          valueInput={input.value}
-                          setSelectedInput={setSelectedInput}
-                          sourcePath={sourcePath}
-                          line={line}
+                          setSelectedInput={props.setSelectedInput}
+                          sourcePath={props.sourcePath}
+                          line={props.line}
                           index={index()}
                         />
                       </Show>
@@ -165,19 +198,19 @@ function SourceLine({
                     <Match when={input.type === "value"}>
                       <ValueParam
                         valueInput={input.value}
-                        setSelectedInput={setSelectedInput}
-                        sourcePath={sourcePath}
-                        line={line}
+                        setSelectedInput={props.setSelectedInput}
+                        sourcePath={props.sourcePath}
+                        line={props.line}
                         index={index()}
                       />
                     </Match>
                     <Match when={input.type === "register"}>
                       <RegisterParam
                         registerId={input.value}
-                        registers={registers}
-                        setSelectedInput={setSelectedInput}
-                        sourcePath={sourcePath}
-                        line={line}
+                        registers={props.registers}
+                        setSelectedInput={props.setSelectedInput}
+                        sourcePath={props.sourcePath}
+                        line={props.line}
                         index={index()}
                       />
                     </Match>
@@ -187,22 +220,22 @@ function SourceLine({
               );
             }}
           </For>
-          <Show when={selected()}>
-            <Show when={(() => canAddParam(line))()}>
+          <Show when={props.selected()}>
+            <Show when={(() => canAddParam(props.line))()}>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  addParameter(sourcePath, line.id);
+                  addParameter(props.sourcePath, props.line.id);
                 }}
               >
                 +
               </button>
             </Show>
-            <Show when={(() => canRemoveParam(line))()}>
+            <Show when={(() => canRemoveParam(props.line))()}>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  removeParameter(sourcePath, line.id);
+                  removeParameter(props.sourcePath, props.line.id);
                 }}
               >
                 -
@@ -215,14 +248,19 @@ function SourceLine({
   );
 }
 
-function Program({ source, sourcePath, registers, setSelectedInput }) {
-  const isSelected = (id) => {
+function ProgramInterface(props: {
+  source: Instruction[];
+  sourcePath: keyof Program["source"];
+  registers: Register[];
+  setSelectedInput: Setter<any>;
+}) {
+  const isSelected = (id: string) => {
     const isSelected = store.gui.selection.indexOf(id) !== -1;
     return isSelected;
   };
   const depths = createMemo(() => {
     let d = 0;
-    return source.map((line) => {
+    return props.source.map((line) => {
       let result;
       if (line.code[1] === "endif" || line.code[1] === "endfor") {
         d--;
@@ -238,38 +276,39 @@ function Program({ source, sourcePath, registers, setSelectedInput }) {
     <div style={{ display: "flex", "flex-direction": "column" }}>
       <Show
         when={
-          store.gui.cursor.context === sourcePath &&
+          store.gui.cursor.context === props.sourcePath &&
           store.gui.cursor.position === -1
         }
       >
         <button
           class="insertionButton"
-          onClick={() => insertAfter(sourcePath, null)}
+          onClick={() => insertAfter(props.sourcePath, null)}
         >
           +
         </button>
       </Show>
-      <For each={source}>
+      <For each={props.source}>
         {(line, i) => {
           return (
             <>
               <SourceLine
                 line={line}
                 depth={() => depths()[i()]}
-                sourcePath={sourcePath}
-                registers={registers}
+                sourcePath={props.sourcePath}
+                registers={props.registers}
                 selected={() => isSelected(line.id)}
-                setSelectedInput={setSelectedInput}
+                setSelectedInput={props.setSelectedInput}
+                order="0"
               />
               <Show
                 when={
-                  store.gui.cursor.context === sourcePath &&
+                  store.gui.cursor.context === props.sourcePath &&
                   store.gui.cursor.position === i()
                 }
               >
                 <button
                   class="insertionButton"
-                  onClick={() => insertAfter(sourcePath, line.id)}
+                  onClick={() => insertAfter(props.sourcePath, line.id)}
                 >
                   +
                 </button>
@@ -281,7 +320,10 @@ function Program({ source, sourcePath, registers, setSelectedInput }) {
     </div>
   );
 }
-export function Code({ source, registers }) {
+export function Code(props: {
+  source: Program["source"];
+  registers: Register[];
+}) {
   const [selectedInput, setSelectedInput] = createSignal(null);
   const showInstruction = () => {
     const selectedLines = getSelectedLines();
@@ -291,14 +333,17 @@ export function Code({ source, registers }) {
     return store.gui.selection.length > 0;
   };
 
-  function CodeContext({ title, key }) {
+  function CodeContext(ctxProps: {
+    title: string;
+    key: keyof Program["source"];
+  }) {
     return (
       <>
-        <h3 onClick={() => clickContext(key)}>{title}</h3>
-        <Program
-          source={source[key]}
-          sourcePath={key}
-          registers={registers}
+        <h3 onClick={() => clickContext(ctxProps.key)}>{ctxProps.title}</h3>
+        <ProgramInterface
+          source={props.source[ctxProps.key]}
+          sourcePath={ctxProps.key}
+          registers={props.registers}
           setSelectedInput={setSelectedInput}
         />
       </>
@@ -327,7 +372,7 @@ export function Code({ source, registers }) {
       </Show>
       <Show when={selectedInput()}>
         <InputSelection
-          registers={registers}
+          registers={props.registers}
           selectedInput={selectedInput()}
           setSelectedInput={setSelectedInput}
         />
@@ -336,12 +381,15 @@ export function Code({ source, registers }) {
   );
 }
 
-export function ValueInput({ selectedInput, setSelectedInput }) {
+export function ValueInput(props: {
+  selectedInput: any;
+  setSelectedInput: Setter<any>;
+}) {
   const input = () => {
     return getInput(
-      selectedInput.sourcePath,
-      selectedInput.lineId,
-      selectedInput.index,
+      props.selectedInput.sourcePath,
+      props.selectedInput.lineId,
+      props.selectedInput.index,
     );
   };
 
@@ -362,12 +410,12 @@ export function ValueInput({ selectedInput, setSelectedInput }) {
       />
       <button
         onClick={() => {
-          const { sourcePath, lineId, index } = selectedInput;
+          const { sourcePath, lineId, index } = props.selectedInput;
           setParameter(sourcePath, lineId, index, "value", {
             type: type(),
             value: value(),
           });
-          setSelectedInput(null);
+          props.setSelectedInput(null);
         }}
       >
         set
@@ -376,20 +424,27 @@ export function ValueInput({ selectedInput, setSelectedInput }) {
   );
 }
 
-function InputSelection({ registers, selectedInput, setSelectedInput }) {
-  const [step, setStep] = createSignal({ id: "selection", data: {} });
+function InputSelection(props: {
+  registers: Register[];
+  selectedInput: any;
+  setSelectedInput: Setter<any>;
+}) {
+  const [step, setStep] = createSignal<{ id: string; data: any }>({
+    id: "selection",
+    data: {},
+  });
 
   return (
     <div class="inputSelection">
       <ValueInput
-        selectedInput={selectedInput}
-        setSelectedInput={setSelectedInput}
+        selectedInput={props.selectedInput}
+        setSelectedInput={props.setSelectedInput}
       />
       <div class="registerPicker">
         <Show when={step().id == "selection"}>
           <RegistersGrid
-            registers={registers}
-            onRegisterClicked={(registerPosition) => {
+            registers={props.registers}
+            onRegisterClicked={(registerPosition: { x: number; y: number }) => {
               const register = getRegisterByPosition(
                 registerPosition.x,
                 registerPosition.y,
@@ -397,7 +452,7 @@ function InputSelection({ registers, selectedInput, setSelectedInput }) {
               if (!register) {
                 setStep({ id: "creation", data: registerPosition });
               } else {
-                const { sourcePath, lineId, index } = selectedInput;
+                const { sourcePath, lineId, index } = props.selectedInput;
                 setParameter(
                   sourcePath,
                   lineId,
@@ -405,7 +460,7 @@ function InputSelection({ registers, selectedInput, setSelectedInput }) {
                   "register",
                   register.id,
                 );
-                setSelectedInput(null);
+                props.setSelectedInput(null);
               }
             }}
           />
@@ -414,21 +469,23 @@ function InputSelection({ registers, selectedInput, setSelectedInput }) {
           <RegisterDetails
             registerPosition={step().data}
             onClose={(reason) => {
-              const { sourcePath, lineId, index } = selectedInput;
+              const { sourcePath, lineId, index } = props.selectedInput;
               if (reason === "create") {
                 const register = getRegisterByPosition(
                   step().data.x,
                   step().data.y,
                 );
-                setParameter(
-                  sourcePath,
-                  lineId,
-                  index,
-                  "register",
-                  register.id,
-                );
+                if (register) {
+                  setParameter(
+                    sourcePath,
+                    lineId,
+                    index,
+                    "register",
+                    register.id,
+                  );
+                }
               }
-              setSelectedInput(null);
+              props.setSelectedInput(null);
             }}
           />
         </Show>

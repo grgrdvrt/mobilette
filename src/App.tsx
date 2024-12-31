@@ -26,6 +26,8 @@ import {
   Show,
   Switch,
   Match,
+  Setter,
+  Accessor,
 } from "solid-js";
 import { unwrap, reconcile } from "solid-js/store";
 
@@ -35,7 +37,9 @@ import {
   createEmptyProgram,
   setProgram,
   setThumb,
+  Register,
 } from "./store";
+
 const [store, setStore] = useStore();
 
 import {
@@ -51,26 +55,28 @@ import { Registers } from "./Registers";
 import { Code } from "./Code";
 import "./App.css";
 
-function Console({ log }) {
-  let container;
+function Console(props: { log: Accessor<any> }) {
+  let container: HTMLDivElement | undefined;
   createEffect(
-    on(log, () => {
-      container.scrollTop = container.scrollHeight;
+    on(props.log, () => {
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
     }),
   );
   return (
     <div ref={container} style={{ height: "100%", overflow: "auto" }}>
-      <For each={log().slice(-200)}>{(line) => <p>{line}</p>}</For>
+      <For each={props.log().slice(-200)}>{(line) => <p>{line}</p>}</For>
     </div>
   );
 }
 
-function Editor({ setPage }) {
+function Editor(props: { setPage: Setter<string> }) {
   resetRegisters();
   const [mode, setMode] = createSignal("code");
   const [isPlaying, setIsPlaying] = createSignal(false);
   const [tab, setTab] = createSignal("code");
-  const interpreter = new Interpreter((registers) => {
+  const interpreter = new Interpreter((registers: Register[]) => {
     setStore("program", "registers", reconcile(registers));
   });
 
@@ -100,7 +106,7 @@ function Editor({ setPage }) {
                 </button>
               </div>
 
-              <button onClick={() => setPage("home")}>
+              <button onClick={() => props.setPage("home")}>
                 <img src={HomePicto} />
               </button>
 
@@ -186,9 +192,9 @@ function Editor({ setPage }) {
   );
 }
 
-function Home({ setPage }) {
+function Home(props: { setPage: Setter<string> }) {
   const [documents, { refetch }] = createResource(getDocuments);
-  const [selected, setSelected] = createSignal(null);
+  const [selected, setSelected] = createSignal<string | null>(null);
   const isSelected = createSelector(selected);
   return (
     <div class="home" onClick={() => setSelected(null)}>
@@ -200,7 +206,7 @@ function Home({ setPage }) {
         <button
           class="home-action"
           onClick={() => {
-            setPage("about");
+            props.setPage("about");
           }}
         >
           About
@@ -211,7 +217,7 @@ function Home({ setPage }) {
             const program = createEmptyProgram();
             saveDocument(program);
             setProgram(program);
-            setPage("editor");
+            props.setPage("editor");
           }}
         >
           new
@@ -242,7 +248,7 @@ function Home({ setPage }) {
                   <button
                     onClick={() => {
                       setProgram(program);
-                      setPage("editor");
+                      props.setPage("editor");
                     }}
                   >
                     {" "}
@@ -266,7 +272,7 @@ function Home({ setPage }) {
                         p.id = crypto.randomUUID();
                         saveDocument(p);
                         setProgram(p);
-                        setPage("editor");
+                        props.setPage("editor");
                       }}
                     >
                       <img
@@ -285,7 +291,7 @@ function Home({ setPage }) {
   );
 }
 
-function About({ setPage }) {
+function About(props: { setPage: Setter<string> }) {
   return (
     <div class="about">
       <h1 class="title">
@@ -296,7 +302,7 @@ function About({ setPage }) {
         Mobilette is a programming language + editor for recreational creative
         coding on mobile.
       </p>
-      <button onClick={() => setPage("home")}>
+      <button onClick={() => props.setPage("home")}>
         <img src={HomePicto} />
       </button>
     </div>

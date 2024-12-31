@@ -1,7 +1,21 @@
 import { createNoise2D, createNoise3D, createNoise4D } from "simplex-noise";
+import { Interpreter } from "./interpreter";
 const noise2D = createNoise2D();
 const noise3D = createNoise3D();
 const noise4D = createNoise4D();
+
+export type ParamDefinition = {
+  type: number;
+  optional?: boolean;
+  variadic?: boolean;
+};
+export type Param = { type: "empty" | "register" | "value"; value: any };
+export type InstructionVariant = {
+  params: ParamDefinition[];
+  effect: (params: Param[], env: Interpreter) => void;
+};
+export type InstructionDefinition = InstructionVariant[];
+export type Module = Record<string, InstructionDefinition>;
 
 export const types = {
   ANY: -1,
@@ -33,7 +47,10 @@ export const defaultValues = {
 const num = { type: types.NUMBER };
 const bool = { type: types.BOOLEAN };
 const arr = { type: types.ARRAY };
-function binop(func, paramsTypes = [types.NUMBER, types.NUMBER, types.NUMBER]) {
+function binop(
+  func: (a: any, b: any) => any,
+  paramsTypes = [types.NUMBER, types.NUMBER, types.NUMBER],
+): InstructionVariant {
   return {
     params: [
       { type: paramsTypes[0] },
@@ -49,7 +66,10 @@ function binop(func, paramsTypes = [types.NUMBER, types.NUMBER, types.NUMBER]) {
   };
 }
 
-function monop(func, paramsTypes = [types.NUMBER, types.NUMBER]) {
+function monop(
+  func: (a: any) => any,
+  paramsTypes = [types.NUMBER, types.NUMBER],
+): InstructionVariant {
   return {
     params: [
       { type: paramsTypes[0] },
@@ -64,7 +84,7 @@ function monop(func, paramsTypes = [types.NUMBER, types.NUMBER]) {
   };
 }
 
-function comp(func) {
+function comp(func: (a: any, b: any) => boolean): InstructionVariant {
   return {
     params: [num, num, bool],
     effect: (params, env) => {
@@ -76,18 +96,18 @@ function comp(func) {
   };
 }
 
-function hsla(color) {
+function hsla(color: [number, number, number, number]) {
   return `hsla(${color[0]}, ${color[1]}%, ${color[2]}%, ${color[3]})`;
 }
-function lerp(a, b, t) {
+function lerp(a: number, b: number, t: number) {
   return a + t * (b - a);
 }
 
-function map(a, b, c, d, t) {
+function map(a: number, b: number, c: number, d: number, t: number) {
   return lerp(c, d, (t - a) / (b - a));
 }
 
-export const instructionsDefinitions = {
+export const instructionsDefinitions: Record<string, Module> = {
   registers: {
     set: [
       {
@@ -183,45 +203,45 @@ export const instructionsDefinitions = {
     "+": [
       binop((a, b) => a + b),
       binop(
-        (a, b) => b.map((v) => v + a),
+        (a, b) => b.map((v: number) => v + a),
         [types.NUMBER, types.ARRAY, types.ARRAY],
       ),
       binop(
-        (a, b) => a.map((v) => v + b),
+        (a, b) => a.map((v: number) => v + b),
         [types.ARRAY, types.NUMBER, types.ARRAY],
       ),
       binop(
-        (a, b) => a.map((v, i) => v + b[i]),
+        (a, b) => a.map((v: number, i: number) => v + b[i]),
         [types.ARRAY, types.ARRAY, types.ARRAY],
       ),
     ],
     "-": [
       binop((a, b) => a - b),
       binop(
-        (a, b) => b.map((v) => v - a),
+        (a, b) => b.map((v: number) => v - a),
         [types.NUMBER, types.ARRAY, types.ARRAY],
       ),
       binop(
-        (a, b) => a.map((v) => v - b),
+        (a, b) => a.map((v: number) => v - b),
         [types.ARRAY, types.NUMBER, types.ARRAY],
       ),
       binop(
-        (a, b) => a.map((v, i) => v - b[i]),
+        (a, b) => a.map((v: number, i: number) => v - b[i]),
         [types.ARRAY, types.ARRAY, types.ARRAY],
       ),
     ],
     "*": [
       binop((a, b) => a * b),
       binop(
-        (a, b) => b.map((v) => v * a),
+        (a, b) => b.map((v: number) => v * a),
         [types.NUMBER, types.ARRAY, types.ARRAY],
       ),
       binop(
-        (a, b) => a.map((v) => v * b),
+        (a, b) => a.map((v: number) => v * b),
         [types.ARRAY, types.NUMBER, types.ARRAY],
       ),
       binop(
-        (a, b) => a.map((v, i) => v * b[i]),
+        (a, b) => a.map((v: number, i: number) => v * b[i]),
         [types.ARRAY, types.ARRAY, types.ARRAY],
       ),
     ],
@@ -241,7 +261,7 @@ export const instructionsDefinitions = {
     log: [monop(Math.log)],
     round: [monop(Math.round)],
     ceil: [monop(Math.ceil)],
-    floor: monop(Math.floor),
+    floor: [monop(Math.floor)],
     random: [
       {
         params: [num, num, num],
@@ -352,7 +372,7 @@ export const instructionsDefinitions = {
         params: [num, num, num, num],
         effect: (params, env) => {
           const [cx, cy, x, y] = params.map(env.readVal, env);
-          env.ctx.curveTo(cx, cy, x, y);
+          env.ctx.quadraticCurveTo(cx, cy, x, y);
         },
       },
       {
@@ -360,7 +380,7 @@ export const instructionsDefinitions = {
         effect: (params, env) => {
           const c = env.readVal(params[0]);
           const p = env.readVal(params[1]);
-          env.ctx.curveTo(c[0], c[1], p[0], p[1]);
+          env.ctx.quadraticCurveTo(c[0], c[1], p[0], p[1]);
         },
       },
     ],
@@ -466,7 +486,7 @@ export const instructionsDefinitions = {
         params: [arr, num, num, num, num],
         effect: (params, env) => {
           const [c, r, a1, a2, d] = params.map(env.readVal, env);
-          env.ctx.moveTo(x + r * Math.cos(a1), y + r * Math.sin(a1));
+          env.ctx.moveTo(c[0] + r * Math.cos(a1), c[1] + r * Math.sin(a1));
           env.ctx.arc(c[0] + r, c[1], r, a1, a2, d);
         },
       },
@@ -545,7 +565,7 @@ export const instructionsDefinitions = {
     dist: [
       binop(
         (a, b) => {
-          return Math.hypot(...a.map((c, i) => c - b[i]));
+          return Math.hypot(...a.map((c: number, i: number) => c - b[i]));
         },
         [types.ARRAY, types.ARRAY, types.NUMBER],
       ),
@@ -555,7 +575,7 @@ export const instructionsDefinitions = {
       binop(
         (v, l) => {
           const r = l / Math.hypot(...v);
-          return v.map((c) => c * r);
+          return v.map((c: number) => c * r);
         },
         [types.ARRAY, types.ARRAY, types.NUMBER],
       ),
@@ -563,7 +583,7 @@ export const instructionsDefinitions = {
     dot: [
       binop(
         (a, b) => {
-          return a.reduce((t, c, i) => c * b[i]);
+          return a.reduce((t: number, c: number, i: number) => t + c * b[i]);
         },
         [types.ARRAY, types.ARRAY, types.NUMBER],
       ),
