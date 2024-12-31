@@ -1,5 +1,5 @@
 import { Accessor, createSignal, Setter, untrack } from "solid-js";
-import { Param, types, instructionsDefinitions } from "./language";
+import { ParamInput, types, instructionsDefinitions } from "./language";
 import { Instruction, Program, Register, ProgramContext } from "../store";
 
 type IfDefinition = {
@@ -9,7 +9,7 @@ type IfDefinition = {
 };
 type ForDefinition = {
   type: "for";
-  targetRegister: Param;
+  targetRegister: ParamInput;
   begin: number;
   end: number;
   step: number;
@@ -65,7 +65,7 @@ export class Interpreter {
     this.getReg(regId).value = val;
   }
 
-  readVal(param: Param) {
+  readVal(param: ParamInput) {
     switch (param.type) {
       case "value":
         return JSON.parse(JSON.stringify(param.value.value));
@@ -76,7 +76,7 @@ export class Interpreter {
     }
   }
 
-  readType(param: Param) {
+  readType(param: ParamInput) {
     switch (param.type) {
       case "value":
         return param.value.type;
@@ -87,7 +87,7 @@ export class Interpreter {
     }
   }
 
-  readParam(param: Param) {
+  readParam(param: ParamInput) {
     switch (param.type) {
       case "value":
         return param.value;

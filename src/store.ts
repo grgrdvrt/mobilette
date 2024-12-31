@@ -5,17 +5,17 @@ import { updateDocument } from "./db";
 import {
   types,
   instructionsDefinitions,
-  Param,
+  ParamInput,
   InstructionVariant,
 } from "./language/language";
+import { lerp } from "./utils";
 
 export type Type = number;
 
 export type Instruction = {
   id: string;
-  params: Param[];
-  inputs: Param[];
-  definition: [string, string];
+  slots: ParamInput[];
+  definition: [string, string] | undefined;
 };
 
 export type Register = {
@@ -169,14 +169,14 @@ export function getSelectedLines() {
   return lines;
 }
 
-export function getInput(
+export function getSlot(
   sourcePath: ProgramContextId,
   lineId: string,
   index: number,
 ) {
   return store.program.source[sourcePath].find(
     (line: Instruction) => line.id === lineId,
-  )?.code[index + 2];
+  )?.slots[index];
 }
 
 //commands
@@ -205,8 +205,8 @@ export function insertAfter(sourcePath: ProgramContextId, id: string | null) {
       const i = id === null ? 0 : source.findIndex((line) => line.id === id);
       source.splice(i + (id === null ? 0 : 1), 0, {
         id: newLineId,
-        params: [],
-        code: ["", ""],
+        slots: [],
+        definition: undefined,
       });
     }),
   );
@@ -221,8 +221,8 @@ export function insertAtIndex(sourcePath: ProgramContextId, index: number) {
       const newLineId = crypto.randomUUID();
       source.splice(index + 1, 0, {
         id: newLineId,
-        params: [],
-        code: ["", ""],
+        slots: [],
+        definition: undefined,
       });
       store.gui.selection = [newLineId];
     }),
@@ -251,8 +251,14 @@ export function setCommand(module: string, command: string) {
         },
         0,
       );
-      const params = new Array(paramsCount).fill({ type: "empty", value: "" });
-      targetLine?.code.push(module, command, ...params);
+      if (targetLine) {
+        targetLine.definition = [module, command];
+        const params = new Array(paramsCount).fill({
+          type: "empty",
+          value: undefined,
+        });
+        targetLine.slots.push(...params);
+      }
     }),
   );
   autoSave();
@@ -264,18 +270,18 @@ export function addParameter(sourcePath: ProgramContextId, lineId: string) {
       const line = store.program.source[sourcePath].find(
         (l) => l.id === lineId,
       );
-      line?.code.push({ type: "empty", value: "" });
+      line?.slots.push({ type: "empty", value: undefined });
     }),
   );
 }
 
-export function removeParameter(sourcePath: ProgramContextId, lineId: string) {
+export function removeSlot(sourcePath: ProgramContextId, lineId: string) {
   setStore(
     produce((store) => {
       const line = store.program.source[sourcePath].find(
         (l) => l.id === lineId,
       );
-      line?.code.pop();
+      line?.slots.pop();
     }),
   );
   autoSave();
@@ -293,14 +299,10 @@ export function setParameter(
       const line = store.program.source[sourcePath].find(
         (l) => l.id === lineId,
       );
-      line!.code[registerIndex + 2] = { type: type, value: value };
+      line!.slots[registerIndex] = { type: type, value: value };
     }),
   );
   autoSave();
-}
-
-function lerp(a: number, b: number, t: number) {
-  return a + t * (b - a);
 }
 
 function randomRegisterColor() {
@@ -380,15 +382,15 @@ export function saveRegister(
 export function setSelection(ids: string[]) {
   setStore("gui", "selection", ids);
   if (ids.length === 1) {
-    let cursor = undefined;
+    let cursor: AppStore["gui"]["cursor"] | undefined = undefined;
     const source = store.program.source;
-    for (let context in source) {
-      const candidate = source[context as ProgramContextId].findIndex(
+    for (let programContextId in source) {
+      const candidate = source[programContextId as ProgramContextId].findIndex(
         (l) => l.id === ids[0],
       );
       if (candidate !== -1) {
         cursor = {
-          context: context,
+          programContextId: programContextId as ProgramContextId,
           position: candidate,
         };
         break;
@@ -403,7 +405,7 @@ export function setSelection(ids: string[]) {
 }
 
 export function clearCursor() {
-  setStore("gui", "cursor", "context", null);
+  setStore("gui", "cursor", "programContextId", null);
 }
 
 //click the title of a code section

@@ -10,10 +10,10 @@ export type ParamDefinition = {
   optional?: boolean;
   variadic?: boolean;
 };
-export type Param = { type: "empty" | "register" | "value"; value: any };
+export type ParamInput = { type: "empty" | "register" | "value"; value: any };
 export type InstructionVariant = {
   params: ParamDefinition[];
-  effect: (params: Param[], env: Interpreter) => void;
+  effect: (params: ParamInput[], env: Interpreter) => void;
 };
 export type InstructionDefinition = InstructionVariant[];
 export type Module = Record<string, InstructionDefinition>;

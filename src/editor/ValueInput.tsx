@@ -1,6 +1,6 @@
 import { createSignal, Setter } from "solid-js";
 
-import { setParameter, getInput } from "../store";
+import { setParameter, getSlot } from "../store";
 
 import { types, defaultValues } from "../language/language";
 
@@ -11,7 +11,7 @@ export function ValueInput(props: {
   setSelectedInput: Setter<any>;
 }) {
   const input = () => {
-    return getInput(
+    return getSlot(
       props.selectedInput.sourcePath,
       props.selectedInput.lineId,
       props.selectedInput.index,

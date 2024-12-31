@@ -11,7 +11,7 @@ import {
 import {
   setSelection,
   addParameter,
-  removeParameter,
+  removeSlot,
   Program,
   Instruction,
   Register,
@@ -235,7 +235,7 @@ export function SourceLine(props: {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  removeParameter(props.sourcePath, props.line.id);
+                  removeSlot(props.sourcePath, props.line.id);
                 }}
               >
                 -
