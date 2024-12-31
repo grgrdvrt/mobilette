@@ -1,6 +1,6 @@
 import { Accessor, createSignal, Setter, untrack } from "solid-js";
 import { Param, types, instructionsDefinitions } from "./language";
-import { Instruction, Program, Register, Source } from "./store";
+import { Instruction, Program, Register, Source } from "../store";
 
 type IfDefinition = {
   type: "if";

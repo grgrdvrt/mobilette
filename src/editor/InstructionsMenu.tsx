@@ -1,6 +1,6 @@
 import { For, createSignal, Show } from "solid-js";
-import { instructionsDefinitions } from "./language";
-import { setCommand } from "./store";
+import { instructionsDefinitions } from "../language/language";
+import { setCommand } from "../store";
 export function InstructionsMenu() {
   const [selectedModule, setSelectedModule] = createSignal<string | null>(null);
   return (

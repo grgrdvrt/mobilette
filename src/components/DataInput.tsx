@@ -1,6 +1,6 @@
 import { For, Switch, Match, Accessor, Setter } from "solid-js";
 
-import { types, typesNames, defaultValues } from "../language";
+import { types, typesNames, defaultValues } from "../language/language";
 import { hexToHSLA, hslaToHex } from "../utils";
 
 export function DataInput(props: {

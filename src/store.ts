@@ -7,7 +7,7 @@ import {
   instructionsDefinitions,
   Param,
   InstructionVariant,
-} from "./language";
+} from "./language/language";
 
 export type Type = number;
 
@@ -471,7 +471,7 @@ function save() {
   updateDocument(unwrap(store.program));
 }
 
-let savedRecently;
+let savedRecently: boolean = false;
 let requestSave: boolean = false;
 let saveTimeout: number | undefined = undefined;
 function autoSave() {

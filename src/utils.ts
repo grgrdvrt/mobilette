@@ -1,3 +1,23 @@
+export function range(min: number, max: number) {
+  const result = [];
+  for (let i = min; i < max; i++) {
+    result.push(i);
+  }
+  return result;
+}
+
+export function hsla(color: [number, number, number, number]) {
+  return `hsla(${color[0]}, ${color[1]}%, ${color[2]}%, ${color[3]})`;
+}
+
+export function lerp(a: number, b: number, t: number) {
+  return a + t * (b - a);
+}
+
+export function map(a: number, b: number, c: number, d: number, t: number) {
+  return lerp(c, d, (t - a) / (b - a));
+}
+
 //via chatGPT
 export function hexToHSLA(hex: string, a: number) {
   // Convert hex to RGB first

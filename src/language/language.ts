@@ -1,5 +1,6 @@
 import { createNoise2D, createNoise3D, createNoise4D } from "simplex-noise";
 import { Interpreter } from "./interpreter";
+import { hsla, lerp, map } from "../utils";
 const noise2D = createNoise2D();
 const noise3D = createNoise3D();
 const noise4D = createNoise4D();
@@ -94,17 +95,6 @@ function comp(func: (a: any, b: any) => boolean): InstructionVariant {
       );
     },
   };
-}
-
-function hsla(color: [number, number, number, number]) {
-  return `hsla(${color[0]}, ${color[1]}%, ${color[2]}%, ${color[3]})`;
-}
-function lerp(a: number, b: number, t: number) {
-  return a + t * (b - a);
-}
-
-function map(a: number, b: number, c: number, d: number, t: number) {
-  return lerp(c, d, (t - a) / (b - a));
 }
 
 export const instructionsDefinitions: Record<string, Module> = {
