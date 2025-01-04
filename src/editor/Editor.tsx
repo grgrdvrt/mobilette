@@ -125,8 +125,13 @@ export function Editor(props: {
   const [selectedSlot, setSelectedSlot] = createSignal<SlotPath | undefined>(
     undefined,
   );
-  const showInstruction = () => {
-    return store.gui.cursor && store.gui.cursor.lineIndex != -1;
+  const showInstructionSelection = () => {
+    const cursor = store.gui.cursor;
+    return (
+      cursor &&
+      cursor.lineIndex != -1 &&
+      props.source[cursor.programContextId][cursor.lineIndex] === undefined
+    );
   };
 
   function CodeContext(ctxProps: { title: string; key: ProgramContextId }) {
@@ -155,7 +160,7 @@ export function Editor(props: {
         <hr />
         <CodeContext title="On Pointer Move" key="pointerMove" />
       </div>
-      <Show when={showInstruction()}>
+      <Show when={showInstructionSelection()}>
         <InstructionsMenu />
       </Show>
       <Show when={hasSelection()}>
