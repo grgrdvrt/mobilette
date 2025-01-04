@@ -10,7 +10,7 @@
     flex-direction: column;
 }
 
-.about {
+.documentation {
     height: 100%;
     position: relative;
     text-align: center;
@@ -25,6 +25,9 @@
 .home-actions {
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    margin-top: 2em;
+    padding: 0 3em;
 }
 
 .home-action {
@@ -32,11 +35,24 @@
     margin: 0.5em;
 }
 
-.title {
+.home-title {
+    margin: 5em auto;
+}
+
+.mainTitle {
     font-size: 2em;
     line-height: initial;
     text-align: center;
     width: 100%;
+    margin-bottom: 0px;
+}
+
+.subtitle {
+    font-size: 1em;
+    line-height: initial;
+    text-align: center;
+    width: 100%;
+    margin: 0px;
 }
 
 .home-logo {
@@ -44,18 +60,11 @@
     vertical-align: middle;
 }
 
-.home-title {
-    height: 3em;
-    vertical-align: middle;
-}
-
 .documentsList {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-around;
-    margin: 0;
-    margin-block: 0;
-    margin-inline: 0;
+    margin: 2em auto;
     padding-inline: 0;
 }
 
@@ -67,6 +76,8 @@
     position: relative;
     border-radius: 10px;
     overflow: hidden;
+    border: solid 1px #eeeeee;
+    margin: 0.5em;
 }
 
 .documentItem-thumb {
