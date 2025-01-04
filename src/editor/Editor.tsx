@@ -80,6 +80,7 @@ function ProgramInterface(props: {
                       lineIndex: i(),
                     }}
                     selected={() => isSelected(i())}
+                    order="0"
                   />
                 }
               >

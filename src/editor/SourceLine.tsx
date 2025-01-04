@@ -106,20 +106,27 @@ function ValueParam(props: {
 export function EmptySourceLine(props: {
   instructionPath: InstructionPath;
   selected: Accessor<boolean>;
+  order: string;
 }) {
   return (
-    <p
-      onClick={() =>
-        props.selected()
-          ? clearCursor()
-          : setCursor(
-              props.instructionPath.programContextId,
-              props.instructionPath.lineIndex,
-            )
-      }
+    <div
+      class="sourceLine"
+      classList={{ selected: props.selected() }}
+      style={{ order: props.order }}
     >
-      //
-    </p>
+      <p
+        onClick={() =>
+          props.selected()
+            ? clearCursor()
+            : setCursor(
+                props.instructionPath.programContextId,
+                props.instructionPath.lineIndex,
+              )
+        }
+      >
+        //
+      </p>
+    </div>
   );
 }
 
