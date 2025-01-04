@@ -68,9 +68,9 @@ export class Interpreter {
   readVal(param: ParamInput) {
     switch (param.type) {
       case "value":
-        return JSON.parse(JSON.stringify(param.value.value));
+        return JSON.parse(JSON.stringify(param.content.value));
       case "register":
-        return this.getReg(param.value).value;
+        return this.getReg(param.content).value;
       default:
         throw new Error(`unknown type ${param.type}`);
     }
@@ -79,9 +79,9 @@ export class Interpreter {
   readType(param: ParamInput) {
     switch (param.type) {
       case "value":
-        return param.value.type;
+        return param.content.type;
       case "register":
-        return this.getReg(param.value).type;
+        return this.getReg(param.content).type;
       default:
         throw new Error(`unknown type ${param.type}`);
     }
@@ -90,9 +90,9 @@ export class Interpreter {
   readParam(param: ParamInput) {
     switch (param.type) {
       case "value":
-        return param.value;
+        return param.content;
       case "register":
-        return this.getReg(param.value);
+        return this.getReg(param.content);
       default:
         throw new Error(`unknown type ${param.type}`);
     }
@@ -103,8 +103,8 @@ export class Interpreter {
     const ifStack: number[][] = [];
     const forStack: number[] = [];
     instructions.forEach((line, i) => {
-      if (line.code.length === 0) return;
-      const [module, cmd] = line.code;
+      if (line === undefined) return;
+      const [module, cmd] = line;
       if (module === "ctrl") {
         switch (cmd) {
           case "if":
@@ -141,7 +141,7 @@ export class Interpreter {
     });
   }
 
-  executeInstructions(instructions: Instruction[]) {
+  executeInstructions(instructions: ProgramContext) {
     this.initJumpTable(instructions);
     this.setVal("time", Date.now() - this.initialTime);
     this.instructionId = 0;
@@ -150,19 +150,20 @@ export class Interpreter {
       const line = instructions[this.instructionId];
       // console.log(this.instructionId, JSON.stringify(line.code));
       // try{
-      if (line.code.length) {
-        const [module, cmd, ...params] = line.code;
+      if (line !== undefined) {
+        const [module, cmd, ...params] = line;
         // const hasNull = params.some(p => p.value === "null");
         const hasNull = false;
         if (!hasNull) {
           if (module === "ctrl") {
             if (cmd === "if") {
+              const ifParams = params[0] as ParamInput;
               ctrlStack.push({
                 type: "if",
                 line: this.instructionId,
                 jumps: this.jumpTable.get(this.instructionId),
               });
-              if (this.readVal(params[0])) {
+              if (this.readVal(ifParams)) {
                 this.instructionId++;
               } else {
                 const jumps = this.jumpTable.get(this.instructionId);
@@ -182,12 +183,13 @@ export class Interpreter {
                   c.type === "for" && c.beginLine == this.instructionId,
               );
               if (!forDefinition) {
-                const begin = this.readVal(params[1]);
-                const end = this.readVal(params[2]);
+                const forInputs = params as ParamInput[];
+                const begin = this.readVal(forInputs[1]);
+                const end = this.readVal(forInputs[2]);
                 const step = begin < end ? 1 : -1;
                 forDefinition = {
                   type: "for",
-                  targetRegister: params[0],
+                  targetRegister: forInputs[0],
                   begin,
                   end,
                   step,
@@ -195,10 +197,10 @@ export class Interpreter {
                   endLine: this.jumpTable.get(this.instructionId)! as number,
                 };
                 ctrlStack.push(forDefinition);
-                this.setVal(forDefinition.targetRegister.value, begin);
+                this.setVal(forDefinition.targetRegister.content, begin);
               } else {
                 this.setVal(
-                  forDefinition.targetRegister.value,
+                  forDefinition.targetRegister.content,
                   this.readVal(forDefinition.targetRegister) +
                     forDefinition.step,
                 );
@@ -255,7 +257,7 @@ export class Interpreter {
               this.instructionId = line;
             }
           } else {
-            const filteredParams = params.filter((p) => p.type !== "empty");
+            const filteredParams = params.filter((p) => p !== undefined);
             const instruction = instructionsDefinitions[module][cmd].find(
               (v) => {
                 return (
@@ -271,16 +273,16 @@ export class Interpreter {
             );
             if (!instruction) {
               this.log(
-                `${this.instructionId}: ERROR: can't find matching implementation : ${JSON.stringify(line.code)}; ${params.map((p) => this.readType(p))}`,
+                `${this.instructionId}: ERROR: can't find matching implementation : ${JSON.stringify(line)}; ${params.map((p) => (p ? this.readType(p) : "empty"))}`,
               );
               throw new Error();
             }
-            instruction.effect(params, this);
+            instruction.effect(filteredParams, this);
             this.instructionId++;
           }
         } else {
           this.log(
-            `${this.instructionId}: ERROR: has null param : ${JSON.stringify(line.code)}`,
+            `${this.instructionId}: ERROR: has null param : ${JSON.stringify(line)}`,
           );
           this.instructionId++;
         }
@@ -342,7 +344,7 @@ export class Interpreter {
     this.ctx.clearRect(0, 0, width, height);
     this.updatePointer(0, 0);
     this.setStdOut([]);
-    this.executeInstructions(this.source.init);
+    this.executeInstructions(this.source.init as Instruction[]);
   }
 
   loop() {

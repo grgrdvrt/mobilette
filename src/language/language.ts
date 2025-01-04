@@ -10,7 +10,7 @@ export type ParamDefinition = {
   optional?: boolean;
   variadic?: boolean;
 };
-export type ParamInput = { type: "empty" | "register" | "value"; value: any };
+export type ParamInput = { type: "register" | "value"; content: any };
 export type InstructionVariant = {
   params: ParamDefinition[];
   effect: (params: ParamInput[], env: Interpreter) => void;
@@ -60,7 +60,7 @@ function binop(
     ],
     effect: (params, env) => {
       env.setVal(
-        (params.length === 3 ? params[2] : params[0]).value,
+        (params.length === 3 ? params[2] : params[0]).content,
         func(env.readVal(params[0]), env.readVal(params[1])),
       );
     },
@@ -78,7 +78,7 @@ function monop(
     ],
     effect: (params, env) => {
       env.setVal(
-        (params.length === 2 ? params[1] : params[0]).value,
+        (params.length === 2 ? params[1] : params[0]).content,
         func(env.readVal(params[0])),
       );
     },
@@ -90,7 +90,7 @@ function comp(func: (a: any, b: any) => boolean): InstructionVariant {
     params: [num, num, bool],
     effect: (params, env) => {
       env.setVal(
-        params[2].value,
+        params[2].content,
         func(env.readVal(params[0]), env.readVal(params[1])) ? 1 : 0,
       );
     },
@@ -103,7 +103,7 @@ export const instructionsDefinitions: Record<string, Module> = {
       {
         params: [{ type: types.ANY }, { type: types.ANY }],
         effect: (params, env) =>
-          env.setVal(params[0].value, env.readVal(params[1])),
+          env.setVal(params[0].content, env.readVal(params[1])),
       },
       {
         params: [
@@ -129,7 +129,7 @@ export const instructionsDefinitions: Record<string, Module> = {
                   return `[${env.readVal(param)}]`;
                   break;
                 case "register":
-                  const register = env.getReg(param.value);
+                  const register = env.getReg(param.content);
                   return `[${register.name || register.y + ":" + register.x} ${register.value}]`;
                   break;
               }
@@ -148,7 +148,7 @@ export const instructionsDefinitions: Record<string, Module> = {
         ],
         effect: (params, env) => {
           env.setVal(
-            params[2].value,
+            params[2].content,
             env.readVal(params[0])[env.readVal(params[1])],
           );
         },
@@ -174,7 +174,7 @@ export const instructionsDefinitions: Record<string, Module> = {
           console.log("arr", arr);
           for (let i = 0; i < arr.length; i++) {
             console.log(arr[i], params[i + 1]);
-            env.setVal(params[i + 1].value, arr[i]);
+            env.setVal(params[i + 1].content, arr[i]);
           }
         },
       },
@@ -257,7 +257,7 @@ export const instructionsDefinitions: Record<string, Module> = {
         params: [num, num, num],
         effect: (params, env) => {
           const [min, max] = params.slice(0, 2).map(env.readVal, env);
-          env.setVal(params[2].value, lerp(min, max, Math.random()));
+          env.setVal(params[2].content, lerp(min, max, Math.random()));
         },
       },
     ],
@@ -266,7 +266,7 @@ export const instructionsDefinitions: Record<string, Module> = {
         params: [num, num, num, num],
         effect: (params, env) => {
           const [a, b, t] = params.slice(0, 3).map(env.readVal, env);
-          env.setVal(params[3].value, lerp(a, b, t));
+          env.setVal(params[3].content, lerp(a, b, t));
         },
       },
     ],
@@ -275,7 +275,7 @@ export const instructionsDefinitions: Record<string, Module> = {
         params: [num, num, num, num, num, num],
         effect: (params, env) => {
           const [a, b, c, d, t] = params.slice(0, 5).map(env.readVal, env);
-          env.setVal(params[5].value, map(a, b, c, d, t));
+          env.setVal(params[5].content, map(a, b, c, d, t));
         },
       },
     ],
@@ -299,8 +299,8 @@ export const instructionsDefinitions: Record<string, Module> = {
       {
         params: [],
         effect: (_, env) => {
-          const w = env.readVal({ type: "register", value: "width" });
-          const h = env.readVal({ type: "register", value: "height" });
+          const w = env.readVal({ type: "register", content: "width" });
+          const h = env.readVal({ type: "register", content: "height" });
           env.ctx.save();
           env.ctx.fillStyle = "white";
           env.ctx.fillRect(0, 0, w, h);
@@ -310,8 +310,8 @@ export const instructionsDefinitions: Record<string, Module> = {
       {
         params: [{ type: types.COLOR }],
         effect: (params, env) => {
-          const w = env.readVal({ type: "register", value: "width" });
-          const h = env.readVal({ type: "register", value: "height" });
+          const w = env.readVal({ type: "register", content: "width" });
+          const h = env.readVal({ type: "register", content: "height" });
           env.ctx.save();
           env.ctx.fillStyle = hsla(env.readVal(params[0]));
           env.ctx.fillRect(0, 0, w, h);
@@ -531,7 +531,7 @@ export const instructionsDefinitions: Record<string, Module> = {
           { type: types.ARRAY },
         ],
         effect: (params, env) => {
-          env.setVal(params[2].value, [
+          env.setVal(params[2].content, [
             env.readVal(params[0]),
             env.readVal(params[1]),
           ]);
@@ -548,7 +548,7 @@ export const instructionsDefinitions: Record<string, Module> = {
         effect: (params, env) => {
           const a = env.readVal(params[0]);
           const r = env.readVal(params[1]);
-          env.setVal(params[2].value, [r * Math.cos(a), r * Math.sin(a)]);
+          env.setVal(params[2].content, [r * Math.cos(a), r * Math.sin(a)]);
         },
       },
     ],
@@ -615,7 +615,7 @@ export const instructionsDefinitions: Record<string, Module> = {
         params: [num, num, num],
         effect: (params, env) => {
           env.setVal(
-            params[2].value,
+            params[2].content,
             noise2D(env.readVal(params[0]), env.readVal(params[1])),
           );
         },
@@ -624,7 +624,7 @@ export const instructionsDefinitions: Record<string, Module> = {
         params: [arr, num],
         effect: (params, env) => {
           const v = env.readVal(params[0]);
-          env.setVal(params[1].value, noise2D(v[0], v[1]));
+          env.setVal(params[1].content, noise2D(v[0], v[1]));
         },
       },
     ],
@@ -633,7 +633,7 @@ export const instructionsDefinitions: Record<string, Module> = {
         params: [num, num, num, num],
         effect: (params, env) => {
           env.setVal(
-            params[3].value,
+            params[3].content,
             noise3D(
               env.readVal(params[0]),
               env.readVal(params[1]),
@@ -648,7 +648,7 @@ export const instructionsDefinitions: Record<string, Module> = {
         params: [num, num, num, num, num],
         effect: (params, env) => {
           env.setVal(
-            params[4].value,
+            params[4].content,
             noise4D(
               env.readVal(params[0]),
               env.readVal(params[1]),

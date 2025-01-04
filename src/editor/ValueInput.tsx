@@ -1,27 +1,24 @@
 import { createSignal, Setter } from "solid-js";
 
-import { setParameter, getSlot } from "../store";
+import { setParameter, getSlot, InstructionPath } from "../store";
 
 import { types, defaultValues } from "../language/language";
 
 import { DataInput } from "../components/DataInput";
 
 export function ValueInput(props: {
-  selectedInput: any;
+  instructionPath: InstructionPath;
+  slotIndex: number;
   setSelectedInput: Setter<any>;
 }) {
-  const input = () => {
-    return getSlot(
-      props.selectedInput.sourcePath,
-      props.selectedInput.lineId,
-      props.selectedInput.index,
-    );
+  const slot = () => {
+    return getSlot(props.instructionPath, props.slotIndex);
   };
 
-  const [type, setType] = createSignal(input().value.type ?? types.NUMBER);
+  const [type, setType] = createSignal(slot()?.content.type ?? types.NUMBER);
   const [value, setValue] = createSignal(
-    input()?.type === "value"
-      ? (input().value.value ?? defaultValues[type()])
+    slot()?.type === "value"
+      ? (slot()?.content.value ?? defaultValues[type()])
       : defaultValues[type()],
   );
 
@@ -35,11 +32,14 @@ export function ValueInput(props: {
       />
       <button
         onClick={() => {
-          const { sourcePath, lineId, index } = props.selectedInput;
-          setParameter(sourcePath, lineId, index, "value", {
-            type: type(),
-            value: value(),
-          });
+          setParameter(
+            { ...props.instructionPath, slotIndex: props.slotIndex },
+            "value",
+            {
+              type: type(),
+              value: value(),
+            },
+          );
           props.setSelectedInput(null);
         }}
       >

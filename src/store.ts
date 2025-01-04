@@ -12,11 +12,13 @@ import { lerp } from "./utils";
 
 export type Type = number;
 
-export type Instruction = {
-  id: string;
-  slots: ParamInput[];
-  definition: [string, string] | undefined;
+export type ParamSlot = ParamInput | undefined;
+export type Instruction = [string, string, ...ParamSlot[]];
+export type InstructionPath = {
+  programContextId: ProgramContextId;
+  lineIndex: number;
 };
+export type SlotPath = InstructionPath & { slotIndex: number };
 
 export type Register = {
   id: string;
@@ -29,7 +31,7 @@ export type Register = {
   color: string;
 };
 
-export type ProgramContext = Instruction[];
+export type ProgramContext = (Instruction | undefined)[];
 export type Program = {
   id: string;
   lastOpened: number;
@@ -48,11 +50,7 @@ export type ProgramContextId = keyof Program["source"];
 
 export type AppStore = {
   gui: {
-    cursor: {
-      programContextId: null | ProgramContextId;
-      position: null | number;
-    };
-    selection: string[];
+    cursor: InstructionPath | null;
     registers: {
       scrollTop: number;
       scrollLeft: number;
@@ -133,11 +131,7 @@ export function createEmptyProgram(): Program {
 
 const [store, setStore] = createStore<AppStore>({
   gui: {
-    cursor: {
-      programContextId: null,
-      position: null,
-    },
-    selection: [],
+    cursor: null,
     registers: {
       scrollTop: 224,
       scrollLeft: 376,
@@ -157,26 +151,28 @@ Object.defineProperty(window, "store", {
 });
 
 //accessors
-export function getSelectedLines() {
-  const lines: Instruction[] = [];
-  for (let contextName in store.program.source) {
-    store.program.source[contextName as ProgramContextId].filter(
-      (line: Instruction) => {
-        return store.gui.selection.includes(line.id);
-      },
-    );
-  }
-  return lines;
+
+export function getInstruction({
+  programContextId: context,
+  lineIndex: index,
+}: InstructionPath) {
+  return store.program.source[context][index];
 }
 
 export function getSlot(
-  sourcePath: ProgramContextId,
-  lineId: string,
-  index: number,
+  { programContextId: context, lineIndex: index }: InstructionPath,
+  slotIndex: number,
 ) {
-  return store.program.source[sourcePath].find(
-    (line: Instruction) => line.id === lineId,
-  )?.slots[index];
+  const instruction = store.program.source[context][index];
+  if (instruction) {
+    return instruction[slotIndex + 2] as ParamSlot;
+  } else {
+    return undefined;
+  }
+}
+
+export function hasSelection() {
+  return store.gui.cursor !== null;
 }
 
 //commands
@@ -197,109 +193,74 @@ export function setProgram(program: Program) {
   );
 }
 
-export function insertAfter(sourcePath: ProgramContextId, id: string | null) {
-  const newLineId = crypto.randomUUID();
+export function insertAfter(sourcePath: ProgramContextId, lineIndex: number) {
   setStore(
     produce((store) => {
       const source = store.program.source[sourcePath] as ProgramContext;
-      const i = id === null ? 0 : source.findIndex((line) => line.id === id);
-      source.splice(i + (id === null ? 0 : 1), 0, {
-        id: newLineId,
-        slots: [],
-        definition: undefined,
-      });
+      source.splice(lineIndex + 1, 0, undefined);
     }),
   );
-  setSelection([newLineId]);
-  autoSave();
-}
-
-export function insertAtIndex(sourcePath: ProgramContextId, index: number) {
-  setStore(
-    produce((store) => {
-      const source = store.program.source[sourcePath];
-      const newLineId = crypto.randomUUID();
-      source.splice(index + 1, 0, {
-        id: newLineId,
-        slots: [],
-        definition: undefined,
-      });
-      store.gui.selection = [newLineId];
-    }),
-  );
+  setCursor(sourcePath, lineIndex + 1);
   autoSave();
 }
 
 export function setCommand(module: string, command: string) {
   setStore(
     produce((store) => {
-      let targetLine = null;
-      for (let k in store.program.source) {
-        targetLine = store.program.source[k as ProgramContextId].find(
-          (line) => {
-            return store.gui.selection.indexOf(line.id) !== -1;
-          },
-        );
-        if (targetLine) {
-          break;
-        }
+      if (!store.gui.cursor) {
+        return;
       }
-      const instruction = instructionsDefinitions[module][command];
-      const paramsCount = instruction.reduce(
+      const instructionDefinition = instructionsDefinitions[module][command];
+      const paramsCount = instructionDefinition.reduce(
         (t: number, inst: InstructionVariant) => {
           return Math.max(t, inst.params.length);
         },
         0,
       );
-      if (targetLine) {
-        targetLine.definition = [module, command];
-        const params = new Array(paramsCount).fill({
-          type: "empty",
-          value: undefined,
-        });
-        targetLine.slots.push(...params);
-      }
+      const instruction: Instruction = [module, command];
+      const params = new Array(paramsCount).fill(undefined);
+      instruction.push(...params);
+      const { programContextId: context, lineIndex: index } = store.gui.cursor;
+      store.program.source[context][index] = instruction;
     }),
   );
   autoSave();
 }
 
-export function addParameter(sourcePath: ProgramContextId, lineId: string) {
+export function addSlot({
+  programContextId: context,
+  lineIndex: index,
+}: InstructionPath) {
   setStore(
     produce((store) => {
-      const line = store.program.source[sourcePath].find(
-        (l) => l.id === lineId,
-      );
-      line?.slots.push({ type: "empty", value: undefined });
+      const line = store.program.source[context][index];
+      line?.push(undefined);
     }),
   );
 }
 
-export function removeSlot(sourcePath: ProgramContextId, lineId: string) {
+export function removeSlot({
+  programContextId: context,
+  lineIndex: index,
+}: InstructionPath) {
   setStore(
     produce((store) => {
-      const line = store.program.source[sourcePath].find(
-        (l) => l.id === lineId,
-      );
-      line?.slots.pop();
+      const line = store.program.source[context][index];
+      line?.pop();
     }),
   );
   autoSave();
 }
 
 export function setParameter(
-  sourcePath: ProgramContextId,
-  lineId: string,
-  registerIndex: number,
-  type: "empty" | "register" | "value",
+  { programContextId, lineIndex, slotIndex }: SlotPath,
+  type: "register" | "value",
   value: any,
 ) {
   setStore(
     produce((store) => {
-      const line = store.program.source[sourcePath].find(
-        (l) => l.id === lineId,
-      );
-      line!.slots[registerIndex] = { type: type, value: value };
+      const line = store.program.source[programContextId][lineIndex];
+      line![slotIndex + 2] = { type: type, content: value };
     }),
   );
   autoSave();
@@ -379,78 +340,39 @@ export function saveRegister(
   autoSave();
 }
 
-export function setSelection(ids: string[]) {
-  setStore("gui", "selection", ids);
-  if (ids.length === 1) {
-    let cursor: AppStore["gui"]["cursor"] | undefined = undefined;
-    const source = store.program.source;
-    for (let programContextId in source) {
-      const candidate = source[programContextId as ProgramContextId].findIndex(
-        (l) => l.id === ids[0],
-      );
-      if (candidate !== -1) {
-        cursor = {
-          programContextId: programContextId as ProgramContextId,
-          position: candidate,
-        };
-        break;
-      }
-    }
-    if (cursor !== undefined) {
-      setStore("gui", "cursor", cursor);
-    }
-  } else {
-    clearCursor();
-  }
-}
-
 export function clearCursor() {
-  setStore("gui", "cursor", "programContextId", null);
+  setStore("gui", "cursor", null);
 }
 
 //click the title of a code section
 export function clickContext(context: ProgramContextId) {
-  setStore("gui", "selection", []);
+  const cursor = store.gui.cursor;
   if (
-    store.gui.cursor.programContextId === context &&
-    store.gui.cursor.position === -1
+    cursor &&
+    cursor.programContextId === context &&
+    cursor.lineIndex === -1
   ) {
-    setStore("gui", "cursor", { programContextId: context, position: null });
+    setStore("gui", "cursor", null);
   } else {
-    setStore("gui", "cursor", { programContextId: context, position: -1 });
+    setStore("gui", "cursor", { programContextId: context, lineIndex: -1 });
   }
 }
 
-export function setCursor(context: ProgramContextId, position: number) {
-  setStore("gui", "cursor", { programContextId: context, position });
+export function setCursor(context: ProgramContextId, index: number) {
+  setStore("gui", "cursor", { programContextId: context, lineIndex: index });
 }
 
-export function addToSelection(id: string) {
-  setStore(
-    produce((store) => {
-      store.gui.selection.push(id);
-    }),
-  );
-}
-
-export function deleteSelection() {
+export function deleteLine({
+  programContextId: context,
+  lineIndex: index,
+}: InstructionPath) {
   setStore(
     produce((store) => {
       const source = store.program.source;
-      store.gui.selection.forEach((idToDelete) => {
-        for (let key in source) {
-          const sourceEntry = source[key as ProgramContextId];
-          for (let i = sourceEntry.length - 1; i >= 0; i--) {
-            const line = sourceEntry[i];
-            if (line.id === idToDelete) {
-              sourceEntry.splice(i, 1);
-            }
-          }
-        }
-      });
+      source[context].splice(index, 1);
     }),
   );
-  setSelection([]);
+  clearCursor();
   autoSave();
 }
 

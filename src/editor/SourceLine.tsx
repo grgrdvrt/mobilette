@@ -9,29 +9,28 @@ import {
 } from "solid-js";
 
 import {
-  setSelection,
-  addParameter,
+  addSlot,
   removeSlot,
-  Program,
   Instruction,
   Register,
-  ProgramContextId,
+  InstructionPath,
+  clearCursor,
+  setCursor,
+  SlotPath,
 } from "../store";
 
-import { types, instructionsDefinitions } from "../language/language";
+import {
+  types,
+  instructionsDefinitions,
+  ParamInput,
+} from "../language/language";
 
 import { hslaToHslaString } from "../utils";
 
 function EmptySlot(props: {
-  setSelectedInput: Setter<{
-    sourcePath: ProgramContextId;
-    lineId: Instruction["id"];
-    value: any;
-    index: number;
-  }>;
-  sourcePath: ProgramContextId;
-  line: Instruction;
-  index: number;
+  slotPath: SlotPath;
+  setSelectedSlot: Setter<SlotPath | undefined>;
+  instruction: Instruction;
 }) {
   return (
     <button
@@ -39,12 +38,7 @@ function EmptySlot(props: {
       style={{}}
       onClick={(e) => {
         e.stopPropagation();
-        props.setSelectedInput({
-          sourcePath: props.sourcePath,
-          lineId: props.line.id,
-          value: null,
-          index: props.index,
-        });
+        props.setSelectedSlot(props.slotPath);
       }}
     >
       {"slot"}
@@ -53,12 +47,10 @@ function EmptySlot(props: {
 }
 
 function RegisterParam(props: {
+  slotPath: SlotPath;
   registers: Register[];
   registerId: Register["id"];
-  setSelectedInput: Setter<any>;
-  sourcePath: ProgramContextId;
-  line: Instruction;
-  index: number;
+  setSelectedSlot: Setter<any>;
 }) {
   const register = createMemo(() => {
     const register = props.registers.find((r) => r.id === props.registerId);
@@ -73,12 +65,7 @@ function RegisterParam(props: {
       style={{ "background-color": register().color }}
       onClick={(e) => {
         e.stopPropagation();
-        props.setSelectedInput({
-          sourcePath: props.sourcePath,
-          lineId: props.line.id,
-          value: register(),
-          index: props.index,
-        });
+        props.setSelectedSlot(props.slotPath);
       }}
     >
       {register().name || register().y + ":" + register().x}
@@ -87,11 +74,9 @@ function RegisterParam(props: {
 }
 
 function ValueParam(props: {
+  slotPath: SlotPath;
   valueInput: any;
-  setSelectedInput: Setter<any>;
-  sourcePath: ProgramContextId;
-  line: Instruction;
-  index: number;
+  setSelectedSlot: Setter<SlotPath | undefined>;
 }) {
   return (
     <button
@@ -110,12 +95,7 @@ function ValueParam(props: {
       }}
       onClick={(e) => {
         e.stopPropagation();
-        props.setSelectedInput({
-          sourcePath: props.sourcePath,
-          lineId: props.line.id,
-          value: props.valueInput,
-          index: props.index,
-        });
+        props.setSelectedSlot(props.slotPath);
       }}
     >
       {JSON.stringify(props.valueInput.value)}
@@ -123,28 +103,45 @@ function ValueParam(props: {
   );
 }
 
+export function EmptySourceLine(props: {
+  instructionPath: InstructionPath;
+  selected: Accessor<boolean>;
+}) {
+  return (
+    <p
+      onClick={() =>
+        props.selected()
+          ? clearCursor()
+          : setCursor(
+              props.instructionPath.programContextId,
+              props.instructionPath.lineIndex,
+            )
+      }
+    >
+      //
+    </p>
+  );
+}
+
 export function SourceLine(props: {
+  instructionPath: InstructionPath;
   line: Instruction;
   depth: Accessor<number>;
   selected: Accessor<boolean>;
-  sourcePath: ProgramContextId;
   registers: Register[];
-  setSelectedInput: Setter<any>;
+  setSelectedSlot: Setter<SlotPath | undefined>;
   order: string;
 }) {
   const canAddParam = (line: Instruction) => {
-    if (!line.code.length) return false;
-
-    const [module, command] = line.code;
-    if (module === "" || command === "") {
-      return false;
-    }
+    const [module, command] = line;
+    console.log(line, module, command);
     const def = instructionsDefinitions[module][command];
     return def.some((d) => d.params[d.params.length - 1]?.variadic);
   };
+
   const canRemoveParam = (line: Instruction) => {
-    if (!line.code.length) return false;
-    const [module, command] = line.code;
+    if (!line.length) return false;
+    const [module, command] = line;
     if (module === "" || command === "") {
       return false;
     }
@@ -155,9 +152,10 @@ export function SourceLine(props: {
       (m, d) => Math.min(m, d.params.length),
       Number.MAX_SAFE_INTEGER,
     );
-    const canRemove = line.code.length > minLength;
+    const canRemove = line?.length > minLength;
     return isVariadic && canRemove;
   };
+
   return (
     <div
       class="sourceLine"
@@ -167,80 +165,80 @@ export function SourceLine(props: {
       <p
         style={{ "padding-left": 15 * props.depth() + "px" }}
         onClick={() =>
-          props.selected() ? setSelection([]) : setSelection([props.line.id])
+          props.selected()
+            ? clearCursor()
+            : setCursor(
+                props.instructionPath.programContextId,
+                props.instructionPath.lineIndex,
+              )
         }
       >
-        <Show
-          when={
-            props.line.code.length &&
-            props.line.code[0] !== "" &&
-            props.line.code[1] !== ""
-          }
-          fallback={<p>//</p>}
-        >
-          {props.line.code[1]}
-          <span> </span>
-          <For each={props.line.code.slice(2)}>
-            {(input, index) => {
-              return (
-                <>
-                  <Switch>
-                    <Match when={input.type === "empty"}>
-                      <Show when={props.selected()}>
-                        <EmptySlot
-                          setSelectedInput={props.setSelectedInput}
-                          sourcePath={props.sourcePath}
-                          line={props.line}
-                          index={index()}
-                        />
-                      </Show>
-                    </Match>
-                    <Match when={input.type === "value"}>
-                      <ValueParam
-                        valueInput={input.value}
-                        setSelectedInput={props.setSelectedInput}
-                        sourcePath={props.sourcePath}
-                        line={props.line}
-                        index={index()}
+        {props.line![1]}
+        <span> </span>
+        <For each={props.line.slice(2) as ParamInput[]}>
+          {(input, index) => {
+            return (
+              <>
+                <Switch>
+                  <Match when={input === undefined}>
+                    <Show when={props.selected()}>
+                      <EmptySlot
+                        slotPath={{
+                          ...props.instructionPath,
+                          slotIndex: index(),
+                        }}
+                        setSelectedSlot={props.setSelectedSlot}
+                        instruction={props.line}
                       />
-                    </Match>
-                    <Match when={input.type === "register"}>
-                      <RegisterParam
-                        registerId={input.value}
-                        registers={props.registers}
-                        setSelectedInput={props.setSelectedInput}
-                        sourcePath={props.sourcePath}
-                        line={props.line}
-                        index={index()}
-                      />
-                    </Match>
-                  </Switch>
-                  <span> </span>
-                </>
-              );
-            }}
-          </For>
-          <Show when={props.selected()}>
-            <Show when={(() => canAddParam(props.line))()}>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  addParameter(props.sourcePath, props.line.id);
-                }}
-              >
-                +
-              </button>
-            </Show>
-            <Show when={(() => canRemoveParam(props.line))()}>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  removeSlot(props.sourcePath, props.line.id);
-                }}
-              >
-                -
-              </button>
-            </Show>
+                    </Show>
+                  </Match>
+                  <Match when={input.type === "value"}>
+                    <ValueParam
+                      slotPath={{
+                        ...props.instructionPath,
+                        slotIndex: index(),
+                      }}
+                      valueInput={input.content}
+                      setSelectedSlot={props.setSelectedSlot}
+                    />
+                  </Match>
+                  <Match when={input.type === "register"}>
+                    <RegisterParam
+                      slotPath={{
+                        ...props.instructionPath,
+                        slotIndex: index(),
+                      }}
+                      registerId={input.content}
+                      registers={props.registers}
+                      setSelectedSlot={props.setSelectedSlot}
+                    />
+                  </Match>
+                </Switch>
+                <span> </span>
+              </>
+            );
+          }}
+        </For>
+        <Show when={props.selected()}>
+          <Show when={(() => canAddParam(props.line))()}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                addSlot(props.instructionPath);
+              }}
+            >
+              +
+            </button>
+          </Show>
+          <Show when={(() => canRemoveParam(props.line))()}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                removeSlot(props.instructionPath);
+              }}
+            >
+              -
+            </button>
           </Show>
         </Show>
       </p>
