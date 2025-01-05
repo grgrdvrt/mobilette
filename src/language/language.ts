@@ -1,7 +1,22 @@
 import { createNoise2D, createNoise3D, createNoise4D } from "simplex-noise";
+import { Interpreter } from "./interpreter";
+import { hsla, lerp, map } from "../utils";
 const noise2D = createNoise2D();
 const noise3D = createNoise3D();
 const noise4D = createNoise4D();
+
+export type ParamDefinition = {
+  type: number;
+  optional?: boolean;
+  variadic?: boolean;
+};
+export type ParamInput = { type: "register" | "value"; content: any };
+export type InstructionVariant = {
+  params: ParamDefinition[];
+  effect: (params: ParamInput[], env: Interpreter) => void;
+};
+export type InstructionDefinition = InstructionVariant[];
+export type Module = Record<string, InstructionDefinition>;
 
 export const types = {
   ANY: -1,
@@ -33,7 +48,10 @@ export const defaultValues = {
 const num = { type: types.NUMBER };
 const bool = { type: types.BOOLEAN };
 const arr = { type: types.ARRAY };
-function binop(func, paramsTypes = [types.NUMBER, types.NUMBER, types.NUMBER]) {
+function binop(
+  func: (a: any, b: any) => any,
+  paramsTypes = [types.NUMBER, types.NUMBER, types.NUMBER],
+): InstructionVariant {
   return {
     params: [
       { type: paramsTypes[0] },
@@ -42,14 +60,17 @@ function binop(func, paramsTypes = [types.NUMBER, types.NUMBER, types.NUMBER]) {
     ],
     effect: (params, env) => {
       env.setVal(
-        (params.length === 3 ? params[2] : params[0]).value,
+        (params.length === 3 ? params[2] : params[0]).content,
         func(env.readVal(params[0]), env.readVal(params[1])),
       );
     },
   };
 }
 
-function monop(func, paramsTypes = [types.NUMBER, types.NUMBER]) {
+function monop(
+  func: (a: any) => any,
+  paramsTypes = [types.NUMBER, types.NUMBER],
+): InstructionVariant {
   return {
     params: [
       { type: paramsTypes[0] },
@@ -57,43 +78,32 @@ function monop(func, paramsTypes = [types.NUMBER, types.NUMBER]) {
     ],
     effect: (params, env) => {
       env.setVal(
-        (params.length === 2 ? params[1] : params[0]).value,
+        (params.length === 2 ? params[1] : params[0]).content,
         func(env.readVal(params[0])),
       );
     },
   };
 }
 
-function comp(func) {
+function comp(func: (a: any, b: any) => boolean): InstructionVariant {
   return {
     params: [num, num, bool],
     effect: (params, env) => {
       env.setVal(
-        params[2].value,
+        params[2].content,
         func(env.readVal(params[0]), env.readVal(params[1])) ? 1 : 0,
       );
     },
   };
 }
 
-function hsla(color) {
-  return `hsla(${color[0]}, ${color[1]}%, ${color[2]}%, ${color[3]})`;
-}
-function lerp(a, b, t) {
-  return a + t * (b - a);
-}
-
-function map(a, b, c, d, t) {
-  return lerp(c, d, (t - a) / (b - a));
-}
-
-export const instructionsDefinitions = {
+export const instructionsDefinitions: Record<string, Module> = {
   registers: {
     set: [
       {
         params: [{ type: types.ANY }, { type: types.ANY }],
         effect: (params, env) =>
-          env.setVal(params[0].value, env.readVal(params[1])),
+          env.setVal(params[0].content, env.readVal(params[1])),
       },
       {
         params: [
@@ -119,7 +129,7 @@ export const instructionsDefinitions = {
                   return `[${env.readVal(param)}]`;
                   break;
                 case "register":
-                  const register = env.getReg(param.value);
+                  const register = env.getReg(param.content);
                   return `[${register.name || register.y + ":" + register.x} ${register.value}]`;
                   break;
               }
@@ -138,7 +148,7 @@ export const instructionsDefinitions = {
         ],
         effect: (params, env) => {
           env.setVal(
-            params[2].value,
+            params[2].content,
             env.readVal(params[0])[env.readVal(params[1])],
           );
         },
@@ -164,7 +174,7 @@ export const instructionsDefinitions = {
           console.log("arr", arr);
           for (let i = 0; i < arr.length; i++) {
             console.log(arr[i], params[i + 1]);
-            env.setVal(params[i + 1].value, arr[i]);
+            env.setVal(params[i + 1].content, arr[i]);
           }
         },
       },
@@ -183,45 +193,45 @@ export const instructionsDefinitions = {
     "+": [
       binop((a, b) => a + b),
       binop(
-        (a, b) => b.map((v) => v + a),
+        (a, b) => b.map((v: number) => v + a),
         [types.NUMBER, types.ARRAY, types.ARRAY],
       ),
       binop(
-        (a, b) => a.map((v) => v + b),
+        (a, b) => a.map((v: number) => v + b),
         [types.ARRAY, types.NUMBER, types.ARRAY],
       ),
       binop(
-        (a, b) => a.map((v, i) => v + b[i]),
+        (a, b) => a.map((v: number, i: number) => v + b[i]),
         [types.ARRAY, types.ARRAY, types.ARRAY],
       ),
     ],
     "-": [
       binop((a, b) => a - b),
       binop(
-        (a, b) => b.map((v) => v - a),
+        (a, b) => b.map((v: number) => v - a),
         [types.NUMBER, types.ARRAY, types.ARRAY],
       ),
       binop(
-        (a, b) => a.map((v) => v - b),
+        (a, b) => a.map((v: number) => v - b),
         [types.ARRAY, types.NUMBER, types.ARRAY],
       ),
       binop(
-        (a, b) => a.map((v, i) => v - b[i]),
+        (a, b) => a.map((v: number, i: number) => v - b[i]),
         [types.ARRAY, types.ARRAY, types.ARRAY],
       ),
     ],
     "*": [
       binop((a, b) => a * b),
       binop(
-        (a, b) => b.map((v) => v * a),
+        (a, b) => b.map((v: number) => v * a),
         [types.NUMBER, types.ARRAY, types.ARRAY],
       ),
       binop(
-        (a, b) => a.map((v) => v * b),
+        (a, b) => a.map((v: number) => v * b),
         [types.ARRAY, types.NUMBER, types.ARRAY],
       ),
       binop(
-        (a, b) => a.map((v, i) => v * b[i]),
+        (a, b) => a.map((v: number, i: number) => v * b[i]),
         [types.ARRAY, types.ARRAY, types.ARRAY],
       ),
     ],
@@ -247,7 +257,7 @@ export const instructionsDefinitions = {
         params: [num, num, num],
         effect: (params, env) => {
           const [min, max] = params.slice(0, 2).map(env.readVal, env);
-          env.setVal(params[2].value, lerp(min, max, Math.random()));
+          env.setVal(params[2].content, lerp(min, max, Math.random()));
         },
       },
     ],
@@ -256,7 +266,7 @@ export const instructionsDefinitions = {
         params: [num, num, num, num],
         effect: (params, env) => {
           const [a, b, t] = params.slice(0, 3).map(env.readVal, env);
-          env.setVal(params[3].value, lerp(a, b, t));
+          env.setVal(params[3].content, lerp(a, b, t));
         },
       },
     ],
@@ -265,7 +275,7 @@ export const instructionsDefinitions = {
         params: [num, num, num, num, num, num],
         effect: (params, env) => {
           const [a, b, c, d, t] = params.slice(0, 5).map(env.readVal, env);
-          env.setVal(params[5].value, map(a, b, c, d, t));
+          env.setVal(params[5].content, map(a, b, c, d, t));
         },
       },
     ],
@@ -289,8 +299,8 @@ export const instructionsDefinitions = {
       {
         params: [],
         effect: (_, env) => {
-          const w = env.readVal({ type: "register", value: "width" });
-          const h = env.readVal({ type: "register", value: "height" });
+          const w = env.readVal({ type: "register", content: "width" });
+          const h = env.readVal({ type: "register", content: "height" });
           env.ctx.save();
           env.ctx.fillStyle = "white";
           env.ctx.fillRect(0, 0, w, h);
@@ -300,8 +310,8 @@ export const instructionsDefinitions = {
       {
         params: [{ type: types.COLOR }],
         effect: (params, env) => {
-          const w = env.readVal({ type: "register", value: "width" });
-          const h = env.readVal({ type: "register", value: "height" });
+          const w = env.readVal({ type: "register", content: "width" });
+          const h = env.readVal({ type: "register", content: "height" });
           env.ctx.save();
           env.ctx.fillStyle = hsla(env.readVal(params[0]));
           env.ctx.fillRect(0, 0, w, h);
@@ -352,7 +362,7 @@ export const instructionsDefinitions = {
         params: [num, num, num, num],
         effect: (params, env) => {
           const [cx, cy, x, y] = params.map(env.readVal, env);
-          env.ctx.curveTo(cx, cy, x, y);
+          env.ctx.quadraticCurveTo(cx, cy, x, y);
         },
       },
       {
@@ -360,7 +370,7 @@ export const instructionsDefinitions = {
         effect: (params, env) => {
           const c = env.readVal(params[0]);
           const p = env.readVal(params[1]);
-          env.ctx.curveTo(c[0], c[1], p[0], p[1]);
+          env.ctx.quadraticCurveTo(c[0], c[1], p[0], p[1]);
         },
       },
     ],
@@ -466,7 +476,7 @@ export const instructionsDefinitions = {
         params: [arr, num, num, num, num],
         effect: (params, env) => {
           const [c, r, a1, a2, d] = params.map(env.readVal, env);
-          env.ctx.moveTo(x + r * Math.cos(a1), y + r * Math.sin(a1));
+          env.ctx.moveTo(c[0] + r * Math.cos(a1), c[1] + r * Math.sin(a1));
           env.ctx.arc(c[0] + r, c[1], r, a1, a2, d);
         },
       },
@@ -521,7 +531,7 @@ export const instructionsDefinitions = {
           { type: types.ARRAY },
         ],
         effect: (params, env) => {
-          env.setVal(params[2].value, [
+          env.setVal(params[2].content, [
             env.readVal(params[0]),
             env.readVal(params[1]),
           ]);
@@ -538,14 +548,14 @@ export const instructionsDefinitions = {
         effect: (params, env) => {
           const a = env.readVal(params[0]);
           const r = env.readVal(params[1]);
-          env.setVal(params[2].value, [r * Math.cos(a), r * Math.sin(a)]);
+          env.setVal(params[2].content, [r * Math.cos(a), r * Math.sin(a)]);
         },
       },
     ],
     dist: [
       binop(
         (a, b) => {
-          return Math.hypot(...a.map((c, i) => c - b[i]));
+          return Math.hypot(...a.map((c: number, i: number) => c - b[i]));
         },
         [types.ARRAY, types.ARRAY, types.NUMBER],
       ),
@@ -555,7 +565,7 @@ export const instructionsDefinitions = {
       binop(
         (v, l) => {
           const r = l / Math.hypot(...v);
-          return v.map((c) => c * r);
+          return v.map((c: number) => c * r);
         },
         [types.ARRAY, types.ARRAY, types.NUMBER],
       ),
@@ -563,7 +573,7 @@ export const instructionsDefinitions = {
     dot: [
       binop(
         (a, b) => {
-          return a.reduce((t, c, i) => c * b[i]);
+          return a.reduce((t: number, c: number, i: number) => t + c * b[i]);
         },
         [types.ARRAY, types.ARRAY, types.NUMBER],
       ),
@@ -605,7 +615,7 @@ export const instructionsDefinitions = {
         params: [num, num, num],
         effect: (params, env) => {
           env.setVal(
-            params[2].value,
+            params[2].content,
             noise2D(env.readVal(params[0]), env.readVal(params[1])),
           );
         },
@@ -614,7 +624,7 @@ export const instructionsDefinitions = {
         params: [arr, num],
         effect: (params, env) => {
           const v = env.readVal(params[0]);
-          env.setVal(params[1].value, noise2D(v[0], v[1]));
+          env.setVal(params[1].content, noise2D(v[0], v[1]));
         },
       },
     ],
@@ -623,7 +633,7 @@ export const instructionsDefinitions = {
         params: [num, num, num, num],
         effect: (params, env) => {
           env.setVal(
-            params[3].value,
+            params[3].content,
             noise3D(
               env.readVal(params[0]),
               env.readVal(params[1]),
@@ -638,7 +648,7 @@ export const instructionsDefinitions = {
         params: [num, num, num, num, num],
         effect: (params, env) => {
           env.setVal(
-            params[4].value,
+            params[4].content,
             noise4D(
               env.readVal(params[0]),
               env.readVal(params[1]),

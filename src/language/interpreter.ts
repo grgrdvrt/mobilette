@@ -1,11 +1,43 @@
-import { createSignal, untrack } from "solid-js";
-import { types, instructionsDefinitions } from "./language";
+import { Accessor, createSignal, Setter, untrack } from "solid-js";
+import { ParamInput, types, instructionsDefinitions } from "./language";
+import { Instruction, Program, Register, ProgramContext } from "../store";
+
+type IfDefinition = {
+  type: "if";
+  line: number;
+  jumps: number | number[] | undefined;
+};
+type ForDefinition = {
+  type: "for";
+  targetRegister: ParamInput;
+  begin: number;
+  end: number;
+  step: number;
+  beginLine: number;
+  endLine: number;
+};
 
 export class Interpreter {
-  constructor(onExecuted) {
+  onExecuted: (registers: Register[]) => void;
+  stdOut: Accessor<Array<any>>;
+  setStdOut: Setter<Array<any>>;
+  mainCanvas: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D;
+  instructionId: number = 0;
+
+  registers: Register[] = [];
+  source: Record<string, ProgramContext> = {};
+  jumpTable: Map<number, number | number[]> = new Map();
+  initialTime: number = 0;
+
+  rafHandle: number = 0;
+  pointerX: number = 0;
+  pointerY: number = 0;
+
+  constructor(onExecuted: (registers: Register[]) => void) {
     this.onExecuted = onExecuted;
 
-    const [stdOut, setStdOut] = createSignal([]);
+    const [stdOut, setStdOut] = createSignal<Array<any>>([]);
     this.stdOut = stdOut;
     this.setStdOut = setStdOut;
 
@@ -13,62 +45,66 @@ export class Interpreter {
     this.mainCanvas.style.width = "100%";
     this.mainCanvas.style.height = "100%";
     this.mainCanvas.style.touchAction = "none";
-    this.ctx = this.mainCanvas.getContext("2d");
+    this.ctx = this.mainCanvas.getContext("2d")!;
   }
 
-  initProgram(program) {
+  initProgram(program: Program) {
     this.registers = program.registers;
     this.source = program.source;
   }
 
-  getReg(regId) {
-    return this.registers.find((r) => r.id === regId);
+  getReg(regId: Register["id"]) {
+    const register = this.registers.find((r) => r.id === regId);
+    if (!register) {
+      throw new Error(`Register not found: ${regId}`);
+    }
+    return register;
   }
 
-  setVal(regId, val) {
+  setVal(regId: Register["id"], val: any) {
     this.getReg(regId).value = val;
   }
 
-  readVal(param) {
+  readVal(param: ParamInput) {
     switch (param.type) {
       case "value":
-        return JSON.parse(JSON.stringify(param.value.value));
+        return JSON.parse(JSON.stringify(param.content.value));
       case "register":
-        return this.getReg(param.value).value;
+        return this.getReg(param.content).value;
       default:
         throw new Error(`unknown type ${param.type}`);
     }
   }
 
-  readType(param) {
+  readType(param: ParamInput) {
     switch (param.type) {
       case "value":
-        return param.value.type;
+        return param.content.type;
       case "register":
-        return this.getReg(param.value).type;
+        return this.getReg(param.content).type;
       default:
         throw new Error(`unknown type ${param.type}`);
     }
   }
 
-  readParam(param) {
+  readParam(param: ParamInput) {
     switch (param.type) {
       case "value":
-        return param.value;
+        return param.content;
       case "register":
-        return this.getReg(param.value);
+        return this.getReg(param.content);
       default:
         throw new Error(`unknown type ${param.type}`);
     }
   }
 
-  initJumpTable(instructions) {
+  initJumpTable(instructions: ProgramContext) {
     this.jumpTable = new Map();
-    const ifStack = [];
-    const forStack = [];
+    const ifStack: number[][] = [];
+    const forStack: number[] = [];
     instructions.forEach((line, i) => {
-      if (line.code.length === 0) return;
-      const [module, cmd, ...params] = line.code;
+      if (line === undefined) return;
+      const [module, cmd] = line;
       if (module === "ctrl") {
         switch (cmd) {
           case "if":
@@ -84,6 +120,9 @@ export class Interpreter {
           }
           case "endif":
             const jumps = ifStack.pop();
+            if (!jumps) {
+              throw new Error(`No corresponding  \`if\` l.${i}`);
+            }
             jumps.push(i);
             this.jumpTable.set(jumps[0], jumps);
             break;
@@ -91,38 +130,47 @@ export class Interpreter {
             forStack.push(i);
             break;
           case "endfor":
-            this.jumpTable.set(forStack.pop(), i);
+            const jump = forStack.pop();
+            if (!jump) {
+              throw new Error(`No corresponding \`for\` l.${i}`);
+            }
+            this.jumpTable.set(jump, i);
             break;
         }
       }
     });
   }
 
-  executeInstructions(instructions) {
+  executeInstructions(instructions: ProgramContext) {
     this.initJumpTable(instructions);
     this.setVal("time", Date.now() - this.initialTime);
     this.instructionId = 0;
-    const ctrlStack = [];
+    const ctrlStack: (ForDefinition | IfDefinition)[] = [];
     while (this.instructionId < instructions.length) {
       const line = instructions[this.instructionId];
       // console.log(this.instructionId, JSON.stringify(line.code));
       // try{
-      if (line.code.length) {
-        const [module, cmd, ...params] = line.code;
+      if (line !== undefined) {
+        const [module, cmd, ...params] = line;
         // const hasNull = params.some(p => p.value === "null");
         const hasNull = false;
         if (!hasNull) {
           if (module === "ctrl") {
             if (cmd === "if") {
+              const ifParams = params[0] as ParamInput;
               ctrlStack.push({
                 type: "if",
                 line: this.instructionId,
                 jumps: this.jumpTable.get(this.instructionId),
               });
-              if (this.readVal(params[0])) {
+              if (this.readVal(ifParams)) {
                 this.instructionId++;
               } else {
-                this.instructionId = this.jumpTable.get(this.instructionId)[1];
+                const jumps = this.jumpTable.get(this.instructionId);
+                if (!jumps || !Array.isArray(jumps)) {
+                  throw new Error(`\`if\` not closed l.${this.instructionId}`);
+                }
+                this.instructionId = jumps[1];
               }
             }
             if (cmd === "endif") {
@@ -130,27 +178,29 @@ export class Interpreter {
               this.instructionId++;
             }
             if (cmd === "for") {
-              let forDefinition = ctrlStack.find(
-                (c) => c.beginLine == this.instructionId,
+              let forDefinition: ForDefinition | undefined = ctrlStack.find(
+                (c): c is ForDefinition =>
+                  c.type === "for" && c.beginLine == this.instructionId,
               );
               if (!forDefinition) {
-                const begin = this.readVal(params[1]);
-                const end = this.readVal(params[2]);
+                const forInputs = params as ParamInput[];
+                const begin = this.readVal(forInputs[1]);
+                const end = this.readVal(forInputs[2]);
                 const step = begin < end ? 1 : -1;
                 forDefinition = {
                   type: "for",
-                  targetRegister: params[0],
+                  targetRegister: forInputs[0],
                   begin,
                   end,
                   step,
                   beginLine: this.instructionId,
-                  endLine: this.jumpTable.get(this.instructionId),
+                  endLine: this.jumpTable.get(this.instructionId)! as number,
                 };
                 ctrlStack.push(forDefinition);
-                this.setVal(forDefinition.targetRegister.value, begin);
+                this.setVal(forDefinition.targetRegister.content, begin);
               } else {
                 this.setVal(
-                  forDefinition.targetRegister.value,
+                  forDefinition.targetRegister.content,
                   this.readVal(forDefinition.targetRegister) +
                     forDefinition.step,
                 );
@@ -176,14 +226,14 @@ export class Interpreter {
                 }
               }
               if (ctrlId !== undefined) {
-                const forDefinition = ctrlStack[ctrlId];
+                const forDefinition = ctrlStack[ctrlId] as ForDefinition;
                 //drop opened ifs and current for
                 ctrlStack.length = ctrlId;
                 this.instructionId = forDefinition.endLine + 1;
               }
             }
             if (cmd === "continue") {
-              //find most recently encountered for. Some "If" can be opened
+              //find most recently encountered `for`. Some `if`s can be opened
               let ctrlId = undefined;
               for (let i = ctrlStack.length - 1; i >= 0; i--) {
                 const ctrl = ctrlStack[i];
@@ -193,19 +243,21 @@ export class Interpreter {
                 }
               }
               if (ctrlId !== undefined) {
-                const forDefinition = ctrlStack[ctrlId];
+                const forDefinition = ctrlStack[ctrlId] as ForDefinition;
                 //drop opened ifs
                 ctrlStack.length = ctrlId + 1;
                 this.instructionId = forDefinition.beginLine;
               }
             }
             if (cmd === "endfor") {
-              const forDefinition = ctrlStack[ctrlStack.length - 1];
+              const forDefinition = ctrlStack[
+                ctrlStack.length - 1
+              ] as ForDefinition;
               const line = forDefinition.beginLine;
               this.instructionId = line;
             }
           } else {
-            const filteredParams = params.filter((p) => p.type !== "empty");
+            const filteredParams = params.filter((p) => p !== undefined);
             const instruction = instructionsDefinitions[module][cmd].find(
               (v) => {
                 return (
@@ -221,15 +273,16 @@ export class Interpreter {
             );
             if (!instruction) {
               this.log(
-                `${this.instructionId}: ERROR: can't find matching implementation : ${JSON.stringify(line.code)}; ${params.map((p) => this.readType(p))}`,
+                `${this.instructionId}: ERROR: can't find matching implementation : ${JSON.stringify(line)}; ${params.map((p) => (p ? this.readType(p) : "empty"))}`,
               );
+              throw new Error();
             }
-            instruction.effect(params, this);
+            instruction.effect(filteredParams, this);
             this.instructionId++;
           }
         } else {
           this.log(
-            `${this.instructionId}: ERROR: has null param : ${JSON.stringify(line.code)}`,
+            `${this.instructionId}: ERROR: has null param : ${JSON.stringify(line)}`,
           );
           this.instructionId++;
         }
@@ -245,7 +298,8 @@ export class Interpreter {
     }
     this.onExecuted(this.registers);
   }
-  log(msg) {
+
+  log(msg: string) {
     untrack(() => {
       this.setStdOut([...this.stdOut(), msg]);
     });
@@ -277,7 +331,7 @@ export class Interpreter {
   }
 
   pause() {
-    cancelAnimationFrame(this.raf);
+    cancelAnimationFrame(this.rafHandle);
     this.mainCanvas.removeEventListener("pointerdown", this.onPointerDown);
     this.mainCanvas.removeEventListener("pointerup", this.onPointerUp);
     this.mainCanvas.removeEventListener("pointermove", this.onPointerMove);
@@ -290,16 +344,16 @@ export class Interpreter {
     this.ctx.clearRect(0, 0, width, height);
     this.updatePointer(0, 0);
     this.setStdOut([]);
-    this.executeInstructions(this.source.init);
+    this.executeInstructions(this.source.init as Instruction[]);
   }
 
   loop() {
-    cancelAnimationFrame(this.raf);
-    this.raf = requestAnimationFrame(() => this.loop());
+    cancelAnimationFrame(this.rafHandle);
+    this.rafHandle = requestAnimationFrame(() => this.loop());
     this.executeInstructions(this.source.loop);
   }
 
-  updatePointer(pointerX, pointerY) {
+  updatePointer(pointerX: number, pointerY: number) {
     const rect = this.mainCanvas.getBoundingClientRect();
     const x = pointerX - rect.left;
     const y = pointerY - rect.top;
@@ -314,17 +368,17 @@ export class Interpreter {
     this.pointerY = y;
   }
 
-  onPointerDown = (e) => {
+  onPointerDown = (e: PointerEvent) => {
     this.updatePointer(e.clientX, e.clientY);
     this.executeInstructions(this.source.pointerDown);
   };
 
-  onPointerUp = (e) => {
+  onPointerUp = (e: PointerEvent) => {
     this.updatePointer(e.clientX, e.clientY);
     this.executeInstructions(this.source.pointerUp);
   };
 
-  onPointerMove = (e) => {
+  onPointerMove = (e: PointerEvent) => {
     e.preventDefault();
     this.updatePointer(e.clientX, e.clientY);
     this.executeInstructions(this.source.pointerMove);
