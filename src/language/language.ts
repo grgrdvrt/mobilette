@@ -154,7 +154,7 @@ export const instructionsDefinitions: Record<string, Module> = {
         },
       },
     ],
-    struct: [
+    pack: [
       {
         params: [{ type: types.ARRAY }, { type: types.ANY, variadic: true }],
         effect: (params, env) => {
@@ -166,14 +166,13 @@ export const instructionsDefinitions: Record<string, Module> = {
         },
       },
     ],
-    destruct: [
+    unpack: [
       {
         params: [{ type: types.ARRAY }, { type: types.ANY, variadic: true }],
         effect: (params, env) => {
           const arr = env.readVal(params[0]);
           console.log("arr", arr);
           for (let i = 0; i < arr.length; i++) {
-            console.log(arr[i], params[i + 1]);
             env.setVal(params[i + 1].content, arr[i]);
           }
         },

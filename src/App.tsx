@@ -2,7 +2,7 @@ import { createSignal, Switch, Match } from "solid-js";
 
 import "./App.css";
 import { HomePage } from "./pages/HomePage";
-import { AboutPage } from "./pages/AboutPage";
+import { DocumentationPage } from "./pages/DocumentationPage";
 import { EditorPage } from "./pages/EditorPage";
 
 function App() {
@@ -13,8 +13,8 @@ function App() {
       <Match when={page() === "home"}>
         <HomePage setPage={setPage} />
       </Match>
-      <Match when={page() === "about"}>
-        <AboutPage setPage={setPage} />
+      <Match when={page() === "documentation"}>
+        <DocumentationPage setPage={setPage} />
       </Match>
       <Match when={page() === "editor"}>
         <EditorPage setPage={setPage} />

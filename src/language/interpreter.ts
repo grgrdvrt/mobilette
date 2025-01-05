@@ -131,7 +131,7 @@ export class Interpreter {
             break;
           case "endfor":
             const jump = forStack.pop();
-            if (!jump) {
+            if (jump === undefined) {
               throw new Error(`No corresponding \`for\` l.${i}`);
             }
             this.jumpTable.set(jump, i);

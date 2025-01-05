@@ -7,9 +7,6 @@ import {
 } from "solid-js";
 
 // import RegistersPicto from "./assets/grid_view_FILL0_wght400_GRAD0_opsz24.svg";
-//
-import Logo from "../assets/logo2.webp";
-import Title from "../assets/title.png";
 
 import DeletePicto from "../assets/delete_FILL0_wght400_GRAD0_opsz24.svg";
 import ForkPicto from "../assets/arrow_split_FILL0_wght400_GRAD0_opsz24.svg";
@@ -25,18 +22,22 @@ export function HomePage(props: { setPage: Setter<string> }) {
   const isSelected = createSelector(selected);
   return (
     <div class="home" onClick={() => setSelected(null)}>
-      <h1 class="title">
-        <img class="home-logo" src={Logo} />
-        <img class="home-title" src={Title} />
-      </h1>
+      <div class="home-title">
+        <h1 class="mainTitle">Mobilette</h1>
+        <h2 class="subtitle">.computer</h2>
+      </div>
+      <p>
+        Mobilette is a small programming language and interface for recreational
+        creative coding on mobile.
+      </p>
       <div class="home-actions">
         <button
           class="home-action"
           onClick={() => {
-            props.setPage("about");
+            props.setPage("documentation");
           }}
         >
-          About
+          Doc
         </button>
         <button
           class="home-action"
