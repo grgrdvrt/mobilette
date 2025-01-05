@@ -173,7 +173,6 @@ export const instructionsDefinitions: Record<string, Module> = {
           const arr = env.readVal(params[0]);
           console.log("arr", arr);
           for (let i = 0; i < arr.length; i++) {
-            console.log(arr[i], params[i + 1]);
             env.setVal(params[i + 1].content, arr[i]);
           }
         },

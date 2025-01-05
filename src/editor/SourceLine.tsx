@@ -141,7 +141,6 @@ export function SourceLine(props: {
 }) {
   const canAddParam = (line: Instruction) => {
     const [module, command] = line;
-    console.log(line, module, command);
     const def = instructionsDefinitions[module][command];
     return def.some((d) => d.params[d.params.length - 1]?.variadic);
   };
