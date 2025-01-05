@@ -1,7 +1,5 @@
 import { Setter } from "solid-js";
 
-import Logo from "../assets/logo2.webp";
-import Title from "../assets/title.png";
 import HomePicto from "../assets/home_FILL0_wght400_GRAD0_opsz24.svg";
 
 export function DocumentationPage(props: { setPage: Setter<string> }) {
