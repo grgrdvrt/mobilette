@@ -38,7 +38,6 @@ export function InputSelection(props: {
           <RegistersGrid
             registers={props.registers}
             onRegisterClicked={(registerPosition: { x: number; y: number }) => {
-              console.log("slotPath", props.slotPath);
               const register = getRegisterByPosition(
                 registerPosition.x,
                 registerPosition.y,

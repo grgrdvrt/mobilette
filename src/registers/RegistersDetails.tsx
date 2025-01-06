@@ -33,7 +33,7 @@ export function RegisterDetails(props: {
   });
   const [type, setType] = createSignal(register().type ?? types.NUMBER);
   const [value, setValue] = createSignal(
-    register().value ?? defaultValues[type()],
+    register().value ?? defaultValues[type()](),
   );
   let colorField, nameField;
   return (

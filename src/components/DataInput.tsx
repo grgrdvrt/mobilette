@@ -17,7 +17,7 @@ export function DataInput(props: {
         onChange={(e) => {
           const value = Number(e.target.value);
           if (value !== props.type()) {
-            props.setValue(defaultValues[value]);
+            props.setValue(defaultValues[value]());
             props.setType(value);
           }
         }}

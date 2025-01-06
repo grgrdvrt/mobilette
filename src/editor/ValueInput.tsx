@@ -18,8 +18,8 @@ export function ValueInput(props: {
   const [type, setType] = createSignal(slot()?.content.type ?? types.NUMBER);
   const [value, setValue] = createSignal(
     slot()?.type === "value"
-      ? (slot()?.content.value ?? defaultValues[type()])
-      : defaultValues[type()],
+      ? (slot()?.content.value ?? defaultValues[type()]())
+      : defaultValues[type()](),
   );
 
   return (

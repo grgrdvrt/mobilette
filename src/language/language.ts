@@ -37,12 +37,12 @@ export const typesNames = {
 };
 
 export const defaultValues = {
-  [types.ANY]: 0,
-  [types.BOOLEAN]: 1,
-  [types.NUMBER]: 0,
-  [types.STRING]: "",
-  [types.ARRAY]: [],
-  [types.COLOR]: [0, 0, 0, 1],
+  [types.ANY]: () => 0,
+  [types.BOOLEAN]: () => 1,
+  [types.NUMBER]: () => 0,
+  [types.STRING]: () => "",
+  [types.ARRAY]: () => [],
+  [types.COLOR]: () => [0, 0, 0, 1],
 };
 
 const num = { type: types.NUMBER };
@@ -171,7 +171,6 @@ export const instructionsDefinitions: Record<string, Module> = {
         params: [{ type: types.ARRAY }, { type: types.ANY, variadic: true }],
         effect: (params, env) => {
           const arr = env.readVal(params[0]);
-          console.log("arr", arr);
           for (let i = 0; i < arr.length; i++) {
             env.setVal(params[i + 1].content, arr[i]);
           }

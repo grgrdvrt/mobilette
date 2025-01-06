@@ -333,7 +333,8 @@ export function saveRegister(
         register.type = type;
         register.color = color;
         register.name = name;
-        (register.initialValue = value), (register.value = value);
+        register.initialValue = value;
+        register.value = value;
       }
     }),
   );
