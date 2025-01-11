@@ -18,9 +18,6 @@ import {
   Switch,
   Match,
   Setter,
-  Accessor,
-  For,
-  on,
 } from "solid-js";
 import { unwrap, reconcile } from "solid-js/store";
 
@@ -32,22 +29,7 @@ import { Interpreter } from "../language/interpreter";
 
 import { Editor } from "../editor/Editor";
 import { Registers } from "../registers/Registers";
-
-function Console(props: { log: Accessor<any> }) {
-  let container: HTMLDivElement | undefined;
-  createEffect(
-    on(props.log, () => {
-      if (container) {
-        container.scrollTop = container.scrollHeight;
-      }
-    }),
-  );
-  return (
-    <div ref={container} style={{ height: "100%", overflow: "auto" }}>
-      <For each={props.log().slice(-200)}>{(line) => <p>{line}</p>}</For>
-    </div>
-  );
-}
+import { ProgramConsole } from "../editor/Console";
 
 export function EditorPage(props: { setPage: Setter<string> }) {
   resetRegisters();
@@ -162,7 +144,7 @@ export function EditorPage(props: { setPage: Setter<string> }) {
             </div>
           </Match>
           <Match when={tab() === "console"}>
-            <Console log={interpreter.stdOut} />
+            <ProgramConsole log={interpreter.stdOut} />
           </Match>
         </Switch>
       </div>
