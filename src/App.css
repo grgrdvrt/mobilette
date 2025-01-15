@@ -167,7 +167,7 @@
 .code {
     height: 100%;
     overflow: hidden;
-    font-family: "monospace";
+    font-family: monospace;
     display: flex;
     flex-direction: column;
 }
