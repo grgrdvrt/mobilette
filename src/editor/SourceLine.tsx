@@ -17,6 +17,7 @@ import {
   clearCursor,
   setCursor,
   SlotPath,
+  Registers,
 } from "../store";
 
 import {
@@ -48,12 +49,12 @@ function EmptySlot(props: {
 
 function RegisterParam(props: {
   slotPath: SlotPath;
-  registers: Register[];
+  registers: Registers;
   registerId: Register["id"];
   setSelectedSlot: Setter<any>;
 }) {
   const register = createMemo(() => {
-    const register = props.registers.find((r) => r.id === props.registerId);
+    const register = props.registers[props.registerId];
     if (!register) {
       throw new Error("Register not found");
     }
@@ -135,7 +136,7 @@ export function SourceLine(props: {
   line: Instruction;
   depth: Accessor<number>;
   selected: Accessor<boolean>;
-  registers: Register[];
+  registers: Registers;
   setSelectedSlot: Setter<SlotPath | undefined>;
   order: string;
 }) {

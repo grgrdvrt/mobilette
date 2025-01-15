@@ -6,11 +6,11 @@ import {
   deleteLine,
   clickContext,
   Program,
-  Register,
   ProgramContextId,
   ProgramContext,
   hasSelection,
   SlotPath,
+  Registers,
 } from "../store";
 const [store] = useStore();
 
@@ -21,7 +21,7 @@ import { EmptySourceLine, SourceLine } from "./SourceLine";
 function ProgramInterface(props: {
   source: ProgramContext;
   sourcePath: ProgramContextId;
-  registers: Register[];
+  registers: Registers;
   setSelectedSlot: Setter<SlotPath | undefined>;
 }) {
   const isSelected = (instructionIndex: number) => {
@@ -121,7 +121,7 @@ function ProgramInterface(props: {
 
 export function Editor(props: {
   source: Program["source"];
-  registers: Register[];
+  registers: Registers;
 }) {
   const [selectedSlot, setSelectedSlot] = createSignal<SlotPath | undefined>(
     undefined,

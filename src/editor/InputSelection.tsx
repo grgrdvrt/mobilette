@@ -3,9 +3,9 @@ import { Show, createSignal, Setter } from "solid-js";
 import {
   getRegisterByPosition,
   setParameter,
-  Register,
   InstructionPath,
   SlotPath,
+  Registers,
 } from "../store";
 
 import { RegistersGrid } from "../registers/Registers";
@@ -17,7 +17,7 @@ import { ValueInput } from "./ValueInput";
 
 export function InputSelection(props: {
   slotPath: SlotPath;
-  registers: Register[];
+  registers: Registers;
   instructionPath: InstructionPath;
   setSelectedSlot: Setter<SlotPath | undefined>;
 }) {

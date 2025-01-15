@@ -30,6 +30,7 @@ export type Register = {
   y: number;
   color: string;
 };
+export type Registers = Record<string, Register>;
 
 export type ProgramContext = (Instruction | undefined)[];
 export type Program = {
@@ -43,7 +44,7 @@ export type Program = {
     pointerUp: ProgramContext;
     pointerMove: ProgramContext;
   };
-  registers: Register[];
+  registers: Registers;
 };
 
 export type ProgramContextId = keyof Program["source"];
@@ -112,7 +113,10 @@ const defaultRegisters = [
   makeRegister("2", types.NUMBER, 2, 9, 13),
   makeRegister("100", types.NUMBER, 100, 8, 14),
   makeRegister("360", types.NUMBER, 360, 9, 14),
-];
+].reduce((acc, reg) => {
+  acc[reg.id] = reg;
+  return acc;
+}, {} as Registers);
 export function createEmptyProgram(): Program {
   return {
     id: crypto.randomUUID(),
@@ -125,7 +129,7 @@ export function createEmptyProgram(): Program {
       pointerUp: [],
       pointerMove: [],
     },
-    registers: [...defaultRegisters],
+    registers: JSON.parse(JSON.stringify(defaultRegisters)),
   };
 }
 
@@ -180,7 +184,9 @@ export function hasSelection() {
 export function resetRegisters() {
   setStore(
     produce((store) => {
-      store.program.registers.forEach((r) => (r.value = r.initialValue));
+      for (let register of Object.values(store.program.registers)) {
+        register.value = register.initialValue;
+      }
     }),
   );
 }
@@ -313,7 +319,7 @@ export function createRegister(
         x,
         y,
       };
-      store.program.registers.push(register);
+      store.program.registers[register.id] = register;
     }),
   );
   autoSave();
@@ -328,7 +334,7 @@ export function saveRegister(
 ) {
   setStore(
     produce((store) => {
-      const register = store.program.registers.find((r) => r.id === id);
+      const register = store.program.registers[id];
       if (register) {
         register.type = type;
         register.color = color;

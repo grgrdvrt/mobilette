@@ -1,4 +1,4 @@
-import { Program } from "./store";
+import { Program, Registers } from "./store";
 
 const dbName = "mobilette";
 function getRequest() {
@@ -52,6 +52,15 @@ export async function getDocuments(): Promise<Program[]> {
           documents.push(cursor.value);
           cursor.continue();
         } else {
+          //migration
+          documents.forEach((d) => {
+            if (Array.isArray(d.registers)) {
+              d.registers = d.registers.reduce((acc, r) => {
+                acc[r.id] = r;
+                return acc;
+              }, {} as Registers);
+            }
+          });
           resolve(documents);
         }
       };

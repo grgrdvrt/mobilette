@@ -1,6 +1,12 @@
 import { Accessor, createSignal, Setter, untrack } from "solid-js";
 import { ParamInput, types, instructionsDefinitions } from "./language";
-import { Instruction, Program, Register, ProgramContext } from "../store";
+import {
+  Instruction,
+  Program,
+  Register,
+  ProgramContext,
+  Registers,
+} from "../store";
 
 type IfDefinition = {
   type: "if";
@@ -18,14 +24,14 @@ type ForDefinition = {
 };
 
 export class Interpreter {
-  onExecuted: (registers: Register[]) => void;
+  onExecuted: (registers: Registers) => void;
   stdOut: Accessor<Array<any>>;
   setStdOut: Setter<Array<any>>;
   mainCanvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   instructionId: number = 0;
 
-  registers: Register[] = [];
+  registers: Registers = {};
   source: Record<string, ProgramContext> = {};
   jumpTable: Map<number, number | number[]> = new Map();
   initialTime: number = 0;
@@ -34,7 +40,7 @@ export class Interpreter {
   pointerX: number = 0;
   pointerY: number = 0;
 
-  constructor(onExecuted: (registers: Register[]) => void) {
+  constructor(onExecuted: (registers: Registers) => void) {
     this.onExecuted = onExecuted;
 
     const [stdOut, setStdOut] = createSignal<Array<any>>([]);
@@ -54,7 +60,7 @@ export class Interpreter {
   }
 
   getReg(regId: Register["id"]) {
-    const register = this.registers.find((r) => r.id === regId);
+    const register = this.registers[regId];
     if (!register) {
       throw new Error(`Register not found: ${regId}`);
     }

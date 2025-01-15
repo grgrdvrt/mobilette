@@ -21,14 +21,14 @@ import {
 } from "solid-js";
 import { unwrap, reconcile } from "solid-js/store";
 
-import { useStore, resetRegisters, setThumb, Register } from "../store";
+import { useStore, resetRegisters, setThumb, Registers } from "../store";
 
 const [store, setStore] = useStore();
 
 import { Interpreter } from "../language/interpreter";
 
 import { Editor } from "../editor/Editor";
-import { Registers } from "../registers/Registers";
+import { RegistersView } from "../registers/Registers";
 import { ProgramConsole } from "../editor/Console";
 
 export function EditorPage(props: { setPage: Setter<string> }) {
@@ -36,7 +36,7 @@ export function EditorPage(props: { setPage: Setter<string> }) {
   const [mode, setMode] = createSignal("code");
   const [isPlaying, setIsPlaying] = createSignal(false);
   const [tab, setTab] = createSignal("code");
-  const interpreter = new Interpreter((registers: Register[]) => {
+  const interpreter = new Interpreter((registers: Registers) => {
     setStore("program", "registers", reconcile(registers));
   });
 
@@ -136,7 +136,7 @@ export function EditorPage(props: { setPage: Setter<string> }) {
             />
           </Match>
           <Match when={tab() === "registers"}>
-            <Registers registers={store.program.registers} />
+            <RegistersView registers={store.program.registers} />
           </Match>
           <Match when={tab() === "view"}>
             <div style={{ width: "100%", height: "100%" }}>
