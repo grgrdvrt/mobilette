@@ -79,20 +79,20 @@ export function RegistersGrid(props: {
 }
 
 export function Registers(props: { registers: Register[] }) {
-  const [selectedRegister, setSelectedRegisiter] =
+  const [selectedRegister, setSelectedRegister] =
     createSignal<RegisterPosition | null>(null);
   return (
     <div class="registers">
       <RegistersGrid
         registers={props.registers}
         onRegisterClicked={(registerPosition: RegisterPosition) => {
-          setSelectedRegisiter(registerPosition);
+          setSelectedRegister(registerPosition);
         }}
       />
       <Show when={selectedRegister() !== null}>
         <RegisterDetails
           registerPosition={selectedRegister()!}
-          onClose={() => setSelectedRegisiter(null)}
+          onClose={() => setSelectedRegister(null)}
         />
       </Show>
     </div>
