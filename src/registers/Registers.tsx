@@ -1,7 +1,7 @@
 import { createSignal, Show, For, onMount, onCleanup } from "solid-js";
 import { produce } from "solid-js/store";
 
-import { Registers, useStore } from "../store";
+import { Registers as RegistersType, useStore } from "../store";
 const [store, setStore] = useStore();
 
 import { RegisterDetails } from "./RegistersDetails";
@@ -10,7 +10,7 @@ import { range } from "../utils";
 export type RegisterPosition = { x: number; y: number };
 
 export function RegistersGrid(props: {
-  registers: Registers;
+  registers: RegistersType;
   onRegisterClicked: (position: RegisterPosition) => void;
 }) {
   let el: HTMLDivElement | undefined;
@@ -78,7 +78,7 @@ export function RegistersGrid(props: {
   );
 }
 
-export function RegistersView(props: { registers: Registers }) {
+export function Registers(props: { registers: RegistersType }) {
   const [selectedRegister, setSelectedRegister] =
     createSignal<RegisterPosition | null>(null);
   return (
