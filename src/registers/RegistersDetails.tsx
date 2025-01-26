@@ -38,26 +38,24 @@ export function RegisterDetails(props: {
   let colorField, nameField;
   return (
     <div class="registerDetails">
-      <button onClick={() => props.onClose("close")}>
-        <img src={ClosePicto} />
-      </button>
-      <p>
-        {register().x}:{register().y}
-      </p>
-
-      <input ref={colorField} type="color" value={register().color} />
-
+      <div class="registerDetails-header">
+        <button onClick={() => props.onClose("close")}>
+          <img src={ClosePicto} />
+        </button>
+        <input
+          ref={nameField}
+          class="registerDetails-name"
+          onFocus={() => nameField.select()}
+          value={register().name || `${register().x}:${register().y}`}
+        />
+        <input ref={colorField} type="color" value={register().color} />
+      </div>
       <DataInput
         type={type}
         setType={setType}
         value={value}
         setValue={setValue}
       />
-
-      <label for="registerName">name</label>
-      <input ref={nameField} id="registerName" value={register().name ?? ""} />
-      <br />
-
       <Show
         when={register().id === "empty"}
         fallback={
@@ -77,22 +75,24 @@ export function RegisterDetails(props: {
           </button>
         }
       >
-        <button onClick={() => props.onClose("cancel")}>Cancel</button>
-        <button
-          onClick={() => {
-            createRegister(
-              props.registerPosition.x,
-              props.registerPosition.y,
-              type(),
-              colorField!.value,
-              nameField!.value,
-              value(),
-            );
-            props.onClose("create");
-          }}
-        >
-          Create
-        </button>
+        <div>
+          <button onClick={() => props.onClose("cancel")}>Cancel</button>
+          <button
+            onClick={() => {
+              createRegister(
+                props.registerPosition.x,
+                props.registerPosition.y,
+                type(),
+                colorField!.value,
+                nameField!.value,
+                value(),
+              );
+              props.onClose("create");
+            }}
+          >
+            Create
+          </button>
+        </div>
       </Show>
     </div>
   );

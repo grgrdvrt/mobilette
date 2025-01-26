@@ -162,6 +162,24 @@
     border-radius: 10px;
     transform: translate(-50%, -50%);
     background-color: white;
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+}
+
+.registerDetails-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.1em;
+}
+
+.registerDetails-name {
+    max-width: 50%;
+    border: none;
+    background-color: #eeeeee;
+    font-size: 1.1em;
+    font-weight: 400;
+    padding: 0.5em 1em;
 }
 
 .code {

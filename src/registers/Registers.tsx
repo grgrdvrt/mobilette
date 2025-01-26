@@ -19,6 +19,9 @@ export function RegistersGrid(props: {
   const register = (x: number, y: number) => {
     return Object.values(props.registers).find((r) => r.x === x && r.y === y);
   };
+  const registerColor = (x: number, y: number) => {
+    return register(x, y)?.color;
+  };
   onMount(() => {
     if (el) {
       el.scrollTop = store.gui.registers.scrollTop;
@@ -56,17 +59,17 @@ export function RegistersGrid(props: {
           return (
             <For each={cols}>
               {(i) => {
-                const reg = register(i, j);
                 return (
                   <div
                     class="registerCell"
                     data-x={i}
                     data-y={j}
                     style={{
-                      "background-color": reg?.color ?? "#eeeeee",
+                      "background-color": (() =>
+                        register(i, j)?.color ?? "#eeeeee")(),
                     }}
                   >
-                    {register(i, j)?.name?.substring(0, 3)}
+                    {register(i, j)?.name?.substring(0, 4)}
                   </div>
                 );
               }}
