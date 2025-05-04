@@ -4,7 +4,7 @@ import { setParameter, getSlot, InstructionPath } from "../store";
 
 import { types, defaultValues } from "../language/language";
 
-import { DataInput } from "../components/DataInput";
+import { CompactDataInput } from "../components/CompactDataInput";
 
 export function ValueInput(props: {
   instructionPath: InstructionPath;
@@ -24,7 +24,7 @@ export function ValueInput(props: {
 
   return (
     <div class="valueInput">
-      <DataInput
+      <CompactDataInput
         type={type}
         setType={setType}
         value={value}

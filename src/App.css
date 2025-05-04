@@ -157,7 +157,7 @@
     top: 50%;
     left: 50%;
     width: 80vw;
-    height: 80vw;
+    height: 80vh;
     padding: 5%;
     border-radius: 10px;
     transform: translate(-50%, -50%);
@@ -180,6 +180,11 @@
     font-size: 1.1em;
     font-weight: 400;
     padding: 0.5em 1em;
+}
+
+.registerDetails-validate {
+    display: flex;
+    justify-content: space-between;
 }
 
 .code {
@@ -275,4 +280,32 @@
 .valueInput select,
 .valueInput input {
     /* font-size:1.2rem; */
+}
+
+.expandedDataInput {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
+
+.typeSelector {
+    display: flex;
+    gap: 0.1em;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+.typeSelector button {
+    padding: 0.8em;
+    background-color: transparent;
+}
+
+.typeSelector button,
+.typeSelector button:active,
+.typeSelector button:focus {
+    outline: none;
+    user-select: none;
+}
+
+.expandedValueInput {
+    vertical-align: center;
 }

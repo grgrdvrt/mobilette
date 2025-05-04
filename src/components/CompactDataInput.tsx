@@ -3,7 +3,7 @@ import { For, Switch, Match, Accessor, Setter } from "solid-js";
 import { types, typesNames, defaultValues } from "../language/language";
 import { hexToHSLA, hslaToHex } from "../utils";
 
-export function DataInput(props: {
+export function CompactDataInput(props: {
   type: Accessor<any>;
   setType: Setter<any>;
   value: Accessor<any>;

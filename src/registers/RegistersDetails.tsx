@@ -11,7 +11,7 @@ import ClosePicto from "../assets/close_FILL0_wght400_GRAD0_opsz24.svg";
 
 import { types, defaultValues } from "../language/language";
 
-import { DataInput } from "../components/DataInput";
+import { ExpandedDataInput } from "../components/ExpandedDataInput";
 import { invertLightness } from "../utils";
 
 export type RegisterDetailsCloseReasons =
@@ -70,7 +70,7 @@ export function RegisterDetails(props: {
           onInput={() => update()}
         />
       </div>
-      <DataInput
+      <ExpandedDataInput
         type={type}
         setType={setType}
         value={value}
@@ -89,7 +89,7 @@ export function RegisterDetails(props: {
           </button>
         }
       >
-        <div>
+        <div class="registerDetails-validate">
           <button onClick={() => props.onClose("cancel")}>Cancel</button>
           <button
             onClick={() => {
