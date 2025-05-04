@@ -19,8 +19,8 @@ export function RegistersGrid(props: {
   const register = (x: number, y: number) => {
     return Object.values(props.registers).find((r) => r.x === x && r.y === y);
   };
-  const registerColor = (x: number, y: number) => {
-    return register(x, y)?.color;
+  const registerColor = (x: number, y: number, defaultColor = "#eeeeee") => {
+    return register(x, y)?.color ?? defaultColor;
   };
   onMount(() => {
     if (el) {
@@ -65,11 +65,8 @@ export function RegistersGrid(props: {
                     data-x={i}
                     data-y={j}
                     style={{
-                      "background-color": (() =>
-                        register(i, j)?.color ?? "#eeeeee")(),
-                      color: invertLightness(
-                        register(i, j)?.color ?? "#000000",
-                      ),
+                      "background-color": registerColor(i, j),
+                      color: invertLightness(registerColor(i, j)),
                     }}
                   >
                     {register(i, j)?.name?.substring(0, 4)}
