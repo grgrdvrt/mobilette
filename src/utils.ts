@@ -96,3 +96,8 @@ export const isMobile = (function () {
   })(navigator.userAgent || navigator.vendor || (window as any).opera);
   return check;
 })();
+
+export function invertLightness(hex: string) {
+  const hsla = hexToHSLA(hex, 1);
+  return hsla[2] < 50 ? "#ffffff" : "#000000";
+}

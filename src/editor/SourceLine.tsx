@@ -26,7 +26,7 @@ import {
   ParamInput,
 } from "../language/language";
 
-import { hslaToHslaString } from "../utils";
+import { hslaToHslaString, invertLightness } from "../utils";
 
 function EmptySlot(props: {
   slotPath: SlotPath;
@@ -63,7 +63,10 @@ function RegisterParam(props: {
   return (
     <button
       class="codeRegister"
-      style={{ "background-color": register().color }}
+      style={{
+        "background-color": register().color,
+        color: invertLightness(register().color),
+      }}
       onClick={(e) => {
         e.stopPropagation();
         props.setSelectedSlot(props.slotPath);

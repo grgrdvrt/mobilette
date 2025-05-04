@@ -12,6 +12,7 @@ import ClosePicto from "../assets/close_FILL0_wght400_GRAD0_opsz24.svg";
 import { types, defaultValues } from "../language/language";
 
 import { DataInput } from "../components/DataInput";
+import { invertLightness } from "../utils";
 
 export type RegisterDetailsCloseReasons =
   | "close"
@@ -35,7 +36,17 @@ export function RegisterDetails(props: {
   const [value, setValue] = createSignal(
     register().value ?? defaultValues[type()](),
   );
-  let colorField, nameField;
+  let colorField: HTMLInputElement, nameField: HTMLInputElement;
+
+  const update = () => {
+    saveRegister(
+      register().id,
+      type(),
+      colorField!.value,
+      nameField!.value,
+      value(),
+    );
+  };
   return (
     <div class="registerDetails">
       <div class="registerDetails-header">
@@ -47,8 +58,17 @@ export function RegisterDetails(props: {
           class="registerDetails-name"
           onFocus={() => nameField.select()}
           value={register().name || `${register().x}:${register().y}`}
+          style={{
+            "background-color": register().color,
+            color: invertLightness(register().color),
+          }}
         />
-        <input ref={colorField} type="color" value={register().color} />
+        <input
+          ref={colorField}
+          type="color"
+          value={register().color}
+          onInput={() => update()}
+        />
       </div>
       <DataInput
         type={type}
@@ -61,13 +81,7 @@ export function RegisterDetails(props: {
         fallback={
           <button
             onClick={() => {
-              saveRegister(
-                register().id,
-                type(),
-                colorField!.value,
-                nameField!.value,
-                value(),
-              );
+              update();
               props.onClose("save");
             }}
           >

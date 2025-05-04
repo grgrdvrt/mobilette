@@ -5,7 +5,7 @@ import { Registers as RegistersType, useStore } from "../store";
 const [store, setStore] = useStore();
 
 import { RegisterDetails } from "./RegistersDetails";
-import { range } from "../utils";
+import { invertLightness, range } from "../utils";
 
 export type RegisterPosition = { x: number; y: number };
 
@@ -67,6 +67,9 @@ export function RegistersGrid(props: {
                     style={{
                       "background-color": (() =>
                         register(i, j)?.color ?? "#eeeeee")(),
+                      color: invertLightness(
+                        register(i, j)?.color ?? "#000000",
+                      ),
                     }}
                   >
                     {register(i, j)?.name?.substring(0, 4)}
