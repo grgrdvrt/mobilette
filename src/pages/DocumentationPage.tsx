@@ -13,17 +13,15 @@ export function DocumentationPage(props: { setPage: Setter<string> }) {
         <img src={HomePicto} />
       </button>
       <section>
-        <h2>Introduction</h2>
         <p>
-          Mobilette is a simplified programming environment. Its capabilites are
-          limited to basic manipulations on basic datatypes.
+          Mobilette is a small programming language and interface for creative
+          coding on mobile.
         </p>
       </section>
       <section>
-        <h2>Concepts</h2>
-        <p>Instructions</p>
-        <p>Registers</p>
-        <p>Data Types</p>
+        <h3>Instructions</h3>
+        <h3>Registers</h3>
+        <h3>Data Types</h3>
       </section>
       <section>
         <h2>Programming</h2>

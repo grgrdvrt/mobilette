@@ -27,8 +27,8 @@ export function HomePage(props: { setPage: Setter<string> }) {
         <h2 class="subtitle">.computer</h2>
       </div>
       <p>
-        Mobilette is a small programming language and interface for recreational
-        creative coding on mobile.
+        Mobilette is a small programming language and interface for creative
+        coding on mobile.
       </p>
       <div class="home-actions">
         <button
