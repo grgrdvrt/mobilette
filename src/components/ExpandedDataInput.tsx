@@ -84,8 +84,8 @@ export function ExpandedDataInput(props: {
           <Match when={props.type() === types.COLOR}>
             <ColorPicker
               hsla={props.value()}
-              onChange={(hex: string) => {
-                props.setValue(hexToHSLA(hex, props.value()[3]));
+              onChange={(color) => {
+                props.setValue(color);
               }}
             />
           </Match>

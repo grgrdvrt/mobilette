@@ -1,8 +1,8 @@
 import { createSignal } from "solid-js";
-
+type HSLAType = [number, number, number, number];
 const ColorPicker = (props: {
-  hsla: [number, number, number, number];
-  onChange: (color: string) => void;
+  hsla: HSLAType;
+  onChange: (color: HSLAType) => void;
 }) => {
   const [color, setColor] = createSignal({
     hue: props.hsla[0] || 0,
@@ -11,8 +11,13 @@ const ColorPicker = (props: {
     opacity: props.hsla[3] || 100,
   });
 
-  const hslaColor = () =>
-    `hsla(${color().hue}, ${color().saturation}%, ${color().lightness}%, ${color().opacity / 100})`;
+  const hslaData = () =>
+    [
+      color().hue,
+      color().saturation,
+      color().lightness,
+      color().opacity,
+    ] as HSLAType;
 
   const updateSaturationLightness = (event: PointerEvent) => {
     event.preventDefault();
@@ -22,7 +27,7 @@ const ColorPicker = (props: {
     const sat = Math.min(Math.max(0, (x / rect.width) * 100), 100);
     const lig = Math.min(Math.max(0, 100 - (y / rect.height) * 100), 100);
     setColor((prev) => ({ ...prev, saturation: sat, lightness: lig }));
-    props.onChange(hslaColor()); // Call onChange prop with the current color
+    props.onChange(hslaData()); // Call onChange prop with the current color
   };
 
   return (
@@ -70,7 +75,7 @@ const ColorPicker = (props: {
           value={color().hue}
           onInput={(e) => {
             setColor((prev) => ({ ...prev, hue: Number(e.target.value) }));
-            props.onChange(hslaColor());
+            props.onChange(hslaData());
           }}
           style={{
             width: "100%",
@@ -89,7 +94,7 @@ const ColorPicker = (props: {
         value={color().opacity}
         onInput={(e) => {
           setColor((prev) => ({ ...prev, opacity: Number(e.target.value) }));
-          props.onChange(hslaColor());
+          props.onChange(hslaData());
         }}
       />
     </div>
