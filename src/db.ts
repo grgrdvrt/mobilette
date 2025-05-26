@@ -1,4 +1,4 @@
-import { Program, Registers } from "./store";
+import { Program } from "./store";
 
 const dbName = "mobilette";
 function getRequest() {

@@ -54,7 +54,7 @@ export function RegisterDetails(props: {
           <img src={ClosePicto} />
         </button>
         <input
-          ref={nameField}
+          ref={nameField!}
           class="registerDetails-name"
           onFocus={() => nameField.select()}
           value={register().name || `${register().x}:${register().y}`}
@@ -64,7 +64,7 @@ export function RegisterDetails(props: {
           }}
         />
         <input
-          ref={colorField}
+          ref={colorField!}
           type="color"
           value={register().color}
           onInput={() => update()}
