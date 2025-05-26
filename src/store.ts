@@ -347,9 +347,8 @@ export function saveRegister(
   autoSave();
 }
 
-const alphabet = "abcdefghijklmnopqrstuvwxyz";
 export function getRegisterDefaultName(register: Register) {
-  return `${alphabet.charAt(register.x).toUpperCase()}:${register.y}`;
+  return `${String.fromCharCode(register.x + 65)}:${register.y}`;
 }
 
 export function clearCursor() {
