@@ -347,6 +347,11 @@ export function saveRegister(
   autoSave();
 }
 
+const alphabet = "abcdefghijklmnopqrstuvwxyz";
+export function getRegisterDefaultName(register: Register) {
+  return `${alphabet.charAt(register.x).toUpperCase()}:${register.y}`;
+}
+
 export function clearCursor() {
   setStore("gui", "cursor", null);
 }

@@ -3,6 +3,7 @@ import { createSignal, createMemo, Show } from "solid-js";
 import {
   createRegister,
   getRegisterByPosition,
+  getRegisterDefaultName,
   makeEmptyRegister,
   saveRegister,
 } from "../store";
@@ -57,7 +58,7 @@ export function RegisterDetails(props: {
           ref={nameField!}
           class="registerDetails-name"
           onFocus={() => nameField.select()}
-          value={register().name || `${register().x}:${register().y}`}
+          value={register().name || getRegisterDefaultName(register())}
           style={{
             "background-color": register().color,
             color: invertLightness(register().color),

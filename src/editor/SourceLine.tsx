@@ -18,6 +18,7 @@ import {
   setCursor,
   SlotPath,
   Registers,
+  getRegisterDefaultName,
 } from "../store";
 
 import {
@@ -72,7 +73,7 @@ function RegisterParam(props: {
         props.setSelectedSlot(props.slotPath);
       }}
     >
-      {register().name || register().y + ":" + register().x}
+      {register().name || getRegisterDefaultName(register())}
     </button>
   );
 }
