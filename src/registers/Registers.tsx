@@ -1,7 +1,11 @@
 import { createSignal, Show, For, onMount, onCleanup } from "solid-js";
 import { produce } from "solid-js/store";
 
-import { Registers as RegistersType, useStore } from "../store";
+import {
+  getRegisterDefaultName,
+  Registers as RegistersType,
+  useStore,
+} from "../store";
 const [store, setStore] = useStore();
 
 import { RegisterDetails } from "./RegistersDetails";
@@ -21,6 +25,13 @@ export function RegistersGrid(props: {
   };
   const registerColor = (x: number, y: number, defaultColor = "#eeeeee") => {
     return register(x, y)?.color ?? defaultColor;
+  };
+  const registerName = (x: number, y: number) => {
+    const reg = register(x, y);
+    if (!reg) {
+      return;
+    }
+    return reg.name ?? getRegisterDefaultName(x, y);
   };
   onMount(() => {
     if (el) {
@@ -69,7 +80,7 @@ export function RegistersGrid(props: {
                       color: invertLightness(registerColor(i, j)),
                     }}
                   >
-                    {register(i, j)?.name?.substring(0, 4)}
+                    {registerName(i, j)}
                   </div>
                 );
               }}
