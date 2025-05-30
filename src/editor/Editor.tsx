@@ -43,6 +43,9 @@ function ProgramInterface(props: {
       if (line[1] === "endif" || line[1] === "endfor") {
         return --d;
       }
+      if (line[1] === "else" || line[1] === "elseif") {
+        return d - 1;
+      }
       result = d;
       if (line[1] === "if" || line[1] === "for") {
         d++;
