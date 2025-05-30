@@ -85,6 +85,24 @@ function monop(
   };
 }
 
+function vecop(func: (a: any, b: any) => any): InstructionDefinition {
+  return [
+    binop((a, b) => func(a, b)),
+    binop(
+      (a, b) => b.map((v: number) => func(v, a)),
+      [types.NUMBER, types.ARRAY, types.ARRAY],
+    ),
+    binop(
+      (a, b) => a.map((v: number) => func(v, b)),
+      [types.ARRAY, types.NUMBER, types.ARRAY],
+    ),
+    binop(
+      (a, b) => a.map((v: number, i: number) => func(v, b[i])),
+      [types.ARRAY, types.ARRAY, types.ARRAY],
+    ),
+  ];
+}
+
 function comp(func: (a: any, b: any) => boolean): InstructionVariant {
   return {
     params: [num, num, bool],
@@ -188,54 +206,12 @@ export const instructionsDefinitions: Record<string, Module> = {
     continue: [{ params: [], effect: () => {} }],
   },
   maths: {
-    "+": [
-      binop((a, b) => a + b),
-      binop(
-        (a, b) => b.map((v: number) => v + a),
-        [types.NUMBER, types.ARRAY, types.ARRAY],
-      ),
-      binop(
-        (a, b) => a.map((v: number) => v + b),
-        [types.ARRAY, types.NUMBER, types.ARRAY],
-      ),
-      binop(
-        (a, b) => a.map((v: number, i: number) => v + b[i]),
-        [types.ARRAY, types.ARRAY, types.ARRAY],
-      ),
-    ],
-    "-": [
-      binop((a, b) => a - b),
-      binop(
-        (a, b) => b.map((v: number) => v - a),
-        [types.NUMBER, types.ARRAY, types.ARRAY],
-      ),
-      binop(
-        (a, b) => a.map((v: number) => v - b),
-        [types.ARRAY, types.NUMBER, types.ARRAY],
-      ),
-      binop(
-        (a, b) => a.map((v: number, i: number) => v - b[i]),
-        [types.ARRAY, types.ARRAY, types.ARRAY],
-      ),
-    ],
-    "*": [
-      binop((a, b) => a * b),
-      binop(
-        (a, b) => b.map((v: number) => v * a),
-        [types.NUMBER, types.ARRAY, types.ARRAY],
-      ),
-      binop(
-        (a, b) => a.map((v: number) => v * b),
-        [types.ARRAY, types.NUMBER, types.ARRAY],
-      ),
-      binop(
-        (a, b) => a.map((v: number, i: number) => v * b[i]),
-        [types.ARRAY, types.ARRAY, types.ARRAY],
-      ),
-    ],
-    "/": [binop((a, b) => a / b)],
-    "%": [binop((a, b) => a % b)],
-    "**": [binop((a, b) => Math.pow(a, b))],
+    "+": vecop((a, b) => a + b),
+    "-": vecop((a, b) => a - b),
+    "*": vecop((a, b) => a * b),
+    "/": vecop((a, b) => a / b),
+    "%": vecop((a, b) => a % b),
+    "**": vecop((a, b) => Math.pow(a, b)),
     min: [binop((a, b) => Math.min(a, b))],
     max: [binop((a, b) => Math.max(a, b))],
     sqrt: [monop(Math.sqrt)],
