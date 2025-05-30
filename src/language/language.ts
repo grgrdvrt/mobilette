@@ -565,7 +565,7 @@ export const instructionsDefinitions: Record<string, Module> = {
           const r = l / Math.hypot(...v);
           return v.map((c: number) => c * r);
         },
-        [types.ARRAY, types.ARRAY, types.NUMBER],
+        [types.ARRAY, types.NUMBER, types.ARRAY],
       ),
     ],
     dot: [
