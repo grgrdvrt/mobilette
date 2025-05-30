@@ -290,7 +290,7 @@ export const instructionsDefinitions: Record<string, Module> = {
     "||": [
       binop((a, b) => a || b, [types.BOOLEAN, types.BOOLEAN, types.BOOLEAN]),
     ],
-    "!": [monop((v) => !v, [types.BOOLEAN])],
+    "!": [monop((v) => !v, [types.BOOLEAN, types.BOOLEAN])],
   },
   gfx: {
     clear: [
