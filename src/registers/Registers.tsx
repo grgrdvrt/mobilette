@@ -31,7 +31,7 @@ export function RegistersGrid(props: {
     if (!reg) {
       return;
     }
-    return reg.name?.substring(0, 4) ?? getRegisterDefaultName(x, y);
+    return reg.name?.substring(0, 4) ?? getRegisterDefaultName(reg);
   };
   onMount(() => {
     if (el) {
