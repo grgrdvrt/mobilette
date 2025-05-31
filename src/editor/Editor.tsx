@@ -6,7 +6,7 @@ import {
   deleteLine,
   clickContext,
   Program,
-  ProgramContextId,
+  ProgramContextType,
   ProgramContext,
   hasSelection,
   SlotPath,
@@ -20,7 +20,7 @@ import { EmptySourceLine, SourceLine } from "./SourceLine";
 
 function ProgramInterface(props: {
   source: ProgramContext;
-  sourcePath: ProgramContextId;
+  sourcePath: ProgramContextType;
   registers: Registers;
   setSelectedSlot: Setter<SlotPath | undefined>;
 }) {
@@ -138,7 +138,7 @@ export function Editor(props: {
     );
   };
 
-  function CodeContext(ctxProps: { title: string; key: ProgramContextId }) {
+  function CodeContext(ctxProps: { title: string; key: ProgramContextType }) {
     return (
       <>
         <h3 onClick={() => clickContext(ctxProps.key)}>{ctxProps.title}</h3>

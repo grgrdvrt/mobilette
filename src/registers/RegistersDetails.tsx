@@ -2,13 +2,16 @@ import { createSignal, createMemo, Show } from "solid-js";
 
 import {
   createRegister,
+  deleteRegister,
   getRegisterByPosition,
   getRegisterDefaultName,
+  isRegisterUsed,
   makeEmptyRegister,
   saveRegister,
 } from "../store";
 
 import ClosePicto from "../assets/close_FILL0_wght400_GRAD0_opsz24.svg";
+import DeletePicto from "../assets/delete_FILL0_wght400_GRAD0_opsz24.svg";
 
 import { types, defaultValues } from "../language/language";
 
@@ -48,6 +51,7 @@ export function RegisterDetails(props: {
       value(),
     );
   };
+  console.log();
   return (
     <div class="registerDetails">
       <div class="registerDetails-header">
@@ -80,14 +84,26 @@ export function RegisterDetails(props: {
       <Show
         when={register().id === "empty"}
         fallback={
-          <button
-            onClick={() => {
-              update();
-              props.onClose("save");
-            }}
-          >
-            Save
-          </button>
+          <div class="registerDetails-validate">
+            <Show when={!isRegisterUsed(register())} fallback={<div></div>}>
+              <button
+                onClick={() => {
+                  deleteRegister(register().id);
+                  props.onClose("cancel");
+                }}
+              >
+                <img src={DeletePicto} />
+              </button>
+            </Show>
+            <button
+              onClick={() => {
+                update();
+                props.onClose("save");
+              }}
+            >
+              Save
+            </button>
+          </div>
         }
       >
         <div class="registerDetails-validate">

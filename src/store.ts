@@ -15,7 +15,7 @@ export type Type = number;
 export type ParamSlot = ParamInput | undefined;
 export type Instruction = [string, string, ...ParamSlot[]];
 export type InstructionPath = {
-  programContextId: ProgramContextId;
+  programContextId: ProgramContextType;
   lineIndex: number;
 };
 export type SlotPath = InstructionPath & { slotIndex: number };
@@ -33,21 +33,23 @@ export type Register = {
 export type Registers = Record<string, Register>;
 
 export type ProgramContext = (Instruction | undefined)[];
+
+export type ProgramContextType =
+  | "init"
+  | "loop"
+  | "pointerDown"
+  | "pointerUp"
+  | "pointerMove";
+
+export type ProgramSource = Record<ProgramContextType, ProgramContext>;
+
 export type Program = {
   id: string;
   lastOpened: number;
   thumb: string;
-  source: {
-    init: ProgramContext;
-    loop: ProgramContext;
-    pointerDown: ProgramContext;
-    pointerUp: ProgramContext;
-    pointerMove: ProgramContext;
-  };
+  source: ProgramSource;
   registers: Registers;
 };
-
-export type ProgramContextId = keyof Program["source"];
 
 export type AppStore = {
   gui: {
@@ -199,7 +201,7 @@ export function setProgram(program: Program) {
   );
 }
 
-export function insertAfter(sourcePath: ProgramContextId, lineIndex: number) {
+export function insertAfter(sourcePath: ProgramContextType, lineIndex: number) {
   setStore(
     produce((store) => {
       const source = store.program.source[sourcePath] as ProgramContext;
@@ -351,12 +353,33 @@ export function getRegisterDefaultName(register: Register) {
   return `${String.fromCharCode(register.x + 65)}:${register.y}`;
 }
 
+export function isRegisterUsed(register: Register): boolean {
+  return Object.values(store.program.source).some((ctx) => {
+    const isUsed = ctx.some((instruction) => {
+      if (!instruction) return;
+      const [_module, _instName, ...slots] = instruction;
+      return slots.some((slot) => {
+        return slot?.content === register.id;
+      });
+    });
+    if (isUsed) return true;
+  });
+}
+
+export function deleteRegister(registerId: Register["id"]) {
+  setStore(
+    produce((store) => {
+      delete store.program.registers[registerId];
+    }),
+  );
+}
+
 export function clearCursor() {
   setStore("gui", "cursor", null);
 }
 
 //click the title of a code section
-export function clickContext(context: ProgramContextId) {
+export function clickContext(context: ProgramContextType) {
   const cursor = store.gui.cursor;
   if (
     cursor &&
@@ -369,7 +392,7 @@ export function clickContext(context: ProgramContextId) {
   }
 }
 
-export function setCursor(context: ProgramContextId, index: number) {
+export function setCursor(context: ProgramContextType, index: number) {
   setStore("gui", "cursor", { programContextId: context, lineIndex: index });
 }
 
