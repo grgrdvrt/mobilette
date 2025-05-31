@@ -212,6 +212,17 @@ export function insertAfter(sourcePath: ProgramContextType, lineIndex: number) {
   autoSave();
 }
 
+const pairs = [
+  [
+    ["ctrl", "for"],
+    ["ctrl", "endfor"],
+  ],
+  [
+    ["ctrl", "if"],
+    ["ctrl", "endif"],
+  ],
+];
+
 export function setCommand(module: string, command: string) {
   setStore(
     produce((store) => {
@@ -232,6 +243,17 @@ export function setCommand(module: string, command: string) {
       store.program.source[context][index] = instruction;
     }),
   );
+  pairs.forEach(([start, end]) => {
+    if (module === start[0] && command === start[1]) {
+      if (!store.gui.cursor) {
+        return;
+      }
+      const { programContextId: context, lineIndex: index } = store.gui.cursor;
+      insertAfter(context, index);
+      setCommand(end[0], end[1]);
+      setCursor(context, index);
+    }
+  });
   autoSave();
 }
 
