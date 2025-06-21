@@ -21,13 +21,11 @@ export function ExpandedDataInput(props: {
           {([key, value]) => {
             return (
               <button
+                class="typeButton"
                 type="button"
-                style={{
-                  border:
-                    Number(key) === props.type()
-                      ? "solid 1px black"
-                      : "solid 1px transparent",
-                }} // Change based on selected state
+                classList={{
+                  selected: Number(key) === props.type(),
+                }}
                 onClick={() => {
                   const valueNum = Number(key);
                   if (valueNum !== props.type()) {
@@ -52,17 +50,20 @@ export function ExpandedDataInput(props: {
           }
         >
           <Match when={props.type() === types.BOOLEAN}>
-            <select
-              name="boolean"
-              onChange={(e) => props.setValue(Number(e.target.value))}
-            >
-              <option value={1} selected={props.value() == 1}>
+            <div class="booleanSelector">
+              <button
+                classList={{ selected: props.value() === 1 }}
+                onClick={() => props.setValue(1)}
+              >
                 True
-              </option>
-              <option value={0} selected={props.value() == 0}>
+              </button>
+              <button
+                classList={{ selected: props.value() === 0 }}
+                onClick={() => props.setValue(0)}
+              >
                 False
-              </option>
-            </select>
+              </button>
+            </div>
           </Match>
           <Match when={props.type() === types.NUMBER}>
             <input

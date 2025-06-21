@@ -294,9 +294,11 @@
     flex-wrap: wrap;
     justify-content: space-between;
 }
+
 .typeSelector button {
     padding: 0.8em;
     background-color: transparent;
+    border: solid 1px transparent;
 }
 
 .typeSelector button,
@@ -306,6 +308,29 @@
     user-select: none;
 }
 
+.typeSelector button.selected {
+    border: solid 1px black;
+}
+
 .expandedValueInput {
     vertical-align: center;
+}
+
+.booleanSelector button {
+    width: 100%;
+    padding: 0.8em;
+    border: solid 1px transparent;
+    cursor: pointer;
+    background-color: transparent;
+}
+
+.booleanSelector button.selected {
+    border: solid 1px black;
+}
+
+.booleanSelector button,
+.booleanSelector button:active,
+.booleanSelector button:focus {
+    outline: none;
+    user-select: none;
 }
