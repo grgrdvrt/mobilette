@@ -1,4 +1,5 @@
 import { createSignal } from "solid-js";
+import { hslaToHslaString } from "../utils";
 type HSLAType = [number, number, number, number];
 const ColorPicker = (props: {
   hsla: HSLAType;
@@ -97,6 +98,13 @@ const ColorPicker = (props: {
           props.onChange(hslaData());
         }}
       />
+      <div
+        style={{
+          width: "50px",
+          height: "50px",
+          "background-color": hslaToHslaString(hslaData()),
+        }}
+      ></div>
     </div>
   );
 };
