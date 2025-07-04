@@ -1,4 +1,4 @@
-import { For, Switch, Match, Accessor, Setter } from "solid-js";
+import { For, Switch, Match, Accessor, Setter, batch } from "solid-js";
 
 import { types, typesNames, defaultValues } from "../language/language";
 
@@ -29,8 +29,10 @@ export function ExpandedDataInput(props: {
                 onClick={() => {
                   const valueNum = Number(key);
                   if (valueNum !== props.type()) {
-                    props.setValue(defaultValues[valueNum]());
-                    props.setType(valueNum);
+                    batch(() => {
+                      props.setType(valueNum);
+                      props.setValue(defaultValues[valueNum]());
+                    });
                   }
                 }}
               >

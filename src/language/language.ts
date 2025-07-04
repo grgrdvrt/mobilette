@@ -42,7 +42,7 @@ export const defaultValues = {
   [types.NUMBER]: () => 0,
   [types.STRING]: () => "",
   [types.ARRAY]: () => [],
-  [types.COLOR]: () => [0, 0, 0, 1],
+  [types.COLOR]: () => [0, 100, 50, 1],
 };
 
 const num = { type: types.NUMBER };

@@ -1,34 +1,45 @@
 import { createSignal } from "solid-js";
 import { hslaToHslaString } from "../utils";
-type HSLAType = [number, number, number, number];
-const ColorPicker = (props: {
-  hsla: HSLAType;
-  onChange: (color: HSLAType) => void;
-}) => {
-  const [color, setColor] = createSignal({
-    hue: props.hsla[0] || 0,
-    saturation: props.hsla[1] || 100,
-    lightness: props.hsla[2] || 50,
-    opacity: props.hsla[3] || 100,
-  });
+type HSLA = [number, number, number, number];
+type HSVA = {
+  h: number;
+  s: number;
+  v: number;
+  a: number;
+};
 
-  const hslaData = () =>
-    [
-      color().hue,
-      color().saturation,
-      color().lightness,
-      color().opacity,
-    ] as HSLAType;
+function hslaToHsva(hsla: HSLA): HSVA {
+  const s = hsla[1] / 100;
+  const l = hsla[2] / 100;
+
+  const v = l + s * Math.min(l, 1 - l);
+  const sNew = v === 0 ? 0 : 2 * (1 - l / v);
+
+  return { h: hsla[0], s: sNew, v: v, a: hsla[3] };
+}
+
+function hsvaToHsla(hsva: HSVA): HSLA {
+  const l = hsva.v * (1 - hsva.s / 2);
+  const sNew = l === 0 || l === 1 ? 0 : (hsva.v - l) / Math.min(l, 1 - l);
+  return [hsva.h, Math.round(100 * sNew), Math.round(100 * l), hsva.a];
+}
+
+const ColorPicker = (props: {
+  hsla: HSLA;
+  onChange: (color: HSLA) => void;
+}) => {
+  const [color, setColor] = createSignal(hslaToHsva(props.hsla));
 
   const updateSaturationLightness = (event: PointerEvent) => {
     event.preventDefault();
     const rect = (event.target as HTMLElement).getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    const sat = Math.min(Math.max(0, (x / rect.width) * 100), 100);
-    const lig = Math.min(Math.max(0, 100 - (y / rect.height) * 100), 100);
-    setColor((prev) => ({ ...prev, saturation: sat, lightness: lig }));
-    props.onChange(hslaData()); // Call onChange prop with the current color
+    const s = Math.min(Math.max(0, x / rect.width), 1);
+    const v = Math.min(Math.max(0, 1 - y / rect.height), 1);
+    const newHsva: HSVA = { ...color(), s, v };
+    setColor(newHsva);
+    props.onChange(hsvaToHsla(newHsva)); // Call onChange prop with the current color
   };
 
   return (
@@ -39,7 +50,7 @@ const ColorPicker = (props: {
           height: "200px",
           "background-image": `linear-gradient(to top, #000 0%, transparent 100%),
                 linear-gradient(to right, #fff 0%, transparent 100%)`,
-          "background-color": `hsl(${color().hue}, 100%, 50%)`,
+          "background-color": `hsl(${color().h}, 100%, 50%)`,
           position: "relative",
           cursor: "crosshair",
           border: "solid 1px black",
@@ -50,8 +61,9 @@ const ColorPicker = (props: {
         <div
           style={{
             position: "absolute",
-            top: `${100 - color().lightness}%`,
-            left: `${color().saturation}%`,
+            transform: `translate(-50%, -50%)`,
+            top: `${100 * (1 - color().v)}%`,
+            left: `${100 * color().s}%`,
             width: "10px",
             height: "10px",
             background: "black",
@@ -64,8 +76,8 @@ const ColorPicker = (props: {
       <div
         style={{
           background: `linear-gradient(to right, hsl(0, 100%, 50%), hsl(60, 100%, 50%), hsl(120, 100%, 50%), hsl(180, 100%, 50%), hsl(240, 100%, 50%), hsl(300, 100%, 50%), hsl(360, 100%, 50%))`,
-          height: "10px",
-          "border-radius": "5px",
+          height: "20px",
+          "border-radius": "10px",
           "margin-top": "10px",
         }}
       >
@@ -73,38 +85,80 @@ const ColorPicker = (props: {
           type="range"
           min="0"
           max="360"
-          value={color().hue}
+          value={color().h}
           onInput={(e) => {
-            setColor((prev) => ({ ...prev, hue: Number(e.target.value) }));
-            props.onChange(hslaData());
+            const newHsva: HSVA = {
+              ...color(),
+              h: Number(e.target.value),
+            };
+            setColor(newHsva);
+            props.onChange(hsvaToHsla(newHsva));
           }}
           style={{
             width: "100%",
             appearance: "none",
             background: "transparent",
             position: "relative",
-            top: "-5px",
           }}
         />
       </div>
-      <input
-        type="range"
-        min="0"
-        step="0.01"
-        max="1"
-        value={color().opacity}
-        onInput={(e) => {
-          setColor((prev) => ({ ...prev, opacity: Number(e.target.value) }));
-          props.onChange(hslaData());
+      <div
+        style={{
+          height: "20px",
+          "border-radius": "10px",
+          "background-image":
+            "linear-gradient(45deg, #cccccc 25%, transparent 25%), linear-gradient(-45deg, #cccccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #cccccc 75%), linear-gradient(-45deg, transparent 75%, #cccccc 75%)",
+          "background-size": "20px 20px",
+          "background-position": "0 0, 0 10px, 10px -10px, -10px 0px",
+          overflow: "hidden",
+          "margin-top": "10px",
         }}
-      />
+      >
+        <input
+          type="range"
+          min="0"
+          step="0.01"
+          max="1"
+          value={color().a}
+          onInput={(e) => {
+            const newHsva: HSVA = {
+              ...color(),
+              a: Number(e.target.value),
+            };
+            setColor(newHsva);
+            props.onChange(hsvaToHsla(newHsva));
+          }}
+          style={{
+            width: "100%",
+            height: "100%",
+
+            "background-image": `linear-gradient(to right, transparent 0%, ${hslaToHslaString(hsvaToHsla(color()))} 100%)`,
+            appearance: "none",
+            background: "transparent",
+            position: "relative",
+            margin: 0,
+          }}
+        />
+      </div>
       <div
         style={{
           width: "50px",
           height: "50px",
-          "background-color": hslaToHslaString(hslaData()),
+          "background-image":
+            "linear-gradient(45deg, #cccccc 25%, transparent 25%), linear-gradient(-45deg, #cccccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #cccccc 75%), linear-gradient(-45deg, transparent 75%, #cccccc 75%)",
+          "background-size": "20px 20px",
+          "background-position": "0 0, 0 10px, 10px -10px, -10px 0px",
         }}
-      ></div>
+      >
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            "margin-top": "10px",
+            "background-color": (() => hslaToHslaString(hsvaToHsla(color())))(),
+          }}
+        ></div>
+      </div>
     </div>
   );
 };
