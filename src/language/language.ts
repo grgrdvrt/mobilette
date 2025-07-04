@@ -125,7 +125,19 @@ export const instructionsDefinitions: Record<string, Module> = {
       },
       {
         params: [
+          { type: types.ARRAY },
+          { type: types.NUMBER },
           { type: types.ANY },
+        ],
+        effect: (params, env) => {
+          env.readVal(params[0])[env.readVal(params[1])] = env.readVal(
+            params[2],
+          );
+        },
+      },
+      {
+        params: [
+          { type: types.COLOR },
           { type: types.NUMBER },
           { type: types.ANY },
         ],
@@ -171,6 +183,19 @@ export const instructionsDefinitions: Record<string, Module> = {
           );
         },
       },
+      {
+        params: [
+          { type: types.COLOR },
+          { type: types.NUMBER },
+          { type: types.ANY },
+        ],
+        effect: (params, env) => {
+          env.setVal(
+            params[2].content,
+            env.readVal(params[0])[env.readVal(params[1])],
+          );
+        },
+      },
     ],
     pack: [
       {
@@ -183,10 +208,29 @@ export const instructionsDefinitions: Record<string, Module> = {
           }
         },
       },
+      {
+        params: [{ type: types.COLOR }, { type: types.ANY, variadic: true }],
+        effect: (params, env) => {
+          const arr = env.readVal(params[0]);
+          arr.length = 0;
+          for (let i = 1; i < params.length; i++) {
+            arr.push(env.readVal(params[i]));
+          }
+        },
+      },
     ],
     unpack: [
       {
         params: [{ type: types.ARRAY }, { type: types.ANY, variadic: true }],
+        effect: (params, env) => {
+          const arr = env.readVal(params[0]);
+          for (let i = 0; i < arr.length; i++) {
+            env.setVal(params[i + 1].content, arr[i]);
+          }
+        },
+      },
+      {
+        params: [{ type: types.COLOR }, { type: types.ANY, variadic: true }],
         effect: (params, env) => {
           const arr = env.readVal(params[0]);
           for (let i = 0; i < arr.length; i++) {
