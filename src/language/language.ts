@@ -601,7 +601,7 @@ export const instructionsDefinitions: Record<string, Module> = {
         (v, a) => {
           const ca = Math.cos(a);
           const sa = Math.sin(a);
-          return [ca * v[0] - sa * v[1], sa * v[0] + sa * v[1]];
+          return [ca * v[0] - sa * v[1], sa * v[0] + ca * v[1]];
         },
         [types.ARRAY, types.NUMBER, types.ARRAY],
       ),
