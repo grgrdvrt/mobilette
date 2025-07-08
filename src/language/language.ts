@@ -258,7 +258,10 @@ export const instructionsDefinitions: Record<string, Module> = {
     "**": vecop((a, b) => Math.pow(a, b)),
     min: [binop((a, b) => Math.min(a, b))],
     max: [binop((a, b) => Math.max(a, b))],
-    sqrt: [monop(Math.sqrt)],
+    sqrt: [
+      monop(Math.sqrt),
+      monop((v) => v.map(Math.sqrt), [types.ARRAY, types.ARRAY]),
+    ],
     sin: [monop(Math.sin)],
     cos: [monop(Math.cos)],
     tan: [monop(Math.tan)],
@@ -267,9 +270,18 @@ export const instructionsDefinitions: Record<string, Module> = {
     atan: [monop(Math.atan)],
     exp: [monop(Math.exp)],
     log: [monop(Math.log)],
-    round: [monop(Math.round)],
-    ceil: [monop(Math.ceil)],
-    floor: [monop(Math.floor)],
+    round: [
+      monop(Math.round),
+      monop((v) => v.map(Math.round), [types.ARRAY, types.ARRAY]),
+    ],
+    ceil: [
+      monop(Math.ceil),
+      monop((v) => v.map(Math.ceil), [types.ARRAY, types.ARRAY]),
+    ],
+    floor: [
+      monop(Math.floor),
+      monop((v) => v.map(Math.floor), [types.ARRAY, types.ARRAY]),
+    ],
     random: [
       {
         params: [num, num, num],
@@ -285,6 +297,26 @@ export const instructionsDefinitions: Record<string, Module> = {
         effect: (params, env) => {
           const [a, b, t] = params.slice(0, 3).map(env.readVal, env);
           env.setVal(params[3].content, lerp(a, b, t));
+        },
+      },
+      {
+        params: [arr, arr, num, arr],
+        effect: (params, env) => {
+          const [a, b, t] = params.slice(0, 3).map(env.readVal, env);
+          env.setVal(
+            params[3].content,
+            a.map((_v: number, i: number) => lerp(a[i], b[i], t)),
+          );
+        },
+      },
+      {
+        params: [arr, arr, arr, arr],
+        effect: (params, env) => {
+          const [a, b, t] = params.slice(0, 3).map(env.readVal, env);
+          env.setVal(
+            params[3].content,
+            a.map((_v: number, i: number) => lerp(a[i], b[i], t[i])),
+          );
         },
       },
     ],
