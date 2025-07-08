@@ -127,7 +127,7 @@ export class Interpreter {
           case "endif":
             const jumps = ifStack.pop();
             if (!jumps) {
-              throw new Error(`No corresponding  \`if\` l.${i}`);
+              throw new Error(`l.${i} endif: No corresponding \`if\`.`);
             }
             jumps.push(i);
             this.jumpTable.set(jumps[0], jumps);
@@ -138,7 +138,7 @@ export class Interpreter {
           case "endfor":
             const jump = forStack.pop();
             if (jump === undefined) {
-              throw new Error(`No corresponding \`for\` l.${i}`);
+              throw new Error(`l.${i} endfor: no corresponding \`for\`.`);
             }
             this.jumpTable.set(jump, i);
             break;
@@ -279,7 +279,7 @@ export class Interpreter {
             );
             if (!instruction) {
               this.log(
-                `${this.instructionId}: ERROR: can't find matching implementation : ${JSON.stringify(line)}; ${params.map((p) => (p ? this.readType(p) : "empty"))}`,
+                `${this.instructionId}: ${module}.${cmd}: Can't find matching implementation: ${params.map((p) => (p ? typesNames[this.readType(p)] : "empty"))}.`,
               );
               throw new Error();
             }
