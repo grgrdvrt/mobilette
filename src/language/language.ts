@@ -628,7 +628,7 @@ export const instructionsDefinitions: Record<string, Module> = {
         [types.ARRAY, types.ARRAY, types.NUMBER],
       ),
     ],
-    rot2: [
+    rotate: [
       binop(
         (v, a) => {
           const ca = Math.cos(a);
