@@ -52,6 +52,7 @@ export class Interpreter {
     this.mainCanvas.style.height = "100%";
     this.mainCanvas.style.touchAction = "none";
     this.ctx = this.mainCanvas.getContext("2d")!;
+    this.ctx.lineJoin = this.ctx.lineCap = "round";
   }
 
   initProgram(program: Program) {
