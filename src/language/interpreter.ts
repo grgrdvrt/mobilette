@@ -1,5 +1,10 @@
 import { Accessor, createSignal, Setter, untrack } from "solid-js";
-import { ParamInput, types, instructionsDefinitions } from "./language";
+import {
+  ParamInput,
+  types,
+  instructionsDefinitions,
+  typesNames,
+} from "./language";
 import {
   Instruction,
   Program,
