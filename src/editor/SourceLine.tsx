@@ -103,7 +103,11 @@ function ValueParam(props: {
         props.setSelectedSlot(props.slotPath);
       }}
     >
-      {JSON.stringify(props.valueInput.value)}
+      {props.valueInput.type === types.BOOLEAN
+        ? props.valueInput.value
+          ? "True"
+          : "False"
+        : JSON.stringify(props.valueInput.value)}
     </button>
   );
 }

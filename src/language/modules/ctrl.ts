@@ -7,6 +7,7 @@ const bool = { type: types.BOOLEAN };
 export const ctrl: Module = {
   if: [{ params: [bool], effect: () => {} }],
   endif: [{ params: [], effect: () => {} }],
+  elseif: [{ params: [bool], effect: () => {} }],
   else: [{ params: [], effect: () => {} }],
   for: [{ params: [num, num, num], effect: () => {} }],
   endfor: [{ params: [], effect: () => {} }],
