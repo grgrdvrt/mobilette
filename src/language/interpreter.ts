@@ -17,6 +17,7 @@ type IfDefinition = {
   type: "if";
   line: number;
   jumps: number | number[] | undefined;
+  conditionVerified: boolean;
 };
 type ForDefinition = {
   type: "for";
@@ -170,19 +171,80 @@ export class Interpreter {
           if (module === "ctrl") {
             if (cmd === "if") {
               const ifParams = params[0] as ParamInput;
-              ctrlStack.push({
+              const jumps = this.jumpTable.get(this.instructionId);
+              const ifDefinition: IfDefinition = {
                 type: "if",
                 line: this.instructionId,
-                jumps: this.jumpTable.get(this.instructionId),
-              });
+                jumps,
+                conditionVerified: false,
+              };
+              ctrlStack.push(ifDefinition);
               if (this.readVal(ifParams)) {
                 this.instructionId++;
+                ifDefinition.conditionVerified = true;
               } else {
-                const jumps = this.jumpTable.get(this.instructionId);
                 if (!jumps || !Array.isArray(jumps)) {
                   throw new Error(`\`if\` not closed l.${this.instructionId}`);
                 }
                 this.instructionId = jumps[1];
+              }
+            }
+            if (cmd === "elseif") {
+              const ifDefinition = ctrlStack[ctrlStack.length - 1];
+              if (ifDefinition.type !== "if") {
+                throw new Error(
+                  `\`elseif\` not preceded by \`if\` l.${this.instructionId}`,
+                );
+              }
+              const jumps = ifDefinition.jumps as number[];
+              if (ifDefinition.conditionVerified) {
+                const nextJump = jumps[jumps.length - 1];
+                if (nextJump <= this.instructionId) {
+                  throw new Error(
+                    `\`elseif\` not closed l.${this.instructionId}`,
+                  );
+                } else {
+                  this.instructionId = nextJump;
+                }
+              } else {
+                const ifParams = params[0] as ParamInput;
+                if (this.readVal(ifParams)) {
+                  this.instructionId++;
+                  ifDefinition.conditionVerified = true;
+                } else {
+                  const nextJumpIndex = jumps.indexOf(this.instructionId) + 1;
+                  if (
+                    jumps.length < nextJumpIndex ||
+                    jumps[nextJumpIndex] <= this.instructionId
+                  ) {
+                    throw new Error(
+                      `\`elseif\` not closed l.${this.instructionId}`,
+                    );
+                  } else {
+                    this.instructionId = jumps[nextJumpIndex];
+                  }
+                }
+              }
+            }
+            if (cmd === "else") {
+              const ifDefinition = ctrlStack[ctrlStack.length - 1];
+              if (ifDefinition.type !== "if") {
+                throw new Error(
+                  `\`else\` not preceded by \`if\` l.${this.instructionId}`,
+                );
+              }
+              if (ifDefinition.conditionVerified) {
+                const jumps = ifDefinition.jumps as number[];
+                const nextJump = jumps[jumps.length - 1];
+                if (nextJump <= this.instructionId) {
+                  throw new Error(
+                    `\`else\` not closed l.${this.instructionId}`,
+                  );
+                } else {
+                  this.instructionId = nextJump;
+                }
+              } else {
+                this.instructionId++;
               }
             }
             if (cmd === "endif") {
