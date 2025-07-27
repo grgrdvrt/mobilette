@@ -7,8 +7,6 @@ import PlayPicto from "../assets/play_circle_FILL0_wght400_GRAD0_opsz24.svg";
 
 import { fork, Program, setProgram } from "../store";
 
-import { saveDocument } from "../db";
-
 import program1 from "../assets/examples/mobilette_program.json";
 import program2 from "../assets/examples/mobilette_program(1).json";
 import program3 from "../assets/examples/mobilette_program(2).json";
