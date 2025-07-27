@@ -109,6 +109,24 @@ export function HomePage(props: { setPage: Setter<string> }) {
                         src={ForkPicto}
                       />
                     </button>
+                    <button
+                      onClick={() => {
+                        const blob = new Blob([JSON.stringify(program)], {
+                          type: "application/json",
+                        });
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement("a");
+                        link.href = url;
+                        link.download = `mobilette_program.json`;
+                        link.click();
+                        URL.revokeObjectURL(url);
+                      }}
+                    >
+                      <img
+                        style={{ "vertical-align": "middle" }}
+                        src={DownloadPicto}
+                      />
+                    </button>
                   </div>
                 </div>
               </li>
@@ -116,6 +134,32 @@ export function HomePage(props: { setPage: Setter<string> }) {
           }}
         </For>
       </ol>
+      <div class="home-actions">
+        <button
+          class="home-action"
+          onClick={() => {
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = ".json";
+            input.onchange = (e) => {
+              const file = (e.target as HTMLInputElement).files?.[0];
+              if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                  const content = e.target?.result as string;
+                  const p = JSON.parse(content);
+                  p.id = crypto.randomUUID();
+                  saveDocument(p);
+                };
+                reader.readAsText(file);
+              }
+            };
+            input.click();
+          }}
+        >
+          Import
+        </button>
+      </div>
     </div>
   );
 }
