@@ -1,8 +1,6 @@
 # Mobilette
 Mobilette is small language and interface for recreational creative coding.
 
-<img src="logo.webp" alt="logo" width="300px"/>
-
 [https://mobilette.computer](https://mobilette.computer)
 
 
