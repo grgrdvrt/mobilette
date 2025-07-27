@@ -191,16 +191,19 @@ export function SourceLine(props: {
           {(input, index) => {
             if (input === null) {
               return (
-                <Show when={props.selected()}>
-                  <EmptySlot
-                    slotPath={{
-                      ...props.instructionPath,
-                      slotIndex: index(),
-                    }}
-                    setSelectedSlot={props.setSelectedSlot}
-                    instruction={props.line}
-                  />
-                </Show>
+                <>
+                  <Show when={props.selected()}>
+                    <EmptySlot
+                      slotPath={{
+                        ...props.instructionPath,
+                        slotIndex: index(),
+                      }}
+                      setSelectedSlot={props.setSelectedSlot}
+                      instruction={props.line}
+                    />
+                  </Show>
+                  <span> </span>
+                </>
               );
             }
             return (
@@ -228,7 +231,6 @@ export function SourceLine(props: {
                     />
                   </Match>
                 </Switch>
-                <span> </span>
               </>
             );
           }}
