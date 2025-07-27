@@ -4,6 +4,7 @@ import "./App.css";
 import { HomePage } from "./pages/HomePage";
 import { DocumentationPage } from "./pages/DocumentationPage";
 import { EditorPage } from "./pages/EditorPage";
+import { ExamplesPage } from "./pages/ExamplesPage";
 
 function App() {
   const [page, setPage] = createSignal("home");
@@ -12,6 +13,9 @@ function App() {
     <Switch>
       <Match when={page() === "home"}>
         <HomePage setPage={setPage} />
+      </Match>
+      <Match when={page() === "examples"}>
+        <ExamplesPage setPage={setPage} />
       </Match>
       <Match when={page() === "documentation"}>
         <DocumentationPage setPage={setPage} />

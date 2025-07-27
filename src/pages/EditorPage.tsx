@@ -122,7 +122,9 @@ export function EditorPage(props: { setPage: Setter<string> }) {
                     setTab("code");
                     setIsPlaying(false);
                     resetRegisters();
-                    setThumb(interpreter.mainCanvas);
+                    if (!store.program.isExample) {
+                      setThumb(interpreter.mainCanvas);
+                    }
                   }}
                 >
                   <img src={StopPicto} />

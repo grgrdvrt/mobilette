@@ -13,7 +13,7 @@ import DownloadPicto from "../assets/download_24dp_1F1F1F_FILL0_wght400_GRAD0_op
 import ForkPicto from "../assets/arrow_split_FILL0_wght400_GRAD0_opsz24.svg";
 import PlayPicto from "../assets/play_circle_FILL0_wght400_GRAD0_opsz24.svg";
 
-import { createEmptyProgram, setProgram } from "../store";
+import { createEmptyProgram, fork, setProgram } from "../store";
 
 import { saveDocument, getDocuments, deleteDocument } from "../db";
 
@@ -32,13 +32,23 @@ export function HomePage(props: { setPage: Setter<string> }) {
         coding on mobile.
       </p>
       <div class="home-actions">
+        {/*
+          <button
+            class="home-action"
+            onClick={() => {
+              props.setPage("documentation");
+            }}
+          >
+            Doc
+          </button>
+          */}
         <button
           class="home-action"
           onClick={() => {
-            props.setPage("documentation");
+            props.setPage("examples");
           }}
         >
-          Doc
+          Examples
         </button>
         <button
           class="home-action"
@@ -97,11 +107,8 @@ export function HomePage(props: { setPage: Setter<string> }) {
                     </button>
                     <button
                       onClick={() => {
-                        const p = JSON.parse(JSON.stringify(program));
-                        p.id = crypto.randomUUID();
-                        saveDocument(p);
-                        setProgram(p);
-                        props.setPage("editor");
+                        fork(program);
+                        refetch();
                       }}
                     >
                       <img

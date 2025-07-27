@@ -16,13 +16,15 @@
     text-align: center;
 }
 
-.home {
+.home,
+.examples {
     height: 100%;
     position: relative;
     text-align: center;
 }
 
-.home-actions {
+.home-actions,
+.examples-actions {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -30,12 +32,14 @@
     padding: 0 3em;
 }
 
-.home-action {
+.home-action,
+.examples-action {
     font-size: 1.3em;
     margin: 0.5em;
 }
 
-.home-title {
+.home-title,
+.examples-title {
     margin: 5em auto;
 }
 

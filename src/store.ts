@@ -1,6 +1,6 @@
 import { createStore, produce, SetStoreFunction, unwrap } from "solid-js/store";
 
-import { updateDocument } from "./db";
+import { saveDocument, updateDocument } from "./db";
 
 import {
   types,
@@ -45,6 +45,7 @@ export type ProgramSource = Record<ProgramContextType, ProgramContext>;
 
 export type Program = {
   id: string;
+  isExample: boolean;
   lastOpened: number;
   thumb: string;
   source: ProgramSource;
@@ -122,6 +123,7 @@ const defaultRegisters = [
 export function createEmptyProgram(): Program {
   return {
     id: crypto.randomUUID(),
+    isExample: false,
     lastOpened: Date.now(),
     thumb: "",
     source: {
@@ -438,7 +440,12 @@ export function setThumb(canvas: HTMLCanvasElement) {
 }
 
 function save() {
-  setStore("program", "lastOpened", Date.now());
+  setStore(
+    produce((store) => {
+      store.program.lastOpened = Date.now();
+      store.program.isExample = false;
+    }),
+  );
   updateDocument(unwrap(store.program));
 }
 
@@ -460,4 +467,13 @@ function autoSave() {
       requestSave = false;
     }, 5000);
   }
+}
+
+export function fork(program: Program) {
+  const p = JSON.parse(JSON.stringify(program)) as Program;
+  p.id = crypto.randomUUID();
+  p.isExample = false;
+  p.lastOpened = Date.now();
+  saveDocument(p);
+  setProgram(p);
 }

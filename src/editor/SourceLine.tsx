@@ -34,7 +34,6 @@ function EmptySlot(props: {
   return (
     <button
       class="codeRegister"
-      style={{}}
       onClick={(e) => {
         e.stopPropagation();
         props.setSelectedSlot(props.slotPath);
