@@ -22,11 +22,7 @@ import {
   ParamSlot,
 } from "../store";
 
-import {
-  types,
-  instructionsDefinitions,
-  ParamInput,
-} from "../language/language";
+import { types, instructionsDefinitions } from "../language/language";
 
 import { hslaToHslaString, invertLightness } from "../utils";
 
