@@ -19,6 +19,7 @@ import {
   SlotPath,
   Registers,
   getRegisterDefaultName,
+  ParamSlot,
 } from "../store";
 
 import {
@@ -31,7 +32,7 @@ import { hslaToHslaString, invertLightness } from "../utils";
 
 function EmptySlot(props: {
   slotPath: SlotPath;
-  setSelectedSlot: Setter<SlotPath | undefined>;
+  setSelectedSlot: Setter<SlotPath | null>;
   instruction: Instruction;
 }) {
   return (
@@ -81,7 +82,7 @@ function RegisterParam(props: {
 function ValueParam(props: {
   slotPath: SlotPath;
   valueInput: any;
-  setSelectedSlot: Setter<SlotPath | undefined>;
+  setSelectedSlot: Setter<SlotPath | null>;
 }) {
   return (
     <button
@@ -141,7 +142,7 @@ export function SourceLine(props: {
   depth: Accessor<number>;
   selected: Accessor<boolean>;
   registers: Registers;
-  setSelectedSlot: Setter<SlotPath | undefined>;
+  setSelectedSlot: Setter<SlotPath | null>;
   order: string;
 }) {
   const canAddParam = (line: Instruction) => {
@@ -186,23 +187,25 @@ export function SourceLine(props: {
       >
         {props.line![1]}
         <span> </span>
-        <For each={props.line.slice(2) as ParamInput[]}>
+        <For each={props.line.slice(2) as ParamSlot[]}>
           {(input, index) => {
+            if (input === null) {
+              return (
+                <Show when={props.selected()}>
+                  <EmptySlot
+                    slotPath={{
+                      ...props.instructionPath,
+                      slotIndex: index(),
+                    }}
+                    setSelectedSlot={props.setSelectedSlot}
+                    instruction={props.line}
+                  />
+                </Show>
+              );
+            }
             return (
               <>
                 <Switch>
-                  <Match when={input === undefined}>
-                    <Show when={props.selected()}>
-                      <EmptySlot
-                        slotPath={{
-                          ...props.instructionPath,
-                          slotIndex: index(),
-                        }}
-                        setSelectedSlot={props.setSelectedSlot}
-                        instruction={props.line}
-                      />
-                    </Show>
-                  </Match>
                   <Match when={input.type === "value"}>
                     <ValueParam
                       slotPath={{

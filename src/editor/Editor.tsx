@@ -22,7 +22,7 @@ function ProgramInterface(props: {
   source: ProgramContext;
   sourcePath: ProgramContextType;
   registers: Registers;
-  setSelectedSlot: Setter<SlotPath | undefined>;
+  setSelectedSlot: Setter<SlotPath | null>;
 }) {
   const isSelected = (instructionIndex: number) => {
     const cursor = store.gui.cursor;
@@ -36,7 +36,7 @@ function ProgramInterface(props: {
   const depths = createMemo(() => {
     let d = 0;
     return props.source.map((line) => {
-      if (line == undefined) {
+      if (line == null) {
         return d;
       }
       let result;
@@ -75,7 +75,7 @@ function ProgramInterface(props: {
           return (
             <>
               <Show
-                when={line != undefined}
+                when={line != null}
                 fallback={
                   <EmptySourceLine
                     instructionPath={{
@@ -126,15 +126,13 @@ export function Editor(props: {
   source: Program["source"];
   registers: Registers;
 }) {
-  const [selectedSlot, setSelectedSlot] = createSignal<SlotPath | undefined>(
-    undefined,
-  );
+  const [selectedSlot, setSelectedSlot] = createSignal<SlotPath | null>(null);
   const showInstructionSelection = () => {
     const cursor = store.gui.cursor;
     return (
       cursor &&
       cursor.lineIndex != -1 &&
-      props.source[cursor.programContextId][cursor.lineIndex] === undefined
+      props.source[cursor.programContextId][cursor.lineIndex] === null
     );
   };
 

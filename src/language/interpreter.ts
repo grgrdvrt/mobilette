@@ -84,7 +84,7 @@ export class Interpreter {
       case "register":
         return this.getReg(param.content).value;
       default:
-        throw new Error(`unknown type ${param.type}`);
+        throw new Error(`unknown type ${param}`);
     }
   }
 
@@ -95,7 +95,7 @@ export class Interpreter {
       case "register":
         return this.getReg(param.content).type;
       default:
-        throw new Error(`unknown type ${param.type}`);
+        throw new Error(`unknown type ${param}`);
     }
   }
 
@@ -106,7 +106,7 @@ export class Interpreter {
       case "register":
         return this.getReg(param.content);
       default:
-        throw new Error(`unknown type ${param.type}`);
+        throw new Error(`unknown type ${param}`);
     }
   }
 
@@ -115,7 +115,7 @@ export class Interpreter {
     const ifStack: number[][] = [];
     const forStack: number[] = [];
     instructions.forEach((line, i) => {
-      if (line === undefined) return;
+      if (line === null) return;
       const [module, cmd] = line;
       if (module === "ctrl") {
         switch (cmd) {
@@ -162,7 +162,7 @@ export class Interpreter {
       const line = instructions[this.instructionId];
       // console.log(this.instructionId, JSON.stringify(line.code));
       // try{
-      if (line !== undefined) {
+      if (line !== null) {
         const [module, cmd, ...params] = line;
         // const hasNull = params.some(p => p.value === "null");
         const hasNull = false;
@@ -269,7 +269,8 @@ export class Interpreter {
               this.instructionId = line;
             }
           } else {
-            const filteredParams = params.filter((p) => p !== undefined);
+            const filteredParams = params.filter((p) => p !== null);
+            //Find variant that matches the params
             const instruction = instructionsDefinitions[module][cmd].find(
               (v) => {
                 return (

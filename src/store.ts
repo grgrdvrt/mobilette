@@ -12,16 +12,16 @@ import { lerp } from "./utils";
 
 export type Type = number;
 
-export type ParamSlot = ParamInput | undefined;
+export type ParamSlot = ParamInput | null;
 export type Instruction = [string, string, ...ParamSlot[]];
 export type InstructionPath = {
   programContextId: ProgramContextType;
   lineIndex: number;
 };
 export type SlotPath = InstructionPath & { slotIndex: number };
-
+export type RegisterId = string;
 export type Register = {
-  id: string;
+  id: RegisterId;
   type: Type;
   name: string;
   initialValue: any;
@@ -32,7 +32,7 @@ export type Register = {
 };
 export type Registers = Record<string, Register>;
 
-export type ProgramContext = (Instruction | undefined)[];
+export type ProgramContext = (Instruction | null)[];
 
 export type ProgramContextType =
   | "init"
@@ -173,7 +173,7 @@ export function getSlot(
   if (instruction) {
     return instruction[slotIndex + 2] as ParamSlot;
   } else {
-    return undefined;
+    return null;
   }
 }
 
@@ -205,7 +205,7 @@ export function insertAfter(sourcePath: ProgramContextType, lineIndex: number) {
   setStore(
     produce((store) => {
       const source = store.program.source[sourcePath] as ProgramContext;
-      source.splice(lineIndex + 1, 0, undefined);
+      source.splice(lineIndex + 1, 0, null);
     }),
   );
   setCursor(sourcePath, lineIndex + 1);
@@ -237,7 +237,7 @@ export function setCommand(module: string, command: string) {
         0,
       );
       const instruction: Instruction = [module, command];
-      const params = new Array(paramsCount).fill(undefined);
+      const params = new Array(paramsCount).fill(null);
       instruction.push(...params);
       const { programContextId: context, lineIndex: index } = store.gui.cursor;
       store.program.source[context][index] = instruction;
@@ -264,7 +264,7 @@ export function addSlot({
   setStore(
     produce((store) => {
       const line = store.program.source[context][index];
-      line?.push(undefined);
+      line?.push(null);
     }),
   );
 }
@@ -350,7 +350,7 @@ export function createRegister(
 }
 
 export function saveRegister(
-  id: string,
+  id: RegisterId,
   type: number,
   color: string,
   name: string,
@@ -388,7 +388,7 @@ export function isRegisterUsed(register: Register): boolean {
   });
 }
 
-export function deleteRegister(registerId: Register["id"]) {
+export function deleteRegister(registerId: RegisterId) {
   setStore(
     produce((store) => {
       delete store.program.registers[registerId];

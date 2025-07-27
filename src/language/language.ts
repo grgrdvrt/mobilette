@@ -10,7 +10,9 @@ export type ParamDefinition = {
   optional?: boolean;
   variadic?: boolean;
 };
-export type ParamInput = { type: "register" | "value"; content: any };
+export type ParamInput =
+  | { type: "register"; content: string }
+  | { type: "value"; content: any };
 export type InstructionVariant = {
   params: ParamDefinition[];
   effect: (params: ParamInput[], env: Interpreter) => void;

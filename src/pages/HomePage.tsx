@@ -9,6 +9,7 @@ import {
 // import RegistersPicto from "./assets/grid_view_FILL0_wght400_GRAD0_opsz24.svg";
 
 import DeletePicto from "../assets/delete_FILL0_wght400_GRAD0_opsz24.svg";
+import DownloadPicto from "../assets/download_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg";
 import ForkPicto from "../assets/arrow_split_FILL0_wght400_GRAD0_opsz24.svg";
 import PlayPicto from "../assets/play_circle_FILL0_wght400_GRAD0_opsz24.svg";
 
@@ -75,7 +76,7 @@ export function HomePage(props: { setPage: Setter<string> }) {
                 <div class="documentItem-overlay">
                   <button
                     onClick={() => {
-                      setProgram(program);
+                      setProgram(JSON.parse(JSON.stringify(program)));
                       props.setPage("editor");
                     }}
                   >

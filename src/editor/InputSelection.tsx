@@ -19,7 +19,7 @@ export function InputSelection(props: {
   slotPath: SlotPath;
   registers: Registers;
   instructionPath: InstructionPath;
-  setSelectedSlot: Setter<SlotPath | undefined>;
+  setSelectedSlot: Setter<SlotPath | null>;
 }) {
   const [step, setStep] = createSignal<{ id: string; data: any }>({
     id: "selection",
@@ -46,7 +46,7 @@ export function InputSelection(props: {
                 setStep({ id: "creation", data: registerPosition });
               } else {
                 setParameter(props.slotPath, "register", register.id);
-                props.setSelectedSlot(undefined);
+                props.setSelectedSlot(null);
               }
             }}
           />
@@ -64,7 +64,7 @@ export function InputSelection(props: {
                   setParameter(props.slotPath, "register", register.id);
                 }
               }
-              props.setSelectedSlot(undefined);
+              props.setSelectedSlot(null);
             }}
           />
         </Show>
