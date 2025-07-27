@@ -24,7 +24,7 @@ export function ExamplesPage(props: { setPage: Setter<string> }) {
       <div
         class="examples-title"
         onClick={() => {
-          props.setPage("ome");
+          props.setPage("home");
         }}
       >
         <h1 class="mainTitle">Mobilette</h1>
