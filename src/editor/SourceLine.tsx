@@ -230,6 +230,7 @@ export function SourceLine(props: {
                     />
                   </Match>
                 </Switch>
+<span> </span>
               </>
             );
           }}
