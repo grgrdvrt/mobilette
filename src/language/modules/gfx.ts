@@ -188,7 +188,7 @@ export const gfx: Module = {
       effect: (params, env) => {
         const [c, r, a1, a2, d] = params.map(env.readVal, env);
         env.ctx.moveTo(c[0] + r * Math.cos(a1), c[1] + r * Math.sin(a1));
-        env.ctx.arc(c[0] + r, c[1], r, a1, a2, d);
+        env.ctx.arc(c[0], c[1], r, a1, a2, d);
       },
     },
   ],
