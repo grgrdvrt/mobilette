@@ -280,7 +280,10 @@
 .valueInput {
     display: flex;
     align-items: stretch;
-    gap: 0.3em;
+}
+
+.valueInput > * {
+    margin: 0.25em;
 }
 
 .valueInput > .typeSelect,
@@ -293,7 +296,10 @@
     display: flex;
     align-items: stretch;
     min-width: 0;
-    gap: 0.3em;
+}
+
+.valueInput > .valueSelector > * {
+    margin: 0.25em;
 }
 
 .valueInput > .valueSelector > input,
