@@ -48,17 +48,22 @@ export function CompactDataInput(props: {
         }
       >
         <Match when={props.type() === types.BOOLEAN}>
-          <select
-            name="boolean"
-            onChange={(e) => props.setValue(Number(e.target.value))}
-          >
-            <option value={1} selected={props.value() == 1}>
+          <div class="booleanSelector compact">
+            <button
+              type="button"
+              classList={{ selected: props.value() === 1 }}
+              onClick={() => props.setValue(1)}
+            >
               True
-            </option>
-            <option value={0} selected={props.value() == 0}>
+            </button>
+            <button
+              type="button"
+              classList={{ selected: props.value() === 0 }}
+              onClick={() => props.setValue(0)}
+            >
               False
-            </option>
-          </select>
+            </button>
+          </div>
         </Match>
         <Match when={props.type() === types.NUMBER}>
           <input
@@ -87,6 +92,7 @@ export function CompactDataInput(props: {
               props.value()[2],
             )}
           />
+          <label class="alphaLabel">alpha</label>
           <input
             onChange={(e) =>
               props.setValue([

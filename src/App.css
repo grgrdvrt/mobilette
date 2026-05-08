@@ -338,3 +338,21 @@
     outline: none;
     user-select: none;
 }
+
+.booleanSelector.compact {
+    display: flex;
+    gap: 0.1em;
+}
+
+.booleanSelector.compact button {
+    width: auto;
+    flex: 1;
+    padding: 0.2em 0.4em;
+}
+
+.valueInput .alphaLabel {
+    display: flex;
+    align-items: center;
+    padding: 0 0.3em;
+    user-select: none;
+}
