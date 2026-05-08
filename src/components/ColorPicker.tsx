@@ -55,6 +55,7 @@ const ColorPicker = (props: {
         display: "flex",
         "flex-direction": "column",
         gap: "10px",
+        width: "230px",
       }}
     >
       <div
