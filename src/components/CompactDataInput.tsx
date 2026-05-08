@@ -1,7 +1,7 @@
 import { For, Switch, Match, Accessor, Setter } from "solid-js";
 
 import { types, typesNames, defaultValues } from "../language/language";
-import { hexToHSLA, hslaToHex } from "../utils";
+import ColorPickerPopover from "./ColorPickerPopover";
 
 export function CompactDataInput(props: {
   type: Accessor<any>;
@@ -76,25 +76,9 @@ export function CompactDataInput(props: {
           />
         </Match>
         <Match when={props.type() === types.COLOR}>
-          <input
-            onChange={(e) => {
-              props.setValue(hexToHSLA(e.target.value, props.value()[3]));
-            }}
-            type="color"
-            value={hslaToHex(
-              props.value()[0],
-              props.value()[1],
-              props.value()[2],
-            )}
-          />
-          <input
-            onChange={(e) =>
-              props.setValue([
-                ...props.value().slice(0, 3),
-                JSON.parse(e.target.value),
-              ])
-            }
-            value={JSON.stringify(props.value()[3])}
+          <ColorPickerPopover
+            hsla={props.value()}
+            onChange={(color) => props.setValue(color)}
           />
         </Match>
       </Switch>
