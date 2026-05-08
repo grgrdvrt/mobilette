@@ -10,8 +10,9 @@ export function CompactDataInput(props: {
   setValue: Setter<any>;
 }) {
   return (
-    <div class="valueInput">
+    <>
       <select
+        class="typeSelect"
         name="types"
         id="types-select"
         onChange={(e) => {
@@ -39,71 +40,75 @@ export function CompactDataInput(props: {
           }}
         </For>
       </select>
-      <Switch
-        fallback={
-          <input
-            onInput={(e) => props.setValue(e.target.value)}
-            value={props.value()}
-          />
-        }
-      >
-        <Match when={props.type() === types.BOOLEAN}>
-          <div class="booleanSelector compact">
-            <button
-              type="button"
-              classList={{ selected: props.value() === 1 }}
-              onClick={() => props.setValue(1)}
-            >
-              True
-            </button>
-            <button
-              type="button"
-              classList={{ selected: props.value() === 0 }}
-              onClick={() => props.setValue(0)}
-            >
-              False
-            </button>
-          </div>
-        </Match>
-        <Match when={props.type() === types.NUMBER}>
-          <input
-            type="number"
-            onChange={(e) => props.setValue(JSON.parse(e.target.value))}
-            value={JSON.stringify(props.value())}
-          />
-        </Match>
-        <Match
-          when={props.type() === types.ANY || props.type() === types.ARRAY}
+      <div class="valueSelector">
+        <Switch
+          fallback={
+            <input
+              onInput={(e) => props.setValue(e.target.value)}
+              value={props.value()}
+            />
+          }
         >
-          <input
-            onChange={(e) => props.setValue(JSON.parse(e.target.value))}
-            value={JSON.stringify(props.value())}
-          />
-        </Match>
-        <Match when={props.type() === types.COLOR}>
-          <input
-            onChange={(e) => {
-              props.setValue(hexToHSLA(e.target.value, props.value()[3]));
-            }}
-            type="color"
-            value={hslaToHex(
-              props.value()[0],
-              props.value()[1],
-              props.value()[2],
-            )}
-          />
-          <label class="alphaLabel">alpha</label>
-          <input
-            onChange={(e) =>
-              props.setValue([
-                ...props.value().slice(0, 3),
-                JSON.parse(e.target.value),
-              ])
-            }
-            value={JSON.stringify(props.value()[3])}
-          />
-        </Match>
-      </Switch>
-    </div>
+          <Match when={props.type() === types.BOOLEAN}>
+            <div class="booleanSelector compact">
+              <button
+                type="button"
+                classList={{ selected: props.value() === 1 }}
+                onClick={() => props.setValue(1)}
+              >
+                True
+              </button>
+              <button
+                type="button"
+                classList={{ selected: props.value() === 0 }}
+                onClick={() => props.setValue(0)}
+              >
+                False
+              </button>
+            </div>
+          </Match>
+          <Match when={props.type() === types.NUMBER}>
+            <input
+              type="number"
+              onChange={(e) => props.setValue(JSON.parse(e.target.value))}
+              value={JSON.stringify(props.value())}
+            />
+          </Match>
+          <Match
+            when={props.type() === types.ANY || props.type() === types.ARRAY}
+          >
+            <input
+              onChange={(e) => props.setValue(JSON.parse(e.target.value))}
+              value={JSON.stringify(props.value())}
+            />
+          </Match>
+          <Match when={props.type() === types.COLOR}>
+            <input
+              class="colorInput"
+              onChange={(e) => {
+                props.setValue(hexToHSLA(e.target.value, props.value()[3]));
+              }}
+              type="color"
+              value={hslaToHex(
+                props.value()[0],
+                props.value()[1],
+                props.value()[2],
+              )}
+            />
+            <label class="alphaLabel">alpha</label>
+            <input
+              class="alphaInput"
+              onChange={(e) =>
+                props.setValue([
+                  ...props.value().slice(0, 3),
+                  JSON.parse(e.target.value),
+                ])
+              }
+              value={JSON.stringify(props.value()[3])}
+            />
+          </Match>
+        </Switch>
+      </div>
+    </>
   );
 }

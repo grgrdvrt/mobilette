@@ -279,11 +279,52 @@
 
 .valueInput {
     display: flex;
+    align-items: stretch;
+    gap: 0.3em;
 }
+
+.valueInput > .typeSelect,
+.valueInput > .setButton {
+    flex: 0 0 auto;
+}
+
+.valueInput > .valueSelector {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: stretch;
+    min-width: 0;
+    gap: 0.3em;
+}
+
+.valueInput > .valueSelector > input,
+.valueInput > .valueSelector > .booleanSelector {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.valueInput > .valueSelector > .colorInput {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0;
+}
+
+.valueInput > .valueSelector > .alphaInput {
+    flex: 0 1 4em;
+    min-width: 0;
+}
+
 .valueInput,
 .valueInput select,
-.valueInput input {
-    /* font-size:1.2rem; */
+.valueInput input,
+.valueInput button {
+    box-sizing: border-box;
+}
+
+.valueInput > .typeSelect,
+.valueInput > .setButton,
+.valueInput > .valueSelector > input,
+.valueInput > .valueSelector > .booleanSelector > button {
+    height: 2em;
 }
 
 .expandedDataInput {

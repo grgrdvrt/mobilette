@@ -31,6 +31,7 @@ export function ValueInput(props: {
         setValue={setValue}
       />
       <button
+        class="setButton"
         onClick={() => {
           setParameter(
             { ...props.instructionPath, slotIndex: props.slotIndex },
