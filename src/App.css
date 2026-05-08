@@ -293,16 +293,21 @@
 }
 
 .typeSelector {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
     gap: 0.1em;
-    flex-wrap: wrap;
-    justify-content: space-between;
 }
 
 .typeSelector button {
+    grid-column: span 2;
     padding: 0.8em;
     background-color: transparent;
     border: solid 1px transparent;
+}
+
+.typeSelector button:nth-child(4),
+.typeSelector button:nth-child(5) {
+    grid-column: span 3;
 }
 
 .typeSelector button,
