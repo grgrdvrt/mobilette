@@ -1,4 +1,5 @@
 import { createSignal, Show } from "solid-js";
+import { Portal } from "solid-js/web";
 import ColorPicker from "./ColorPicker";
 import { hslaToHslaString } from "../utils";
 
@@ -24,17 +25,19 @@ export function ColorPickerPopover(props: {
         />
       </button>
       <Show when={isOpen()}>
-        <div
-          class="colorPickerPopover-backdrop"
-          onClick={() => setIsOpen(false)}
-        >
+        <Portal>
           <div
-            class="colorPickerPopover-content"
-            onClick={(e) => e.stopPropagation()}
+            class="colorPickerPopover-backdrop"
+            onClick={() => setIsOpen(false)}
           >
-            <ColorPicker hsla={props.hsla} onChange={props.onChange} />
+            <div
+              class="colorPickerPopover-content"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <ColorPicker hsla={props.hsla} onChange={props.onChange} />
+            </div>
           </div>
-        </div>
+        </Portal>
       </Show>
     </>
   );
