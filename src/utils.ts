@@ -19,7 +19,10 @@ export function map(a: number, b: number, c: number, d: number, t: number) {
 }
 
 //via chatGPT
-export function hexToHSLA(hex: string, a: number) {
+export function hexToHSLA(
+  hex: string,
+  a: number,
+): [number, number, number, number] {
   // Convert hex to RGB first
   let r = 0,
     g = 0,

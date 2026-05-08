@@ -24,6 +24,13 @@ function hsvaToHsla(hsva: HSVA): HSLA {
   return [hsva.h, Math.round(100 * sNew), Math.round(100 * l), hsva.a];
 }
 
+const checkeredBackground = {
+  "background-image":
+    "linear-gradient(45deg, #cccccc 25%, transparent 25%), linear-gradient(-45deg, #cccccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #cccccc 75%), linear-gradient(-45deg, transparent 75%, #cccccc 75%)",
+  "background-size": "20px 20px",
+  "background-position": "0 0, 0 10px, 10px -10px, -10px 0px",
+};
+
 const ColorPicker = (props: {
   hsla: HSLA;
   onChange: (color: HSLA) => void;
@@ -39,125 +46,145 @@ const ColorPicker = (props: {
     const v = Math.min(Math.max(0, 1 - y / rect.height), 1);
     const newHsva: HSVA = { ...color(), s, v };
     setColor(newHsva);
-    props.onChange(hsvaToHsla(newHsva)); // Call onChange prop with the current color
+    props.onChange(hsvaToHsla(newHsva));
   };
 
   return (
-    <div>
+    <div
+      style={{
+        display: "flex",
+        "flex-direction": "column",
+        gap: "10px",
+        width: "230px",
+        margin: "0 auto",
+      }}
+    >
       <div
         style={{
-          width: "200px",
-          height: "200px",
-          "background-image": `linear-gradient(to top, #000 0%, transparent 100%),
+          display: "flex",
+          gap: "10px",
+          "align-items": "center",
+        }}
+      >
+        <div
+          style={{
+            width: "50px",
+            height: "50px",
+            "flex-shrink": 0,
+            ...checkeredBackground,
+          }}
+        >
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              "background-color": hslaToHslaString(hsvaToHsla(color())),
+            }}
+          ></div>
+        </div>
+        <div
+          style={{
+            flex: 1,
+            height: "20px",
+            "border-radius": "10px",
+            overflow: "hidden",
+            ...checkeredBackground,
+          }}
+        >
+          <input
+            type="range"
+            min="0"
+            step="0.01"
+            max="1"
+            value={color().a}
+            onInput={(e) => {
+              const newHsva: HSVA = {
+                ...color(),
+                a: Number(e.target.value),
+              };
+              setColor(newHsva);
+              props.onChange(hsvaToHsla(newHsva));
+            }}
+            style={{
+              width: "100%",
+              height: "100%",
+              "background-image": `linear-gradient(to right, transparent 0%, ${hslaToHslaString(hsvaToHsla(color()))} 100%)`,
+              appearance: "none",
+              background: "transparent",
+              position: "relative",
+              margin: 0,
+            }}
+          />
+        </div>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          gap: "10px",
+        }}
+      >
+        <div
+          style={{
+            width: "200px",
+            height: "200px",
+            "background-image": `linear-gradient(to top, #000 0%, transparent 100%),
                 linear-gradient(to right, #fff 0%, transparent 100%)`,
-          "background-color": `hsl(${color().h}, 100%, 50%)`,
-          position: "relative",
-          cursor: "crosshair",
-          border: "solid 1px black",
-          "touch-action": "none",
-        }}
-        onPointerMove={updateSaturationLightness}
-      >
+            "background-color": `hsl(${color().h}, 100%, 50%)`,
+            position: "relative",
+            cursor: "crosshair",
+            border: "solid 1px black",
+            "touch-action": "none",
+          }}
+          onPointerMove={updateSaturationLightness}
+        >
+          <div
+            style={{
+              position: "absolute",
+              transform: `translate(-50%, -50%)`,
+              top: `${100 * (1 - color().v)}%`,
+              left: `${100 * color().s}%`,
+              width: "10px",
+              height: "10px",
+              background: "black",
+              "border-radius": "50%",
+              "pointer-events": "none",
+            }}
+          />
+        </div>
+
         <div
           style={{
-            position: "absolute",
-            transform: `translate(-50%, -50%)`,
-            top: `${100 * (1 - color().v)}%`,
-            left: `${100 * color().s}%`,
-            width: "10px",
-            height: "10px",
-            background: "black",
-            "border-radius": "50%",
-            "pointer-events": "none",
+            width: "20px",
+            height: "200px",
+            "border-radius": "10px",
+            background: `linear-gradient(to bottom, hsl(0, 100%, 50%), hsl(60, 100%, 50%), hsl(120, 100%, 50%), hsl(180, 100%, 50%), hsl(240, 100%, 50%), hsl(300, 100%, 50%), hsl(360, 100%, 50%))`,
           }}
-        />
-      </div>
-
-      <div
-        style={{
-          background: `linear-gradient(to right, hsl(0, 100%, 50%), hsl(60, 100%, 50%), hsl(120, 100%, 50%), hsl(180, 100%, 50%), hsl(240, 100%, 50%), hsl(300, 100%, 50%), hsl(360, 100%, 50%))`,
-          height: "20px",
-          "border-radius": "10px",
-          "margin-top": "10px",
-        }}
-      >
-        <input
-          type="range"
-          min="0"
-          max="360"
-          value={color().h}
-          onInput={(e) => {
-            const newHsva: HSVA = {
-              ...color(),
-              h: Number(e.target.value),
-            };
-            setColor(newHsva);
-            props.onChange(hsvaToHsla(newHsva));
-          }}
-          style={{
-            width: "100%",
-            appearance: "none",
-            background: "transparent",
-            position: "relative",
-          }}
-        />
-      </div>
-      <div
-        style={{
-          height: "20px",
-          "border-radius": "10px",
-          "background-image":
-            "linear-gradient(45deg, #cccccc 25%, transparent 25%), linear-gradient(-45deg, #cccccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #cccccc 75%), linear-gradient(-45deg, transparent 75%, #cccccc 75%)",
-          "background-size": "20px 20px",
-          "background-position": "0 0, 0 10px, 10px -10px, -10px 0px",
-          overflow: "hidden",
-          "margin-top": "10px",
-        }}
-      >
-        <input
-          type="range"
-          min="0"
-          step="0.01"
-          max="1"
-          value={color().a}
-          onInput={(e) => {
-            const newHsva: HSVA = {
-              ...color(),
-              a: Number(e.target.value),
-            };
-            setColor(newHsva);
-            props.onChange(hsvaToHsla(newHsva));
-          }}
-          style={{
-            width: "100%",
-            height: "100%",
-
-            "background-image": `linear-gradient(to right, transparent 0%, ${hslaToHslaString(hsvaToHsla(color()))} 100%)`,
-            appearance: "none",
-            background: "transparent",
-            position: "relative",
-            margin: 0,
-          }}
-        />
-      </div>
-      <div
-        style={{
-          width: "50px",
-          height: "50px",
-          "background-image":
-            "linear-gradient(45deg, #cccccc 25%, transparent 25%), linear-gradient(-45deg, #cccccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #cccccc 75%), linear-gradient(-45deg, transparent 75%, #cccccc 75%)",
-          "background-size": "20px 20px",
-          "background-position": "0 0, 0 10px, 10px -10px, -10px 0px",
-        }}
-      >
-        <div
-          style={{
-            width: "100%",
-            height: "100%",
-            "margin-top": "10px",
-            "background-color": (() => hslaToHslaString(hsvaToHsla(color())))(),
-          }}
-        ></div>
+        >
+          <input
+            type="range"
+            min="0"
+            max="360"
+            value={color().h}
+            onInput={(e) => {
+              const newHsva: HSVA = {
+                ...color(),
+                h: Number(e.target.value),
+              };
+              setColor(newHsva);
+              props.onChange(hsvaToHsla(newHsva));
+            }}
+            style={{
+              width: "20px",
+              height: "200px",
+              "writing-mode": "vertical-lr",
+              appearance: "none",
+              background: "transparent",
+              position: "relative",
+              margin: 0,
+            }}
+          />
+        </div>
       </div>
     </div>
   );

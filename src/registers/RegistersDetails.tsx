@@ -16,7 +16,8 @@ import DeletePicto from "../assets/delete_FILL0_wght400_GRAD0_opsz24.svg";
 import { types, defaultValues } from "../language/language";
 
 import { ExpandedDataInput } from "../components/ExpandedDataInput";
-import { invertLightness } from "../utils";
+import ColorPickerPopover from "../components/ColorPickerPopover";
+import { hexToHSLA, hslaToHex, invertLightness } from "../utils";
 
 export type RegisterDetailsCloseReasons =
   | "close"
@@ -40,18 +41,18 @@ export function RegisterDetails(props: {
   const [value, setValue] = createSignal(
     register().value ?? defaultValues[type()](),
   );
-  let colorField: HTMLInputElement, nameField: HTMLInputElement;
+  const [color, setColor] = createSignal(register().color);
+  let nameField: HTMLInputElement;
 
   const update = () => {
     saveRegister(
       register().id,
       type(),
-      colorField!.value,
+      color(),
       nameField!.value,
       value(),
     );
   };
-  console.log();
   return (
     <div class="registerDetails">
       <div class="registerDetails-header">
@@ -64,15 +65,16 @@ export function RegisterDetails(props: {
           onFocus={() => nameField.select()}
           value={register().name || getRegisterDefaultName(register())}
           style={{
-            "background-color": register().color,
-            color: invertLightness(register().color),
+            "background-color": color(),
+            color: invertLightness(color()),
           }}
         />
-        <input
-          ref={colorField!}
-          type="color"
-          value={register().color}
-          onInput={() => update()}
+        <ColorPickerPopover
+          hsla={hexToHSLA(color(), 1)}
+          onChange={(hsla) => {
+            setColor(hslaToHex(hsla[0], hsla[1], hsla[2]));
+            update();
+          }}
         />
       </div>
       <ExpandedDataInput
@@ -114,7 +116,7 @@ export function RegisterDetails(props: {
                 props.registerPosition.x,
                 props.registerPosition.y,
                 type(),
-                colorField!.value,
+                color(),
                 nameField!.value,
                 value(),
               );
