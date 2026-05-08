@@ -39,7 +39,7 @@ function EmptySlot(props: {
         props.setSelectedSlot(props.slotPath);
       }}
     >
-      {"slot"}
+      {"..."}
     </button>
   );
 }
