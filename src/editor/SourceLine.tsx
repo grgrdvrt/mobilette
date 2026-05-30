@@ -111,6 +111,7 @@ function ValueParam(props: {
 export function EmptySourceLine(props: {
   instructionPath: InstructionPath;
   selected: Accessor<boolean>;
+  lineNumber: Accessor<number>;
   order: string;
 }) {
   return (
@@ -119,6 +120,7 @@ export function EmptySourceLine(props: {
       classList={{ selected: props.selected() }}
       style={{ order: props.order }}
     >
+      <span class="lineNumber">{props.lineNumber()}</span>
       <p
         onClick={() =>
           props.selected()
@@ -140,6 +142,7 @@ export function SourceLine(props: {
   line: Instruction;
   depth: Accessor<number>;
   selected: Accessor<boolean>;
+  lineNumber: Accessor<number>;
   registers: Registers;
   setSelectedSlot: Setter<SlotPath | null>;
   order: string;
@@ -175,6 +178,7 @@ export function SourceLine(props: {
       classList={{ selected: props.selected() }}
       style={{ order: props.order }}
     >
+      <span class="lineNumber">{props.lineNumber()}</span>
       <p
         style={{ "padding-left": 15 * props.depth() + "px" }}
         onClick={() =>

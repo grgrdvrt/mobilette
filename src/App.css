@@ -212,9 +212,30 @@
     right: 5px;
 }
 
+.sourceLine {
+    display: flex;
+    align-items: stretch;
+}
+
+.lineNumber {
+    flex: 0 0 auto;
+    min-width: 2em;
+    margin: 2px 0;
+    padding: 2px 12px 2px 2px;
+    text-align: right;
+    color: #aaaaaa;
+    user-select: none;
+    pointer-events: none;
+}
+
+.sourceLine.selected .lineNumber {
+    background-color: #eeeeee;
+}
+
 .sourceLine p {
-    margin: 2px;
+    margin: 2px 2px 2px 0;
     padding: 2px;
+    flex: 1 1 auto;
 }
 .sourceLine p * {
     pointer-events: none;
@@ -249,7 +270,7 @@
 }
 
 .insertionButton {
-    width: 100%;
+    margin-left: calc(2em + 14px);
 }
 
 .instructionsMenu {

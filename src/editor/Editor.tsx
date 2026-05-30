@@ -83,6 +83,7 @@ function ProgramInterface(props: {
                       lineIndex: i(),
                     }}
                     selected={() => isSelected(i())}
+                    lineNumber={() => i() + 1}
                     order="0"
                   />
                 }
@@ -96,6 +97,7 @@ function ProgramInterface(props: {
                   depth={() => depths()[i()]}
                   registers={props.registers}
                   selected={() => isSelected(i())}
+                  lineNumber={() => i() + 1}
                   setSelectedSlot={props.setSelectedSlot}
                   order="0"
                 />
