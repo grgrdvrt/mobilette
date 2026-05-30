@@ -214,7 +214,7 @@
 
 .sourceLine {
     display: flex;
-    align-items: baseline;
+    align-items: stretch;
 }
 
 .lineNumber {
