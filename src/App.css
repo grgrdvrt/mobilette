@@ -269,7 +269,7 @@
 }
 
 .insertionButton {
-    width: 100%;
+    margin-left: calc(2em + 14px);
 }
 
 .instructionsMenu {
