@@ -220,11 +220,16 @@
 .lineNumber {
     flex: 0 0 auto;
     min-width: 2em;
-    margin-right: 4px;
+    margin-right: 12px;
+    padding: 2px;
     text-align: right;
     color: #aaaaaa;
     user-select: none;
     pointer-events: none;
+}
+
+.sourceLine.selected .lineNumber {
+    background-color: #eeeeee;
 }
 
 .sourceLine p {
