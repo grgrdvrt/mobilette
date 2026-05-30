@@ -220,8 +220,7 @@
 .lineNumber {
     flex: 0 0 auto;
     min-width: 2em;
-    margin-right: 12px;
-    padding: 2px;
+    padding: 2px 12px 2px 2px;
     text-align: right;
     color: #aaaaaa;
     user-select: none;
@@ -233,7 +232,7 @@
 }
 
 .sourceLine p {
-    margin: 2px;
+    margin: 2px 2px 2px 0;
     padding: 2px;
     flex: 1 1 auto;
 }
