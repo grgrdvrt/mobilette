@@ -220,6 +220,7 @@
 .lineNumber {
     flex: 0 0 auto;
     min-width: 2em;
+    margin: 2px 0;
     padding: 2px 12px 2px 2px;
     text-align: right;
     color: #aaaaaa;
