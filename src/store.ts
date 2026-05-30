@@ -232,7 +232,7 @@ export function setCommand(module: string, command: string) {
         return;
       }
       const instructionDefinition = instructionsDefinitions[module][command];
-      const paramsCount = instructionDefinition.reduce(
+      const paramsCount = instructionDefinition.variants.reduce(
         (t: number, inst: InstructionVariant) => {
           return Math.max(t, inst.params.length);
         },

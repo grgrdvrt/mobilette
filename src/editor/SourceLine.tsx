@@ -147,7 +147,7 @@ export function SourceLine(props: {
   const canAddParam = (line: Instruction) => {
     const [module, command] = line;
     const def = instructionsDefinitions[module][command];
-    return def.some((d) => d.params[d.params.length - 1]?.variadic);
+    return def.variants.some((d) => d.params[d.params.length - 1]?.variadic);
   };
 
   const canRemoveParam = (line: Instruction) => {
@@ -158,8 +158,10 @@ export function SourceLine(props: {
     }
     const def = instructionsDefinitions[module][command];
     // a function is variadic if at least one of its implementations is variadic
-    const isVariadic = def.some((d) => d.params[d.params.length - 1]?.variadic);
-    const minLength = def.reduce(
+    const isVariadic = def.variants.some(
+      (d) => d.params[d.params.length - 1]?.variadic,
+    );
+    const minLength = def.variants.reduce(
       (m, d) => Math.min(m, d.params.length),
       Number.MAX_SAFE_INTEGER,
     );

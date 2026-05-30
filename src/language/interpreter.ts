@@ -333,7 +333,7 @@ export class Interpreter {
           } else {
             const filteredParams = params.filter((p) => p !== null);
             //Find variant that matches the params
-            const instruction = instructionsDefinitions[module][cmd].find(
+            const instruction = instructionsDefinitions[module][cmd].variants.find(
               (v) => {
                 return (
                   (v.params[v.params.length - 1]?.variadic ||

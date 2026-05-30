@@ -16,7 +16,10 @@ export type InstructionVariant = {
   effect: (params: ParamInput[], env: Interpreter) => void;
 };
 
-export type InstructionDefinition = InstructionVariant[];
+export type InstructionDefinition = {
+  description: string;
+  variants: InstructionVariant[];
+};
 
 export type Module = Record<string, InstructionDefinition>;
 
@@ -88,7 +91,7 @@ export function monop(
   };
 }
 
-export function vecop(func: (a: any, b: any) => any): InstructionDefinition {
+export function vecop(func: (a: any, b: any) => any): InstructionVariant[] {
   return [
     binop((a, b) => func(a, b)),
     binop(

@@ -10,53 +10,63 @@ const num = { type: types.NUMBER };
 const arr = { type: types.ARRAY };
 
 export const algo: Module = {
-  noise2D: [
-    {
-      params: [num, num, num],
-      effect: (params, env) => {
-        env.setVal(
-          params[2].content,
-          noise2D(env.readVal(params[0]), env.readVal(params[1])),
-        );
+  noise2D: {
+    description:
+      "Samples 2D simplex noise at the given coordinates (from x, y or a vector).",
+    variants: [
+      {
+        params: [num, num, num],
+        effect: (params, env) => {
+          env.setVal(
+            params[2].content,
+            noise2D(env.readVal(params[0]), env.readVal(params[1])),
+          );
+        },
       },
-    },
-    {
-      params: [arr, num],
-      effect: (params, env) => {
-        const v = env.readVal(params[0]);
-        env.setVal(params[1].content, noise2D(v[0], v[1]));
+      {
+        params: [arr, num],
+        effect: (params, env) => {
+          const v = env.readVal(params[0]);
+          env.setVal(params[1].content, noise2D(v[0], v[1]));
+        },
       },
-    },
-  ],
-  noise3D: [
-    {
-      params: [num, num, num, num],
-      effect: (params, env) => {
-        env.setVal(
-          params[3].content,
-          noise3D(
-            env.readVal(params[0]),
-            env.readVal(params[1]),
-            env.readVal(params[2]),
-          ),
-        );
+    ],
+  },
+  noise3D: {
+    description: "Samples 3D simplex noise at the given coordinates.",
+    variants: [
+      {
+        params: [num, num, num, num],
+        effect: (params, env) => {
+          env.setVal(
+            params[3].content,
+            noise3D(
+              env.readVal(params[0]),
+              env.readVal(params[1]),
+              env.readVal(params[2]),
+            ),
+          );
+        },
       },
-    },
-  ],
-  noise4D: [
-    {
-      params: [num, num, num, num, num],
-      effect: (params, env) => {
-        env.setVal(
-          params[4].content,
-          noise4D(
-            env.readVal(params[0]),
-            env.readVal(params[1]),
-            env.readVal(params[2]),
-            env.readVal(params[3]),
-          ),
-        );
+    ],
+  },
+  noise4D: {
+    description: "Samples 4D simplex noise at the given coordinates.",
+    variants: [
+      {
+        params: [num, num, num, num, num],
+        effect: (params, env) => {
+          env.setVal(
+            params[4].content,
+            noise4D(
+              env.readVal(params[0]),
+              env.readVal(params[1]),
+              env.readVal(params[2]),
+              env.readVal(params[3]),
+            ),
+          );
+        },
       },
-    },
-  ],
+    ],
+  },
 };
