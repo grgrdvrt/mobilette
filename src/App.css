@@ -212,9 +212,25 @@
     right: 5px;
 }
 
+.sourceLine {
+    display: flex;
+    align-items: baseline;
+}
+
+.lineNumber {
+    flex: 0 0 auto;
+    min-width: 2em;
+    margin-right: 4px;
+    text-align: right;
+    color: #aaaaaa;
+    user-select: none;
+    pointer-events: none;
+}
+
 .sourceLine p {
     margin: 2px;
     padding: 2px;
+    flex: 1 1 auto;
 }
 .sourceLine p * {
     pointer-events: none;
